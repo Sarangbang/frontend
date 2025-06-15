@@ -1,5 +1,4 @@
 import axios from 'axios';
-import useAuthStore from '@/component/auth/useAuth';
 import router from 'next/router';
 
 export const getServerURL = () => {
@@ -28,62 +27,62 @@ apiClient.interceptors.request.use((config) => {
     return config;
 });
 
-apiClient.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        const originalRequest = error.config;
+// apiClient.interceptors.response.use(
+//     (response) => response,
+//     async (error) => {
+//         const originalRequest = error.config;
 
-        // 401 오류 & 재발급 시도 전이 아니라면
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
-            const deviceId = localStorage.getItem('deviceId');
+//         // 401 오류 & 재발급 시도 전이 아니라면
+//         if (error.response?.status === 401 && !originalRequest._retry) {
+//             originalRequest._retry = true;
+//             const deviceId = localStorage.getItem('deviceId');
 
-            try {
-                const res = await axios.post(
-                    `${getServerURL()}/auth/reissue`,
-                    {},
-                    {
-                        headers: {
-                            'Device-Id': deviceId,
-                            Authorization: localStorage.getItem('accessToken'),
-                        },
-                        withCredentials: true,
-                    }
-                );
+//             try {
+//                 const res = await axios.post(
+//                     `${getServerURL()}/auth/reissue`,
+//                     {},
+//                     {
+//                         headers: {
+//                             'Device-Id': deviceId,
+//                             Authorization: localStorage.getItem('accessToken'),
+//                         },
+//                         withCredentials: true,
+//                     }
+//                 );
 
-                const newAccessToken = res.headers['authorization']?.split(' ')[1];
-                if (newAccessToken) {
-                    localStorage.setItem('accessToken', newAccessToken);
-                    originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-                    return axios(originalRequest); // 재요청
-                }
-            } catch (reissueError) {
-                // 리프레시 토큰 만료 로그아웃 처리
-                console.warn('❌ 토큰 재발급 실패: 자동 로그아웃');
-                try {
-                    await axios.post(
-                        `${getServerURL()}/auth/logout`,
-                        {},
-                        {
-                            headers: {
-                                Authorization: localStorage.getItem('accessToken'),
-                                'Device-Id': localStorage.getItem('deviceId'),
-                            },
-                            withCredentials: true,
-                        }
-                    );
-                } catch (logoutError) {
-                    console.error('❗ 로그아웃 API 호출 실패:', logoutError);
-                }
+//                 const newAccessToken = res.headers['authorization']?.split(' ')[1];
+//                 if (newAccessToken) {
+//                     localStorage.setItem('accessToken', newAccessToken);
+//                     originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+//                     return axios(originalRequest); // 재요청
+//                 }
+//             } catch (reissueError) {
+//                 // 리프레시 토큰 만료 로그아웃 처리
+//                 console.warn('❌ 토큰 재발급 실패: 자동 로그아웃');
+//                 try {
+//                     await axios.post(
+//                         `${getServerURL()}/auth/logout`,
+//                         {},
+//                         {
+//                             headers: {
+//                                 Authorization: localStorage.getItem('accessToken'),
+//                                 'Device-Id': localStorage.getItem('deviceId'),
+//                             },
+//                             withCredentials: true,
+//                         }
+//                     );
+//                 } catch (logoutError) {
+//                     console.error('❗ 로그아웃 API 호출 실패:', logoutError);
+//                 }
 
-                // ✅ 상태 초기화 + 리디렉션
-                const { logout } = useAuthStore.getState();
-                logout();
-                router.push('/login');
-            }
-        }
-        return Promise.reject(error);
-    }
-);
+//                 // ✅ 상태 초기화 + 리디렉션
+//                 const { logout } = useAuthStore.getState();
+//                 logout();
+//                 router.push('/login');
+//             }
+//         }
+//         return Promise.reject(error);
+//     }
+// );
 
 export default apiClient;
