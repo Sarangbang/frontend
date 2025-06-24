@@ -1,15 +1,25 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
+import { ThemeProvider } from "@/components/common/ThemeProvider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const gmarket = localFont({
+  src: [
+    {
+      path: '../fonts/GmarketSansLight.otf',
+      weight: '300',
+    },
+    {
+      path: '../fonts/GmarketSansMedium.otf',
+      weight: '500',
+    },
+    {
+      path: '../fonts/GmarketSansBold.otf',
+      weight: '700',
+    },
+  ],
+  display: 'swap',
+  variable: '--font-gmarket',
 });
 
 export const metadata: Metadata = {
@@ -23,11 +33,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${gmarket.variable} font-sans bg-white dark:bg-gray-900`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
