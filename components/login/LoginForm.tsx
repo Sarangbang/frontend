@@ -3,15 +3,30 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { login, type LoginRequest } from '@/api/auth';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: 로그인 로직 구현
-    console.log({ email, password });
+    
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    
+    try {
+      const loginData: LoginRequest = { email, password };
+      const response = await login(loginData);
+      setIsLoading(false);
+      console.log('로그인 성공:', response);
+    } catch (error) {
+      console.error('로그인 실패:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const inputStyle =
@@ -84,9 +99,10 @@ const LoginForm = () => {
             <div>
               <button
                 type="submit"
-                className="flex justify-center w-full px-4 py-3 text-sm font-medium text-white bg-orange-500 border border-transparent rounded-md shadow-sm hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                disabled={isLoading}
+                className="flex justify-center w-full px-4 py-3 text-sm font-medium text-white bg-orange-500 border border-transparent rounded-md shadow-sm hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                로그인
+                {isLoading ? '로그인 중...' : '로그인'}
               </button>
             </div>
           </form>
