@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { signUp } from '@/api/signup';
-import { SignUpRequest } from '@/types/SignUpRequest';
+import { SignUpRequest } from '@/types/SignUp';
 
 const SignUpForm = () => {
   const router = useRouter();

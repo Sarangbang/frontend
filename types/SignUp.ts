@@ -7,3 +7,6 @@ export interface SignUpRequest {
     gender: string;
     region: string;
 }
+
+export interface SignUpResponse {
+}
