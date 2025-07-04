@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { signUp } from '@/api/signup';
+import { SignUpRequest } from '@/types/SignUpRequest';
 
 const SignUpForm = () => {
   const router = useRouter();
@@ -41,7 +42,7 @@ const SignUpForm = () => {
       return;
     }
 
-    const response = {
+    const data: SignUpRequest = {
       email,
       password,
       passwordConfirm,
@@ -51,10 +52,10 @@ const SignUpForm = () => {
     };
 
     try {
-      const result = await signUp(response);
+      const result = await signUp(data);
 
       console.log('회원가입 성공: ', result);
-      router.push('/');
+      router.push('/login');
     } catch (error) {
       console.error('회원가입 실패: ', error);
       setError('회원가입에 실패했습니다. 다시 시도해주세요.');
