@@ -2,23 +2,40 @@
 
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-// 스와이프 UI를 위한 Swiper 라이브러리에서 필요한 컴포넌트와 CSS를 가져옵니다.
 import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css'; // Swiper의 기본 스타일을 적용합니다.
+import 'swiper/css';
 
-// 위에서 만든 API 호출 함수와 데이터 타입을 가져옵니다.
 import { fetchCategories } from '@/api/category';
-import type { Category } from '@/types/Category';
+import type { Category, CategoryDto } from '@/types/Category';
 
-// 개별 카테고리 아이콘을 표시하는 작은 재사용 컴포넌트입니다.
+const bgColors = [
+  'bg-yellow-100 dark:bg-yellow-900',
+  'bg-blue-100 dark:bg-blue-900',
+  'bg-green-100 dark:bg-green-900',
+  'bg-purple-100 dark:bg-purple-900',
+  'bg-orange-100 dark:bg-orange-900',
+  'bg-pink-100 dark:bg-pink-900',
+  'bg-teal-100 dark:bg-teal-900',
+  'bg-indigo-100 dark:bg-indigo-900',
+];
+
+const addBgColorsToCategories = (data: CategoryDto[]): Category[] => {
+  return data.map((dto, index) => ({
+    categoryId: dto.categoryId,
+    categoryName: dto.categoryName,
+    categoryImageUrl: dto.categoryImageUrl,
+    bgColor: bgColors[index % bgColors.length],
+  }));
+};
+
 const CategoryCircle = ({
   image,
   label,
   bgColor,
 }: {
-  image: string; // 표시할 이미지 경로
-  label: string; // 표시할 카테고리 이름
-  bgColor: string; // 배경색으로 사용할 Tailwind CSS 클래스
+  image: string;
+  label: string;
+  bgColor: string;
 }) => (
   <div className="text-center flex flex-col items-center">
     <div
@@ -30,29 +47,19 @@ const CategoryCircle = ({
   </div>
 );
 
-// 카테고리 섹션 전체를 담당하는 메인 컴포넌트입니다.
 const CategorySection = () => {
-  // API를 통해 받아온 카테고리 목록을 저장하기 위한 상태(state)입니다.
-  // 초기값은 빈 배열이며, 데이터가 채워지면 화면이 다시 렌더링됩니다.
   const [categories, setCategories] = useState<Category[]>([]);
-  // 전체보기 모드인지 여부를 저장하는 상태입니다.
   const [showAll, setShowAll] = useState(false);
 
-  // 컴포넌트가 처음 화면에 그려질 때(mount) 딱 한 번만 실행되는 부분입니다.
   useEffect(() => {
-    // 비동기로 동작하는 API 호출 함수를 실행하기 위한 내부 함수입니다.
     const getCategories = async () => {
-      // API를 호출하여 카테고리 데이터를 받아옵니다.
-      // fetchCategories에서 이미 bgColor가 포함된 Category[] 데이터를 반환합니다.
       const categoriesData = await fetchCategories();
-      // 받아온 데이터로 categories 상태를 업데이트합니다.
-      setCategories(categoriesData);
+      const categoriesWithBgColor = addBgColorsToCategories(categoriesData);
+      setCategories(categoriesWithBgColor);
     };
-    // 내부 함수를 호출합니다.
     getCategories();
-  }, []); // 두 번째 인자인 배열이 비어있으면, 최초 렌더링 시에만 실행됩니다.
+  }, []);
 
-  // 전체보기 버튼 클릭 시 상태를 토글하는 함수입니다.
   const toggleShowAll = () => {
     setShowAll(!showAll);
   };
@@ -77,6 +84,7 @@ const CategorySection = () => {
       {/* 전체보기 모드에 따라 다른 레이아웃을 보여줍니다. */}
       {showAll ? (
         // 전체보기 모드: 4개씩 줄바꿈하여 그리드 형태로 표시
+        // grid-cols-4로 한 줄에 4개씩, gap-4로 간격을 줍니다.
         <div className="grid grid-cols-4 gap-4">
           {categories.map((category) => (
             <CategoryCircle
