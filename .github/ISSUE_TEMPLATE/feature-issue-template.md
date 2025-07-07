@@ -2,7 +2,9 @@
 name: feature-issue-template
 about: 새로운 기능을 정의해주세요
 title: "[feature]"
-labels: enhancement
+labels: 
+  - enhancement
+  - priority/p1
 assignees: ''
 
 ---
