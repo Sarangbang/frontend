@@ -3,12 +3,16 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { login, type LoginRequest } from '@/api/auth';
+import { login } from '@/api/auth';
+import { useRouter } from 'next/navigation';
+import { LoginRequest } from '@/types/Login';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,10 +24,14 @@ const LoginForm = () => {
     try {
       const loginData: LoginRequest = { email, password };
       const response = await login(loginData);
+
+      if(response && response.token) {
+        localStorage.setItem('accessToken', response.token);
+      }
       setIsLoading(false);
-      console.log('로그인 성공:', response);
+      router.push('/');
     } catch (error) {
-      console.error('로그인 실패:', error);
+      setError('이메일 또는 비밀번호가 올바르지 않습니다.')
     } finally {
       setIsLoading(false);
     }
@@ -106,6 +114,11 @@ const LoginForm = () => {
               </button>
             </div>
           </form>
+          {error && (
+            <div className="p-3 text-sm text-red-700 bg-red-100 border border-red-400 rounded-md mt-4">
+              {error}
+            </div>
+          )}
 
           <div className="mt-6">
             <div className="relative">
