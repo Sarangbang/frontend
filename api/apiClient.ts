@@ -10,7 +10,7 @@ apiClient.interceptors.request.use((config) => {
     if (typeof window !== 'undefined') {
         const token = localStorage.getItem('accessToken');
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+            config.headers.Authorization = `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0dXNlcjNAZXhhbXBsZS5jb20iLCJpZCI6IjU0OTA5YjY5LTdmN2QtNGQ1ZS1iY2E4LTEzNTlmMDU2M2QwZiIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpYXQiOjE3NTE2MTk0OTAsImV4cCI6MTc1MTYyMzA5MH0.lUi6vcqhyO-hoJZMksQ2v7ZzHzN773Wk_I3NbqnopQU`;
         }
     }
     const deviceId = localStorage.getItem('deviceId');
