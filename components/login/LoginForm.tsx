@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { login } from '@/api/auth';
 import { useRouter } from 'next/navigation';
-import { LoginRequest } from '@/types/LoginRequest';
+import { LoginRequest } from '@/types/Login';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -30,10 +30,7 @@ const LoginForm = () => {
       }
       setIsLoading(false);
       router.push('/');
-      console.log('로그인 성공:', response);
-      
     } catch (error) {
-      console.error('로그인 실패:', error);
       setError('이메일 또는 비밀번호가 올바르지 않습니다.')
     } finally {
       setIsLoading(false);

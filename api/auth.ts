@@ -1,6 +1,5 @@
-import { LoginRequest } from '@/types/LoginRequest';
+import { LoginRequest, LoginResponse } from '@/types/Login';
 import apiClient from './apiClient';
-import { LoginResponse } from '@/types/LoginResponse';
 
 // 로그인 API 요청
 export const login = async (data: LoginRequest): Promise<LoginResponse> => {
