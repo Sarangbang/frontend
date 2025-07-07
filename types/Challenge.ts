@@ -27,7 +27,7 @@ export interface ChallengeCreateRequest {
 }
 
 export interface ChallengeFormData {
-  category: string;
+  category: number;
   title: string;
   description: string;
   participants: string; // 👈 input으로 받아서 string인 상태
@@ -40,7 +40,7 @@ export interface ChallengeFormData {
 }
 
 export const initialFormData: ChallengeFormData = {
-  category: '',
+  category: 0,
   title: '',
   description: '',
   participants: '',

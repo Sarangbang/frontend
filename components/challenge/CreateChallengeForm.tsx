@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ChevronLeftIcon, CameraIcon } from '@heroicons/react/24/solid';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 import { ko } from 'date-fns/locale';
 import Image from 'next/image';
+import { fetchCategories } from '@/api/category';
+import { Category } from '@/types/Category';
 
 interface CreateChallengeFormProps {
   onClose: () => void;
@@ -16,7 +18,7 @@ interface CreateChallengeFormProps {
 const CreateChallengeForm = ({ onClose, onSubmit, isDesktop }: CreateChallengeFormProps) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    category: '',
+    category: 0,
     title: '',
     description: '',
     participants: '',
@@ -79,8 +81,13 @@ const CreateChallengeForm = ({ onClose, onSubmit, isDesktop }: CreateChallengeFo
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+
+    if (name === 'category') {
+      setFormData(prev => ({ ...prev, category: Number(value) }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  }; 
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -94,7 +101,22 @@ const CreateChallengeForm = ({ onClose, onSubmit, isDesktop }: CreateChallengeFo
   };
 
 
-  const categories = ['운동/건강', '기상/루틴', '학습/독서', '생활/정리', '마음/감정', '취미/자기계발', '관계/소통', '재테크/자산', '그 외'];
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await fetchCategories();
+        const sorted = data.sort((a, b) => a.categoryId - b.categoryId);
+        setCategories(sorted);
+      } catch (error) {
+        console.error('카테고리 불러오기 실패: ', error);
+      }
+    };
+
+    loadCategories();
+  }, []);
+
   const frequencies = ['매일', '주 1회', '주 2회', '주 3회', '주 4회', '주 5회', '주 6회'];
   const durations = ['1주', '2주', '3주', '한달'];
 
@@ -106,9 +128,9 @@ const CreateChallengeForm = ({ onClose, onSubmit, isDesktop }: CreateChallengeFo
             <h2 className="text-2xl font-bold mb-6 dark:text-white">챌린지 주제를 선택해주세요.</h2>
             <div className="space-y-3">
               {categories.map((category) => (
-                <label key={category} className="flex items-center space-x-3 text-lg dark:text-gray-300">
-                  <input type="radio" name="category" value={category} checked={formData.category === category} onChange={handleChange} className="w-5 h-5 text-orange-500 focus:ring-orange-500 border-gray-300 dark:bg-gray-700 dark:border-gray-600" />
-                  <span>{category}</span>
+                <label key={category.categoryId} className="flex items-center space-x-3 text-lg dark:text-gray-300">
+                  <input type="radio" name="category" value={category.categoryId} checked={formData.category === category.categoryId} onChange={handleChange} className="w-5 h-5 text-orange-500 focus:ring-orange-500 border-gray-300 dark:bg-gray-700 dark:border-gray-600" />
+                  <span>{category.categoryName}</span>
                 </label>
               ))}
             </div>
