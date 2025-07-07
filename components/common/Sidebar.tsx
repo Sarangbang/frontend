@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 const NavItem = ({ children, text, href }: { children: React.ReactNode, text: string, href: string }) => (
     <Link href={href} className="w-full">
@@ -12,8 +13,16 @@ const NavItem = ({ children, text, href }: { children: React.ReactNode, text: st
     </Link>
 )
 
+const Sidebar = () => {
 
-const Sidebar = () => (
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    setIsLoggedIn(!!token);
+  }, []);
+
+  return(
     <aside className="w-64 bg-white dark:bg-gray-800 h-screen fixed top-0 left-0 shadow-[1px_0_3px_rgba(0,0,0,0.1)] p-4 flex flex-col z-20">
       <div className="flex items-center p-4 mb-4">
         <Image src="/images/charactors/gamza.png" alt="logo" width={40} height={40} />
@@ -40,13 +49,14 @@ const Sidebar = () => (
             <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clipRule="evenodd" />
           </svg>
         </NavItem>
-        <NavItem href="/mypage" text="마이페이지">
+        <NavItem href={isLoggedIn ? "/mypage" : "/login"} text={isLoggedIn ? "마이페이지" : "로그인"}>
           <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
           </svg>
         </NavItem>
       </nav>
     </aside>
-  );
+  )
+}
   
   export default Sidebar;
