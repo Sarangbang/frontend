@@ -11,6 +11,8 @@ import CreateChallengeForm from './CreateChallengeForm';
 import ContentHeader from '../common/ContentHeader';
 import Tabs, { type Tab } from '../common/Tabs';
 import { createChallenge } from '@/api/challenge';
+import { formatDateToYYYYMMDD, calculateEndDate } from "@/util/dateUtils";
+
 
 const mockChallenges: Challenge[] = [
   {
@@ -76,18 +78,6 @@ const CHALLENGE_TABS: Tab<'멤버' | '방장'>[] = [
   { id: '방장', label: '방장' },
 ];
 
-// 종료일 계산
-const calculateEndDate = (start: Date, duration: string) : string => {
-  const end = new Date(start);
-  if (duration.includes('주')) {
-    const weeks = parseInt(duration);
-    end.setDate(end.getDate() + weeks * 7);
-  } else if (duration === '한달') {
-    end.setMonth(end.getMonth() + 1);
-  }
-  return end.toISOString().split('T')[0];
-}
-
 const  ChallengeClient = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'멤버' | '방장'>('멤버');
@@ -100,14 +90,16 @@ const  ChallengeClient = () => {
   }, []);
 
   const handleCreateChallenge = async (formData: typeof initialFormData) => {
+    const endDate = formatDateToYYYYMMDD(formData.endDate);
+
     const requestData: ChallengeCreateRequest = {
       location: '서울특별시',
       title: formData.title,
       description: formData.description,
-      participants: parseInt(formData.participants),
+      participants: formData.participants,
       method: formData.verificationMethod,
-      startDate: formData.startDate.toISOString().split('T')[0],
-      endDate: calculateEndDate(formData.startDate, formData.duration),
+      startDate: formatDateToYYYYMMDD(formData.startDate),
+      endDate: endDate,
       image: formData.image?.name || 'default.png', // 실제로는 업로드 후 경로 필요
       status: true,
       categoryId: formData.category,
@@ -123,7 +115,6 @@ const  ChallengeClient = () => {
       alert('챌린지 등록에 실패했습니다. 다시 시도해주세요.');
     } finally {
         setIsCreatingChallenge(false);
-
     }
   };
 

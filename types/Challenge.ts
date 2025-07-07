@@ -30,11 +30,12 @@ export interface ChallengeFormData {
   category: number;
   title: string;
   description: string;
-  participants: string; // 👈 input으로 받아서 string인 상태
+  participants: number;
   verificationMethod: string;
   verificationFrequency: string;
   verificationCountPerDay: string;
   startDate: Date;
+  endDate: Date;
   duration: string;
   image: File | null;
 }
@@ -43,11 +44,12 @@ export const initialFormData: ChallengeFormData = {
   category: 0,
   title: '',
   description: '',
-  participants: '',
+  participants: 0,
   verificationMethod: '',
   verificationFrequency: '',
   verificationCountPerDay: '',
   startDate: new Date(),
+  endDate: new Date(),
   duration: '',
   image: null,
 };
