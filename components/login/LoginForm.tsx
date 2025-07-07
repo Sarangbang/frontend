@@ -3,12 +3,15 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { login, type LoginRequest } from '@/api/auth';
+import { login } from '@/api/auth';
+import { useRouter } from 'next/navigation';
+import { LoginRequest } from '@/types/LoginRequest';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,8 +23,14 @@ const LoginForm = () => {
     try {
       const loginData: LoginRequest = { email, password };
       const response = await login(loginData);
+
+      if(response && response.token) {
+        localStorage.setItem('accessToken', response.token);
+      }
       setIsLoading(false);
+      router.push('/');
       console.log('로그인 성공:', response);
+      
     } catch (error) {
       console.error('로그인 실패:', error);
     } finally {
