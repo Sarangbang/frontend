@@ -1,11 +1,14 @@
 import React from 'react';
+import { useRouter } from 'next/navigation';
 
 const Logout = ({ onLogout }: { onLogout: () => void }) => {
+    const router = useRouter();
+
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
     alert('로그아웃 되었습니다.');
     onLogout();
-    window.location.reload(); // 항상 새로고침
+    router.push('/');
   };
 
   return (
