@@ -6,7 +6,6 @@ export const fetchCategories = async (): Promise<CategoryDto[]> => {
     const response = await apiClient.get<CategoryDto[]>('/categories');
     return response.data;
   } catch (error) {
-    console.error('카테고리 정보를 가져오는데 실패했습니다:', error);
     return [];
   }
 }; 
