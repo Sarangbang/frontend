@@ -1,7 +1,7 @@
 import apiClient from './apiClient';
-import { Category } from '@/types/Category';
+import { CategoryName } from '@/types/CategoryName';
 
-export const fetchCategories = async (): Promise<Category[]> => {
+export const getCategoryNames = async (): Promise<CategoryName[]> => {
   const response = await apiClient.get('/categories');
   return response.data;
 };
