@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { signUp } from '@/api/signup';
 import { SignUpRequest } from '@/types/SignUp';
+import axios from 'axios';
 
 const SignUpForm = () => {
   const router = useRouter();
@@ -27,15 +28,6 @@ const SignUpForm = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    // TODO: 회원가입 로직 구현
-    console.log({
-      email,
-      password,
-      passwordConfirm,
-      gender,
-      region,
-      nickname,
-    });
 
     if (password !== passwordConfirm) {
       setError('비밀번호가 일치하지 않습니다.');
@@ -53,12 +45,27 @@ const SignUpForm = () => {
 
     try {
       const result = await signUp(data);
-
-      console.log('회원가입 성공: ', result);
       router.push('/login');
     } catch (error) {
-      console.error('회원가입 실패: ', error);
-      setError('회원가입에 실패했습니다. 다시 시도해주세요.');
+      if (axios.isAxiosError(error) && error.response) {
+        const errorData = error.response.data;
+        if (error.response.status === 400) {
+          const errorMessage = Object.values(errorData)[0] as string;
+          setError(errorMessage);
+        } else if (error.response.status === 409) {
+          if (errorData.email) {
+            setError(errorData.email)
+          } else if (errorData.nickname) {
+            setError(errorData.nickname);
+          } else {
+            setError('이미 사용 중인 정보가 있습니다. 다시 확인해주세요.');
+          }
+        } else {
+          setError('회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        }
+      } else {
+        setError('서버와 통신할 수 없습니다. 인터넷 연결을 확인해주세요.');
+      }
     }
   };
 
@@ -225,12 +232,13 @@ const SignUpForm = () => {
               </div>
             </div>
 
-            {/* 에러 메시지 표시 */}
-            {error && (
-              <div className="p-3 text-sm text-red-700 bg-red-100 border border-red-400 rounded-md">
-                {error}
-              </div>
-            )}
+            <div className="min-h-[48px] flex items-center">
+              {error && (
+                <div className="w-full p-3 text-sm text-red-700 bg-red-100 border border-red-400 rounded-md">
+                  {error}
+                </div>
+              )}
+            </div>
 
             <div>
               <button
