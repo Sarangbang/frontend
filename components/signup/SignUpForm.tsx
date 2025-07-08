@@ -2,14 +2,20 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { signUp } from '@/api/signup';
+import { SignUpRequest } from '@/types/SignUp';
+import axios from 'axios';
 
 const SignUpForm = () => {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [gender, setGender] = useState('');
-  const [address, setAddress] = useState('');
+  const [region, setRegion] = useState('');
   const [nickname, setNickname] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const handleGenderChange = (selectedGender: string) => {
     if (gender === selectedGender) {
@@ -19,17 +25,48 @@ const SignUpForm = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: 회원가입 로직 구현
-    console.log({
+    setError(null);
+
+    if (password !== passwordConfirm) {
+      setError('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    const data: SignUpRequest = {
       email,
       password,
       passwordConfirm,
       gender,
-      address,
+      region,
       nickname,
-    });
+    };
+
+    try {
+      const result = await signUp(data);
+      router.push('/login');
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        const errorData = error.response.data;
+        if (error.response.status === 400) {
+          const errorMessage = Object.values(errorData)[0] as string;
+          setError(errorMessage);
+        } else if (error.response.status === 409) {
+          if (errorData.email) {
+            setError(errorData.email)
+          } else if (errorData.nickname) {
+            setError(errorData.nickname);
+          } else {
+            setError('이미 사용 중인 정보가 있습니다. 다시 확인해주세요.');
+          }
+        } else {
+          setError('회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        }
+      } else {
+        setError('서버와 통신할 수 없습니다. 인터넷 연결을 확인해주세요.');
+      }
+    }
   };
 
   const inputStyle =
@@ -125,32 +162,32 @@ const SignUpForm = () => {
               <legend className={labelStyle}>성별</legend>
               <div className="flex items-center mt-2 space-x-4">
                 <label
-                  htmlFor="male"
+                  htmlFor="MALE"
                   className="flex items-center cursor-pointer"
                 >
                   <input
-                    id="male"
+                    id="MALE"
                     name="gender"
                     type="checkbox"
                     className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
-                    checked={gender === 'male'}
-                    onChange={() => handleGenderChange('male')}
+                    checked={gender === 'MALE'}
+                    onChange={() => handleGenderChange('MALE')}
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">
                     남자
                   </span>
                 </label>
                 <label
-                  htmlFor="female"
+                  htmlFor="FEMALE"
                   className="flex items-center cursor-pointer"
                 >
                   <input
-                    id="female"
+                    id="FEMALE"
                     name="gender"
                     type="checkbox"
                     className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
-                    checked={gender === 'female'}
-                    onChange={() => handleGenderChange('female')}
+                    checked={gender === 'FEMALE'}
+                    onChange={() => handleGenderChange('FEMALE')}
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-200">
                     여자
@@ -160,19 +197,19 @@ const SignUpForm = () => {
             </fieldset>
 
             <div>
-              <label htmlFor="address" className={labelStyle}>
-                주소
+              <label htmlFor="region" className={labelStyle}>
+                희망지역
               </label>
               <div className="mt-1">
                 <input
-                  id="address"
-                  name="address"
+                  id="region"
+                  name="region"
                   type="text"
                   required
                   placeholder="도로명/지번"
                   className={inputStyle}
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
+                  value={region}
+                  onChange={(e) => setRegion(e.target.value)}
                 />
               </div>
             </div>
@@ -193,6 +230,14 @@ const SignUpForm = () => {
                   onChange={(e) => setNickname(e.target.value)}
                 />
               </div>
+            </div>
+
+            <div className="min-h-[48px] flex items-center">
+              {error && (
+                <div className="w-full p-3 text-sm text-red-700 bg-red-100 border border-red-400 rounded-md">
+                  {error}
+                </div>
+              )}
             </div>
 
             <div>
