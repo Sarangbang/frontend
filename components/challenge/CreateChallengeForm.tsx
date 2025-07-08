@@ -6,8 +6,8 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { ko } from "date-fns/locale";
 import Image from "next/image";
-import { getCategoryNames } from "@/api/categoryName";
-import { CategoryName } from "@/types/CategoryName";
+import { getCategoryNames } from "@/api/category";
+import { CategoryName } from "@/types/Category";
 import {
   formatDateToYYYYMMDD,
   calculateEndDateObject,
