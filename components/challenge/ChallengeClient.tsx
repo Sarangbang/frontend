@@ -8,7 +8,7 @@ import ChallengeCard from "./ChallengeCard";
 import {
   Challenge,
   ChallengeCreateRequest,
-  initialFormData,
+  ChallengeFormData,
 } from "@/types/Challenge";
 import Sidebar from "../common/Sidebar";
 import CreateChallengeForm from "./CreateChallengeForm";
@@ -80,6 +80,18 @@ const CHALLENGE_TABS: Tab<"멤버" | "방장">[] = [
   { id: "멤버", label: "멤버" },
   { id: "방장", label: "방장" },
 ];
+
+const initialFormData: ChallengeFormData = {
+  category: 0,
+  title: '',
+  description: '',
+  participants: 0,
+  verificationMethod: '',
+  startDate: new Date(),
+  endDate: new Date(),
+  duration: '',
+  image: null,
+};
 
 const ChallengeClient = () => {
   const router = useRouter();

@@ -38,7 +38,7 @@ export interface ChallengeFormData {
   image: File | null;
 }
 
-export const initialFormData: ChallengeFormData = {
+const initialFormData: ChallengeFormData = {
   category: 0,
   title: '',
   description: '',
