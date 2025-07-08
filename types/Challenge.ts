@@ -32,8 +32,6 @@ export interface ChallengeFormData {
   description: string;
   participants: number;
   verificationMethod: string;
-  verificationFrequency: string;
-  verificationCountPerDay: string;
   startDate: Date;
   endDate: Date;
   duration: string;
@@ -46,8 +44,6 @@ export const initialFormData: ChallengeFormData = {
   description: '',
   participants: 0,
   verificationMethod: '',
-  verificationFrequency: '',
-  verificationCountPerDay: '',
   startDate: new Date(),
   endDate: new Date(),
   duration: '',

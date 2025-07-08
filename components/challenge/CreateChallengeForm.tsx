@@ -8,7 +8,11 @@ import { ko } from "date-fns/locale";
 import Image from "next/image";
 import { fetchCategories } from "@/api/category";
 import { Category } from "@/types/Category";
-import { formatDateToYYYYMMDD, calculateEndDateObject } from "@/util/dateUtils";
+import {
+  formatDateToYYYYMMDD,
+  calculateEndDateObject,
+  formatRange,
+} from "@/util/dateUtils";
 
 interface CreateChallengeFormProps {
   onClose: () => void;
@@ -29,41 +33,14 @@ const CreateChallengeForm = ({
     description: "",
     participants: "",
     verificationMethod: "",
-    verificationFrequency: "",
-    verificationCountPerDay: "",
     startDate: new Date(),
     duration: "",
     endDate: new Date(),
     image: null as File | null,
   });
+
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (formData.duration && formData.duration !== "직접입력") {
-      const autoEnd = calculateEndDateObject(
-        formData.startDate,
-        formData.duration
-      );
-      setFormData((prev) => ({
-        ...prev,
-        endDate: autoEnd,
-      }));
-    }
-  }, [formData.startDate, formData.duration]);
-
-  function formatRange(startDate: Date, endDate: Date): string {
-    const format = (date: Date) =>
-      date
-        .toLocaleDateString("ko-KR", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-        })
-        .replace(/\. /g, ".")
-        .replace(/\.$/, "");
-    return `${format(startDate)} ~ ${format(endDate)}`;
-  }
 
   const handleNext = () => {
     switch (step) {
@@ -90,26 +67,14 @@ const CreateChallengeForm = ({
         }
         break;
       case 4:
-        if (!formData.verificationFrequency) {
-          alert("인증빈도를 선택해주세요.");
-          return;
-        }
-        if (!formData.verificationCountPerDay) {
-          alert("하루 인증 횟수를 입력해주세요.");
-          return;
-        }
-        break;
-      case 5:
         if (!formData.duration) {
           alert("챌린지 기간을 선택해주세요.");
           return;
         }
-
         if (isNaN(formData.endDate.getTime())) {
           alert("종료일이 올바르지 않습니다.");
           return;
         }
-
         if (formData.duration === "직접입력" && !formData.endDate) {
           alert("종료일을 선택해주세요.");
           return;
@@ -123,21 +88,21 @@ const CreateChallengeForm = ({
   const handlePrev = () => setStep((prev) => prev - 1);
 
   const handleChange = (
-  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-) => {
-  const { name, value } = e.target;
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
 
-  // 'name'이 "category"나 "participants"일 경우,
-  // 해당 필드를 숫자로 변환하여 상태를 업데이트합니다.
-  if (name === "category" || name === "participants") {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: Number(value), // ✅ [name]을 사용해 동적으로 필드를 선택
-    }));
-  } else {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  }
-};
+    // 'name'이 "category"나 "participants"일 경우,
+    // 해당 필드를 숫자로 변환하여 상태를 업데이트합니다.
+    if (name === "category" || name === "participants") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: Number(value), // ✅ [name]을 사용해 동적으로 필드를 선택
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -166,18 +131,14 @@ const CreateChallengeForm = ({
     loadCategories();
   }, []);
 
-  const frequencies = [
-    "매일",
-    "주 1회",
-    "주 2회",
-    "주 3회",
-    "주 4회",
-    "주 5회",
-    "주 6회",
-  ];
   const durations = ["1주", "2주", "3주", "한 달"];
 
   const renderStepContent = () => {
+    const calculatedEndDate =
+    formData.duration === "직접입력"
+      ? formData.endDate
+      : calculateEndDateObject(formData.startDate, formData.duration);
+
     switch (step) {
       case 1: // 챌린지 주제
         return (
@@ -200,7 +161,7 @@ const CreateChallengeForm = ({
                       setFormData((prev) => ({
                         ...prev,
                         category: category.categoryId,
-                        categoryName: category.categoryName, // ✅ 여기에 저장
+                        categoryName: category.categoryName,
                       }))
                     }
                     className="w-5 h-5 text-orange-500 focus:ring-orange-500 border-gray-300 dark:bg-gray-700 dark:border-gray-600"
@@ -290,48 +251,7 @@ const CreateChallengeForm = ({
             </div>
           </div>
         );
-      case 4: // 인증 빈도, 하루 인증 횟수
-        return (
-          <div>
-            <h2 className="text-2xl font-bold mb-4 dark:text-white">
-              인증빈도
-            </h2>
-            <div className="space-y-3">
-              {frequencies.map((freq) => (
-                <label
-                  key={freq}
-                  className="flex items-center space-x-3 text-lg dark:text-gray-300"
-                >
-                  <input
-                    type="radio"
-                    name="verificationFrequency"
-                    value={freq}
-                    checked={formData.verificationFrequency === freq}
-                    onChange={handleChange}
-                    className="w-5 h-5 text-orange-500 focus:ring-orange-500 border-gray-300 dark:bg-gray-700 dark:border-gray-600"
-                  />
-                  <span>{freq}</span>
-                </label>
-              ))}
-            </div>
-            <h2 className="text-2xl font-bold mt-8 mb-4 dark:text-white">
-              하루 인증 횟수
-            </h2>
-            <div className="relative flex items-center">
-              <input
-                type="number"
-                name="verificationCountPerDay"
-                value={formData.verificationCountPerDay}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-lg pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              />
-              <span className="absolute right-4 text-lg text-gray-500 pointer-events-none dark:text-gray-400">
-                회
-              </span>
-            </div>
-          </div>
-        );
-      case 5: // 챌린지 시작일, 기간
+      case 4: // 챌린지 시작일, 기간
         return (
           <div>
             <h2 className="text-2xl font-bold mb-4">챌린지 시작일</h2>
@@ -396,21 +316,20 @@ const CreateChallengeForm = ({
                 </div>
               )}
             </div>
-            {formData.startDate &&
-              formData.endDate &&
-              formData.startDate < formData.endDate && (
+            {formData.startDate && calculatedEndDate &&
+              formData.startDate < calculatedEndDate && (
                 <div className="mt-8 text-center border border-gray-300 rounded-md p-4 bg-gray-50 dark:border-gray-600 dark:bg-gray-700">
                   <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
                     최종 기간
                   </h2>
                   <p className="text-base md:text-lg font-semibold text-gray-800 dark:text-gray-200">
-                    {formatRange(formData.startDate, formData.endDate)}
+                    {formatRange(formData.startDate, calculatedEndDate)}
                   </p>
                 </div>
               )}
           </div>
         );
-      case 6: // 대표 이미지
+      case 5: // 대표 이미지
         return (
           <div>
             <h2 className="text-2xl font-bold dark:text-white">
@@ -447,7 +366,7 @@ const CreateChallengeForm = ({
             </div>
           </div>
         );
-      case 7: // 요약
+      case 6: // 요약
         return (
           <div>
             <div className="space-y-7 text-lg dark:text-white">
@@ -484,18 +403,6 @@ const CreateChallengeForm = ({
                 </p>
               </div>
               <div>
-                <p className="font-bold">인증빈도</p>
-                <p className="text-gray-600 dark:text-gray-300 mt-1.5">
-                  {formData.verificationFrequency}
-                </p>
-              </div>
-              <div>
-                <p className="font-bold">하루 인증 횟수</p>
-                <p className="text-gray-600 dark:text-gray-300 mt-1.5">
-                  {formData.verificationCountPerDay}회
-                </p>
-              </div>
-              <div>
                 <p className="font-bold">챌린지 시작일</p>
                 <p className="text-gray-600 dark:text-gray-300 mt-1.5">
                   {formData.startDate.toLocaleDateString()}
@@ -505,7 +412,7 @@ const CreateChallengeForm = ({
                 <div>
                   <p className="font-bold">챌린지 기간</p>
                   <p className="text-gray-600 dark:text-gray-300 mt-1.5">
-                    {formatRange(formData.startDate, formData.endDate)}
+                    {formatRange(formData.startDate, calculatedEndDate)}
                   </p>
                 </div>
               </div>
@@ -531,7 +438,7 @@ const CreateChallengeForm = ({
     }
   };
 
-  const totalSteps = 7;
+  const totalSteps = 6;
 
   const formContent = (
     <>
