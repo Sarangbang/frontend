@@ -40,22 +40,30 @@ const CreateChallengeForm = ({
         }
         break;
       case 2:
-        if (!formData.title) {
-          alert("챌린지 제목을 입력해주세요.");
+        if (!formData.title || formData.title.trim().length < 2) {
+          alert("챌린지 제목은 2자 이상이어야 합니다.");
           return;
         }
         break;
       case 3:
-        if (!formData.participants) {
-          alert("참여 인원을 입력해주세요.");
+        if (!formData.participants || formData.participants < 2) {
+          alert("참여 인원은 2명 이상이어야 합니다.");
           return;
         }
-        if (!formData.verificationMethod) {
-          alert("인증방법을 입력해주세요.");
+        if (formData.verificationMethod.trim().length < 10) {
+          alert("인증 방법은 최소 10자 이상 입력해주세요.");
           return;
         }
         break;
       case 4:
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (formData.startDate < today) {
+          alert("챌린지 시작일은 오늘이후여야 합니다.");
+          return;
+        }
+
         if (!formData.duration) {
           alert("챌린지 기간을 선택해주세요.");
           return;
