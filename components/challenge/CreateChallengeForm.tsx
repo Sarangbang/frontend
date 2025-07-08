@@ -6,8 +6,8 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { ko } from "date-fns/locale";
 import Image from "next/image";
-import { getCategoryNames } from "@/api/category";
-import { Category } from "@/types/CategoryName";
+import { getCategoryNames } from "@/api/categoryName";
+import { CategoryName } from "@/types/CategoryName";
 import {
   formatDateToYYYYMMDD,
   calculateEndDateObject,
@@ -115,7 +115,7 @@ const CreateChallengeForm = ({
     }
   };
 
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<CategoryName[]>([]);
 
   useEffect(() => {
     const loadCategories = async () => {
