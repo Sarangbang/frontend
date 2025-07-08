@@ -1,6 +1,32 @@
 'use client';
 
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+
+import { fetchCategories } from '@/api/category';
+import type { Category, CategoryDto } from '@/types/Category';
+
+const bgColors = [
+  'bg-yellow-100 dark:bg-yellow-900',
+  'bg-blue-100 dark:bg-blue-900',
+  'bg-green-100 dark:bg-green-900',
+  'bg-purple-100 dark:bg-purple-900',
+  'bg-orange-100 dark:bg-orange-900',
+  'bg-pink-100 dark:bg-pink-900',
+  'bg-teal-100 dark:bg-teal-900',
+  'bg-indigo-100 dark:bg-indigo-900',
+];
+
+const addBgColorsToCategories = (data: CategoryDto[]): Category[] => {
+  return data.map((dto, index) => ({
+    categoryId: dto.categoryId,
+    categoryName: dto.categoryName,
+    categoryImageUrl: dto.categoryImageUrl,
+    bgColor: bgColors[index % bgColors.length],
+  }));
+};
 
 const CategoryCircle = ({
   image,
@@ -21,35 +47,77 @@ const CategoryCircle = ({
   </div>
 );
 
-const CategorySection = () => (
-  <div className="p-4">
-    <div className="flex justify-between items-center mb-4">
-      <h2 className="text-xl font-bold flex items-center dark:text-white">
-        Category
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-        </svg>
-      </h2>
-      <button className="text-sm text-gray-500 dark:text-gray-400 cursor-pointer">전체보기</button>
+const CategorySection = () => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    const getCategories = async () => {
+      const categoriesData = await fetchCategories();
+      const categoriesWithBgColor = addBgColorsToCategories(categoriesData);
+      setCategories(categoriesWithBgColor);
+    };
+    getCategories();
+  }, []);
+
+  const toggleShowAll = () => {
+    setShowAll(!showAll);
+  };
+
+  return (
+    <div className="p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold flex items-center dark:text-white">
+          Category
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+          </svg>
+        </h2>
+        <button 
+          className="text-sm text-gray-500 dark:text-gray-400 cursor-pointer"
+          onClick={toggleShowAll}
+        >
+          {showAll ? '접기' : '전체보기'}
+        </button>
+      </div>
+      
+      {/* 전체보기 모드에 따라 다른 레이아웃을 보여줍니다. */}
+      {showAll ? (
+        // 전체보기 모드: 4개씩 줄바꿈하여 그리드 형태로 표시
+        // grid-cols-4로 한 줄에 4개씩, gap-4로 간격을 줍니다.
+        <div className="grid grid-cols-4 gap-4">
+          {categories.map((category) => (
+            <CategoryCircle
+              key={category.categoryId}
+              image={category.categoryImageUrl}
+              label={category.categoryName}
+              bgColor={category.bgColor}
+            />
+          ))}
+        </div>
+      ) : (
+        // 기본 모드: 스와이프 기능을 제공하는 Swiper 컴포넌트
+        <Swiper
+          spaceBetween={10} // 각 카테고리 아이콘(슬라이드) 사이의 간격을 10px로 설정합니다.
+          slidesPerView={4} // 한 화면에 동시에 보여줄 아이콘(슬라이드)의 개수를 4개로 설정합니다.
+          className="w-full"
+        >
+          {/* categories 상태에 저장된 배열을 순회하며 각 카테고리에 대한 슬라이드를 만듭니다. */}
+          {categories.map((category) => (
+            // 각 슬라이드는 고유한 key 값을 가져야 합니다. 여기서는 categoryId를 사용합니다.
+            <SwiperSlide key={category.categoryId}>
+              {/* 재사용 컴포넌트인 CategoryCircle에 필요한 정보(이미지, 이름, 배경색)를 전달합니다. */}
+              <CategoryCircle
+                image={category.categoryImageUrl}
+                label={category.categoryName}
+                bgColor={category.bgColor}
+              />
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      )}
     </div>
-    <div className="flex justify-around">
-      <CategoryCircle
-        image="/images/charactors/image 25.png"
-        label="운동/건강"
-        bgColor="bg-gray-100 dark:bg-gray-700"
-      />
-      <CategoryCircle
-        image="/images/charactors/image 23.png"
-        label="기상/루틴"
-        bgColor="bg-yellow-100 dark:bg-yellow-900"
-      />
-      <CategoryCircle
-        image="/images/charactors/image 24.png"
-        label="학습/독서"
-        bgColor="bg-blue-100 dark:bg-blue-900"
-      />
-    </div>
-  </div>
-);
+  );
+};
 
 export default CategorySection; 

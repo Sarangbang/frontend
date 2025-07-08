@@ -10,44 +10,10 @@ import {
 } from '@heroicons/react/24/solid';
 import { useMediaQuery } from 'react-responsive';
 import Sidebar from '../common/Sidebar';
+import getChallengeMembers from '@/api/getChallengeMembers';
+import type { Member } from '@/types/Member';
 
-const members = [
-  {
-    id: 1,
-    name: '테스트 유저1',
-    verified: true,
-    imageUrl: '/images/charactors/image 22.png',
-  },
-  {
-    id: 2,
-    name: '테스트 유저2',
-    verified: true,
-    imageUrl: '/images/charactors/image 23.png',
-  },
-  {
-    id: 3,
-    name: '테스트 유저3',
-    verified: true,
-    imageUrl: '/images/charactors/image 24.png',
-  },
-  { id: 4, name: '테스트 유저4', verified: false, imageUrl: null },
-  {
-    id: 5,
-    name: '테스트 유저5',
-    verified: true,
-    imageUrl: '/images/charactors/image 25.png',
-  },
-  {
-    id: 6,
-    name: '테스트 유저6',
-    verified: true,
-    imageUrl: '/images/charactors/gamza.png',
-  },
-];
-
-type Member = (typeof members)[0];
-
-const ChallengeDetailClient = ({ challengeId }: { challengeId: string }) => {
+const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('멤버');
   const [currentDate, setCurrentDate] = useState(new Date('2025-06-20'));
@@ -55,12 +21,27 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: string }) => {
   const [isClient, setIsClient] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
-  const [memberList, setMemberList] = useState(members);
+  const [memberList, setMemberList] = useState<Member[]>([]);
   const [isMaster, setIsMaster] = useState(true); // 방장 여부 (임시)
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    if(challengeId) {
+      const fetchMembers = async () => {
+        const data = await getChallengeMembers(challengeId);
+        setMemberList(
+          data.map((member: Member) => ({
+            id: member.id,
+            nickname: member.nickname,
+            role: member.role,
+            //verified: member.verified,
+            //imageUrl: member.imageUrl,
+          })),
+        )
+      }
+      fetchMembers();
+    }
+  }, [challengeId]); // 챌린지 id변경 시 실행
 
   const handleCancelVerification = (memberId: number) => {
     setMemberList(currentMembers =>
@@ -157,13 +138,13 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: string }) => {
                           ? '/images/expressions/smile.png'
                           : '/images/expressions/sad.png'
                       }
-                      alt={member.name}
+                      alt={member.nickname}
                       layout="fill"
                       className="rounded-full object-cover"
                     />
                   </div>
                   <p className="mt-2 font-semibold dark:text-white">
-                    {member.name}
+                    {member.nickname}
                   </p>
                 </div>
               ))}
@@ -181,7 +162,7 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: string }) => {
                   >
                     <Image
                       src={member.imageUrl}
-                      alt={`${member.name}의 인증 사진`}
+                      alt={`${member.nickname}의 인증 사진`}
                       layout="fill"
                       className="object-cover rounded-lg"
                     />
@@ -194,7 +175,7 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: string }) => {
                 {/* <div className="flex justify-center items-center gap-2 mt-2"> */}
                 <div className="flex justify-between gap-2 mt-2">
                   <p className="font-semibold dark:text-white">
-                    {member.name}
+                    {member.nickname}
                   </p>
                   {isMaster && member.verified && member.imageUrl && (
                     <button
@@ -292,7 +273,7 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: string }) => {
             <div className="flex justify-between items-center relative">
               <div className="flex-1"></div>
               <h3 className="text-xl font-bold dark:text-white absolute left-1/2 transform -translate-x-1/2">
-                {selectedMember.name}
+                {selectedMember.nickname}
               </h3>
               <button
                 onClick={closeImageOverlay}
@@ -304,7 +285,7 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: string }) => {
             <div>
               <Image
                 src={selectedMember.imageUrl!}
-                alt={`${selectedMember.name}의 인증 사진`}
+                alt={`${selectedMember.nickname}의 인증 사진`}
                 width={500}
                 height={500}
                 className="w-full h-auto object-contain rounded-lg"
