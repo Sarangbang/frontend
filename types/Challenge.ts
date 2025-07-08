@@ -11,4 +11,41 @@ export interface Challenge {
   participants: string;
   startDate: string;
   image: string;
-} 
+}
+
+export interface ChallengeCreateRequest {
+  location: string;
+  title: string;
+  description: string;
+  participants: number;
+  method: string;
+  startDate: string;
+  endDate: string;
+  image: string;
+  status: boolean;
+  categoryId: number;
+}
+
+export interface ChallengeFormData {
+  category: number;
+  title: string;
+  description: string;
+  participants: number;
+  verificationMethod: string;
+  startDate: Date;
+  endDate: Date;
+  duration: string;
+  image: File | null;
+}
+
+const initialFormData: ChallengeFormData = {
+  category: 0,
+  title: '',
+  description: '',
+  participants: 0,
+  verificationMethod: '',
+  startDate: new Date(),
+  endDate: new Date(),
+  duration: '',
+  image: null,
+};
