@@ -8,6 +8,7 @@ import { ko } from "date-fns/locale";
 import Image from "next/image";
 import { getCategoryNames } from "@/api/category";
 import { CategoryName } from "@/types/Category";
+import { ChallengeFormData, initialFormData } from "@/types/Challenge";
 import {
   formatDateToYYYYMMDD,
   calculateEndDateObject,
@@ -26,26 +27,14 @@ const CreateChallengeForm = ({
   isDesktop,
 }: CreateChallengeFormProps) => {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    category: 0,
-    categoryName: "",
-    title: "",
-    description: "",
-    participants: "",
-    verificationMethod: "",
-    startDate: new Date(),
-    duration: "",
-    endDate: new Date(),
-    image: null as File | null,
-  });
-
+  const [formData, setFormData] = useState<ChallengeFormData>(initialFormData);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleNext = () => {
     switch (step) {
       case 1:
-        if (!formData.category) {
+        if (!formData.categoryId) {
           alert("챌린지 주제를 선택해주세요.");
           return;
         }
@@ -94,7 +83,7 @@ const CreateChallengeForm = ({
 
     // 'name'이 "category"나 "participants"일 경우,
     // 해당 필드를 숫자로 변환하여 상태를 업데이트합니다.
-    if (name === "category" || name === "participants") {
+    if (name === "categoryId" || name === "participants") {
       setFormData((prev) => ({
         ...prev,
         [name]: Number(value), // ✅ [name]을 사용해 동적으로 필드를 선택
@@ -156,7 +145,7 @@ const CreateChallengeForm = ({
                     type="radio"
                     name="category"
                     value={category.categoryId}
-                    checked={formData.category === category.categoryId}
+                    checked={formData.categoryId === category.categoryId}
                     onChange={() =>
                       setFormData((prev) => ({
                         ...prev,
@@ -367,13 +356,17 @@ const CreateChallengeForm = ({
           </div>
         );
       case 6: // 요약
+        const selectedCategory = categories.find(
+          (c) => c.categoryId === formData.categoryId
+        );
+        const categoryName = selectedCategory?.categoryName ?? "";
         return (
           <div>
             <div className="space-y-7 text-lg dark:text-white">
               <div>
                 <p className="font-bold">챌린지 주제</p>
                 <p className="text-gray-600 dark:text-gray-300 mt-1.5">
-                  {formData.categoryName}
+                  {categoryName}
                 </p>
               </div>
               <div>

@@ -14,20 +14,20 @@ export interface Challenge {
 }
 
 export interface ChallengeCreateRequest {
-  location: string;
+  categoryId: number | null;
   title: string;
   description: string;
+  location: string;
   participants: number;
-  method: string;
+  verificationMethod: string;
   startDate: string;
   endDate: string;
-  image: string;
+  image: string | null;
   status: boolean;
-  categoryId: number;
 }
 
 export interface ChallengeFormData {
-  category: number;
+  categoryId: number | null;
   title: string;
   description: string;
   participants: number;
@@ -38,8 +38,8 @@ export interface ChallengeFormData {
   image: File | null;
 }
 
-const initialFormData: ChallengeFormData = {
-  category: 0,
+export const initialFormData: ChallengeFormData = {
+  categoryId: 0,
   title: '',
   description: '',
   participants: 0,

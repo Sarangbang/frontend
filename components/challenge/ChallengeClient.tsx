@@ -8,7 +8,7 @@ import ChallengeCard from "./ChallengeCard";
 import {
   Challenge,
   ChallengeCreateRequest,
-  ChallengeFormData,
+  initialFormData,
 } from "@/types/Challenge";
 import Sidebar from "../common/Sidebar";
 import CreateChallengeForm from "./CreateChallengeForm";
@@ -81,18 +81,6 @@ const CHALLENGE_TABS: Tab<"멤버" | "방장">[] = [
   { id: "방장", label: "방장" },
 ];
 
-const initialFormData: ChallengeFormData = {
-  category: 0,
-  title: '',
-  description: '',
-  participants: 0,
-  verificationMethod: '',
-  startDate: new Date(),
-  endDate: new Date(),
-  duration: '',
-  image: null,
-};
-
 const ChallengeClient = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"멤버" | "방장">("멤버");
@@ -113,16 +101,16 @@ const ChallengeClient = () => {
     const endDate = formatDateToYYYYMMDD(calculatedEndDate);
 
     const requestData: ChallengeCreateRequest = {
-      location: "서울특별시",
+      categoryId: formData.categoryId,
       title: formData.title,
       description: formData.description,
+      location: "서울특별시",
       participants: formData.participants,
-      method: formData.verificationMethod,
+      verificationMethod: formData.verificationMethod,
       startDate: formatDateToYYYYMMDD(formData.startDate),
       endDate: endDate,
-      image: formData.image?.name || "default.png", // 실제로는 업로드 후 경로 필요
+      image: formData.image?.name || null, // 실제로는 업로드 후 경로 필요
       status: true,
-      categoryId: formData.category,
     };
 
     try {
