@@ -130,7 +130,7 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
           <div className="flex-1 ml-64">
             <main className="w-2/4 mx-auto pt-8">
                <div className="flex items-center mb-8">
-                <Image src="/images/charactors/Rectangle.png" alt={challengeTitle} width={32} height={32} className="mr-3" />
+                <Image src="/images/charactors/default_wakeup.png" alt={challengeTitle} width={32} height={32} className="mr-3" />
                 <h1 className="text-3xl font-bold dark:text-white">{challengeTitle}</h1>
               </div>
               {mainContent}
@@ -144,7 +144,7 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
               <button onClick={() => router.back()} className="mr-4">
                 <ChevronLeftIcon className="w-6 h-6 text-gray-800 dark:text-gray-200" />
               </button>
-              <Image src="/images/charactors/Rectangle.png" alt={challengeTitle} width={24} height={24} className="mr-2" />
+              <Image src="/images/charactors/default_wakeup.png" alt={challengeTitle} width={24} height={24} className="mr-2" />
               <h1 className="text-xl font-bold dark:text-white">{challengeTitle}</h1>
             </div>
           </header>

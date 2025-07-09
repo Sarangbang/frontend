@@ -30,7 +30,7 @@ const mockChallenges: Challenge[] = [
     period: "3개월",
     participants: "10명",
     startDate: "2025-07-20",
-    image: "/images/charactors/Rectangle.png",
+    image: "/images/charactors/default_wakeup.png",
   },
   {
     id: 2,
@@ -44,7 +44,7 @@ const mockChallenges: Challenge[] = [
     period: "3개월",
     participants: "10명",
     startDate: "2025-04-20",
-    image: "/images/charactors/Rectangle.png",
+    image: "/images/charactors/default_wakeup.png",
   },
   {
     id: 3,
@@ -58,7 +58,7 @@ const mockChallenges: Challenge[] = [
     period: "3개월",
     participants: "10명",
     startDate: "2025-03-20",
-    image: "/images/charactors/Rectangle.png",
+    image: "/images/charactors/default_wakeup.png",
   },
   {
     id: 4,
@@ -72,7 +72,7 @@ const mockChallenges: Challenge[] = [
     period: "3개월",
     participants: "10명",
     startDate: "2025-03-20",
-    image: "/images/charactors/Rectangle.png",
+    image: "/images/charactors/default_wakeup.png",
   },
 ];
 

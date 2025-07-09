@@ -76,6 +76,10 @@ const CreateChallengeForm = ({
           alert("종료일을 선택해주세요.");
           return;
         }
+        if (formData.endDate < formData.startDate) {
+          alert('종료일은 시작일 이후여야 합니다.');
+          return;
+        }
         break;
       default:
         break;
@@ -95,6 +99,15 @@ const CreateChallengeForm = ({
       setFormData((prev) => ({
         ...prev,
         [name]: Number(value), // ✅ [name]을 사용해 동적으로 필드를 선택
+      }));
+    } else if (name === "duration") {
+      setFormData((prev) => ({
+        ...prev,
+        duration: value,
+        endDate:
+          value === "직접입력"
+            ? prev.startDate
+            : calculateEndDateObject(prev.startDate, value),
       }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -151,13 +164,13 @@ const CreateChallengeForm = ({
                 >
                   <input
                     type="radio"
-                    name="category"
+                    name="categoryId"
                     value={category.categoryId}
                     checked={formData.categoryId === category.categoryId}
                     onChange={() =>
                       setFormData((prev) => ({
                         ...prev,
-                        category: category.categoryId,
+                        categoryId: category.categoryId,
                         categoryName: category.categoryName,
                       }))
                     }
