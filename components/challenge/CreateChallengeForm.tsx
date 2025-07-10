@@ -8,7 +8,7 @@ import { ko } from "date-fns/locale";
 import Image from "next/image";
 import { getCategoryNames } from "@/api/category";
 import { CategoryName } from "@/types/Category";
-import { ChallengeFormData, initialFormData } from "@/types/Challenge";
+import { ChallengeFormData } from "@/types/Challenge";
 import {
   formatDateToYYYYMMDD,
   calculateEndDateObject,
@@ -27,7 +27,19 @@ const CreateChallengeForm = ({
   isDesktop,
 }: CreateChallengeFormProps) => {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState<ChallengeFormData>(initialFormData);
+  const [formData, setFormData] = useState<ChallengeFormData>(
+    {
+      categoryId: 0,
+      title: '',
+      description: '',
+      participants: 0,
+      verificationMethod: '',
+      startDate: new Date(),
+      endDate: new Date(),
+      image: null,
+      duration: '',
+    }
+  );
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -478,11 +490,39 @@ const CreateChallengeForm = ({
           </button>
         ) : (
           <button
-            onClick={() => onSubmit(formData)}
-            className="w-full bg-[#F4724F] text-white py-3 rounded-lg text-lg font-semibold"
-          >
-            챌린지 생성
-          </button>
+            onClick={() => {
+              // ✅ categoryId와 기본 이미지 URL 매핑
+              const categoryImageMap: Record<number, string> = {
+                1: "/images/charactors/category_all.png",
+                2: "/images/charactors/default_wakeup.png",
+                3: "/images/charactors/default_study.png",
+                4: "/images/charactors/default_health.png",
+                5: "/images/charactors/default_life.png",
+                6: "/images/charactors/default_mind.png",
+                7: "/images/charactors/default_hobby.png",
+                8: "/images/charactors/default_communication.png",
+                9: "/images/charactors/default_money.png",
+                10: "/images/charactors/default_general.png",
+              };
+
+              // 이미지 미지정 시, 카테고리에 맞는 기본 이미지로 설정
+              const defaultImageUrl = categoryImageMap[formData.categoryId!];
+              
+              const payload = {
+                ...formData,
+                image: formData.image instanceof File
+                  ? formData.image
+                  : formData.image || defaultImageUrl,
+              };
+
+              // 최종 제출
+              onSubmit(payload);
+            }}
+  className="w-full bg-[#F4724F] text-white py-3 rounded-lg text-lg font-semibold"
+>
+  챌린지 생성
+</button>
+
         )}
       </footer>
     </>

@@ -8,7 +8,7 @@ import ChallengeCard from "./ChallengeCard";
 import {
   Challenge,
   ChallengeCreateRequest,
-  initialFormData,
+  ChallengeFormData
 } from "@/types/Challenge";
 import Sidebar from "../common/Sidebar";
 import CreateChallengeForm from "./CreateChallengeForm";
@@ -92,24 +92,29 @@ const ChallengeClient = () => {
     setIsClient(true);
   }, []);
 
-  const handleCreateChallenge = async (formData: typeof initialFormData) => {
+  const handleCreateChallenge = async (formData: ChallengeFormData) => {
     const calculatedEndDate =
       formData.duration === "직접입력"
         ? formData.endDate
         : calculateEndDateObject(formData.startDate, formData.duration);
 
     const endDate = formatDateToYYYYMMDD(calculatedEndDate);
-
+    
+    const imageField =
+      formData.image instanceof File
+        ? formData.image.name // 추후 실제 파일 업로드 후 URL로 바꾸기
+        : formData.image;     // 아마 default URL 이거나 null
+    
     const requestData: ChallengeCreateRequest = {
+      regionId: 1,
       categoryId: formData.categoryId,
       title: formData.title,
       description: formData.description,
-      location: "서울특별시",
       participants: formData.participants,
-      verificationMethod: formData.verificationMethod,
+      method: formData.verificationMethod,
       startDate: formatDateToYYYYMMDD(formData.startDate),
       endDate: endDate,
-      image: formData.image?.name || null, // 실제로는 업로드 후 경로 필요
+      image: imageField,
       status: true,
     };
 
