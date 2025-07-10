@@ -32,7 +32,7 @@ const CreateChallengeForm = ({
       categoryId: 0,
       title: '',
       description: '',
-      participants: 0,
+      participants: 2,
       verificationMethod: '',
       startDate: new Date(),
       endDate: new Date(),
@@ -143,8 +143,13 @@ const CreateChallengeForm = ({
     const loadCategories = async () => {
       try {
         const data = await getCategoryNames();
-        const sorted = data.sort((a, b) => a.categoryId - b.categoryId);
-        setCategories(sorted);
+
+        // '전체' 카테고리 제거 후 정렬
+        const filtered = data
+          .filter((c) => c.categoryName !== "전체")
+          .sort((a, b) => a.categoryId - b.categoryId);
+
+        setCategories(filtered);
       } catch (error) {
         console.error("카테고리 불러오기 실패: ", error);
       }
@@ -245,6 +250,7 @@ const CreateChallengeForm = ({
                 type="number"
                 name="participants"
                 value={formData.participants}
+                min={2}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-lg pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
