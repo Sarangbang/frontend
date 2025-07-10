@@ -197,24 +197,6 @@ const SignUpForm = () => {
             </fieldset>
 
             <div>
-              <label htmlFor="region" className={labelStyle}>
-                희망지역
-              </label>
-              <div className="mt-1">
-                <input
-                  id="region"
-                  name="region"
-                  type="text"
-                  required
-                  placeholder="도로명/지번"
-                  className={inputStyle}
-                  value={region}
-                  onChange={(e) => setRegion(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div>
               <label htmlFor="nickname" className={labelStyle}>
                 닉네임
               </label>
@@ -242,10 +224,11 @@ const SignUpForm = () => {
 
             <div>
               <button
-                type="submit"
+                type="button"
                 className="flex justify-center w-full px-4 py-3 text-sm font-medium text-white bg-orange-500 border border-transparent rounded-md shadow-sm hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                onClick={() => router.push('/signup/region')}
               >
-                회원가입
+                다음(1/2)
               </button>
             </div>
           </form>

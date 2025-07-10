@@ -13,6 +13,7 @@ import {
   calculateEndDateObject,
   formatRange,
 } from "@/util/dateUtils";
+import RegionSelectForm from '@/components/signup/RegionSelectForm';
 
 interface CreateChallengeFormProps {
   onClose: () => void;
@@ -33,6 +34,7 @@ const CreateChallengeForm = ({
     description: "",
     participants: "",
     verificationMethod: "",
+    region: "", // 지역 정보 추가
     startDate: new Date(),
     duration: "",
     endDate: new Date(),
@@ -41,6 +43,13 @@ const CreateChallengeForm = ({
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 지역 선택 완료 핸들러
+  const [regionStepSelected, setRegionStepSelected] = useState(false);
+  const handleRegionSelect = (regionLabel: string) => {
+    setFormData((prev) => ({ ...prev, region: regionLabel }));
+    setRegionStepSelected(true);
+  };
 
   const handleNext = () => {
     switch (step) {
@@ -67,6 +76,12 @@ const CreateChallengeForm = ({
         }
         break;
       case 4:
+        if (!formData.region) {
+          alert("챌린지 참여 지역을 선택해주세요.");
+          return;
+        }
+        break;
+      case 5:
         if (!formData.duration) {
           alert("챌린지 기간을 선택해주세요.");
           return;
@@ -251,7 +266,19 @@ const CreateChallengeForm = ({
             </div>
           </div>
         );
-      case 4: // 챌린지 시작일, 기간
+      case 4: // 챌린지 참여 지역
+        return (
+          <div>
+            <h2 className="text-2xl font-bold mb-6 dark:text-white">챌린지 참여 지역</h2>
+            <RegionSelectForm
+              onRegionSelect={handleRegionSelect}
+              initialRegion={formData.region}
+              showLogo={false}
+              showButton={false}
+            />
+          </div>
+        );
+      case 5: // 챌린지 시작일, 기간
         return (
           <div>
             <h2 className="text-2xl font-bold mb-4">챌린지 시작일</h2>
@@ -329,7 +356,7 @@ const CreateChallengeForm = ({
               )}
           </div>
         );
-      case 5: // 대표 이미지
+      case 6: // 대표 이미지
         return (
           <div>
             <h2 className="text-2xl font-bold dark:text-white">
@@ -366,7 +393,7 @@ const CreateChallengeForm = ({
             </div>
           </div>
         );
-      case 6: // 요약
+      case 7: // 요약
         return (
           <div>
             <div className="space-y-7 text-lg dark:text-white">
@@ -400,6 +427,12 @@ const CreateChallengeForm = ({
                 <p className="font-bold">인증방법</p>
                 <p className="text-gray-600 dark:text-gray-300 mt-1.5 whitespace-pre-wrap">
                   {formData.verificationMethod}
+                </p>
+              </div>
+              <div>
+                <p className="font-bold">챌린지 참여 지역</p>
+                <p className="text-gray-600 dark:text-gray-300 mt-1.5">
+                  {formData.region}
                 </p>
               </div>
               <div>
@@ -438,7 +471,7 @@ const CreateChallengeForm = ({
     }
   };
 
-  const totalSteps = 6;
+  const totalSteps = 7;
 
   const formContent = (
     <>
@@ -459,6 +492,7 @@ const CreateChallengeForm = ({
           <button
             onClick={handleNext}
             className="w-full bg-[#F4724F] text-white py-3 rounded-lg text-lg font-semibold"
+            disabled={step === 4 && !regionStepSelected}
           >
             다음 ({step}/{totalSteps - 1})
           </button>
