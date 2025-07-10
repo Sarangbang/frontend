@@ -59,13 +59,16 @@ const RegionSelectForm = ({ onRegionSelect, showLogo = true, showButton = true }
     setSelectedSido(null);
     setSelectedSigungu(null);
     setSelectedDong(null);
+    setAllSelected(null);
   };
   const handleSigunguClick = () => {
     setSelectedSigungu(null);
     setSelectedDong(null);
+    setAllSelected(null);
   };
   const handleDongClick = () => {
     setSelectedDong(null);
+    setAllSelected(null);
   };
   // 초기화 버튼
   const handleReset = () => {
@@ -78,12 +81,12 @@ const RegionSelectForm = ({ onRegionSelect, showLogo = true, showButton = true }
   const regionPathJSX = (
     <>
       {allSelected && allSelected.step === 1 ? (
-        <span className="text-black font-bold">{allSelected.label}</span>
+        <span className="text-orange-700 font-bold">{allSelected.label}</span>
       ) : (
         <>
           {selectedSido ? (
             <span
-              className="text-black font-bold cursor-pointer hover:underline"
+              className="text-orange-700 font-bold cursor-pointer hover:underline"
               onClick={handleSidoClick}
             >
               {selectedSido.name}
@@ -95,7 +98,7 @@ const RegionSelectForm = ({ onRegionSelect, showLogo = true, showButton = true }
             <>
               <span className="mx-2 text-gray-400">{'>'}</span>
               <span
-                className="text-black font-bold cursor-pointer hover:underline"
+                className="text-orange-700 font-bold cursor-pointer hover:underline"
                 onClick={handleSigunguClick}
               >
                 {selectedSigungu.name}
@@ -106,7 +109,7 @@ const RegionSelectForm = ({ onRegionSelect, showLogo = true, showButton = true }
             <>
               <span className="mx-2 text-gray-400">{'>'}</span>
               <span
-                className="text-black font-bold cursor-pointer hover:underline"
+                className="text-orange-700 font-bold cursor-pointer hover:underline"
                 onClick={handleDongClick}
               >
                 {selectedDong.name}
@@ -116,7 +119,7 @@ const RegionSelectForm = ({ onRegionSelect, showLogo = true, showButton = true }
           {allSelected && allSelected.step === 2 && (
             <>
               <span className="mx-2 text-gray-400">{'>'}</span>
-              <span className="text-black font-bold">{allSelected.label}</span>
+              <span className="text-orange-700 font-bold">{allSelected.label}</span>
             </>
           )}
         </>
