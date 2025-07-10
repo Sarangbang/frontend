@@ -9,72 +9,19 @@ import {
   Challenge,
   ChallengeCreateRequest,
   ChallengeFormData,
+  ChallengeMemberResponse,
 } from "@/types/Challenge";
 import Sidebar from "../common/Sidebar";
 import CreateChallengeForm from "./CreateChallengeForm";
 import ContentHeader from "../common/ContentHeader";
 import Tabs, { type Tab } from "../common/Tabs";
-import { createChallenge } from "@/api/challenge";
-import { formatDateToYYYYMMDD, calculateEndDateObject } from "@/util/dateUtils";
-
-const mockChallenges: Challenge[] = [
-  {
-    id: 1,
-    status: "예정",
-    location: "용인시/중동",
-    title: "책..읽읍시다",
-    currentParticipants: 0,
-    maxParticipants: 10,
-    category: "학습/독서",
-    description: "읽기 싫지만.. 읽어보려고 노력해요",
-    period: "3개월",
-    participants: "10명",
-    startDate: "2025-07-20",
-    image: "/images/charactors/Rectangle.png",
-  },
-  {
-    id: 2,
-    status: "진행중",
-    location: "용인시/중동",
-    title: "책..읽읍시다",
-    currentParticipants: 8,
-    maxParticipants: 10,
-    category: "학습/독서",
-    description: "읽기 싫지만.. 읽어보려고 노력해요",
-    period: "3개월",
-    participants: "10명",
-    startDate: "2025-04-20",
-    image: "/images/charactors/Rectangle.png",
-  },
-  {
-    id: 3,
-    status: "종료",
-    location: "용인시/중동",
-    title: "책..읽읍시다",
-    currentParticipants: 5,
-    maxParticipants: 10,
-    category: "학습/독서",
-    description: "읽기 싫지만.. 읽어보려고 노력해요",
-    period: "3개월",
-    participants: "10명",
-    startDate: "2025-03-20",
-    image: "/images/charactors/Rectangle.png",
-  },
-  {
-    id: 4,
-    status: "종료",
-    location: "용인시/중동",
-    title: "책..읽읍시다",
-    currentParticipants: 4,
-    maxParticipants: 10,
-    category: "학습/독서",
-    description: "읽기 싫지만.. 읽어보려고 노력해요",
-    period: "3개월",
-    participants: "10명",
-    startDate: "2025-03-20",
-    image: "/images/charactors/Rectangle.png",
-  },
-];
+import { createChallenge, getChallengeMembers } from "@/api/challenge";
+import {
+  formatDateToYYYYMMDD,
+  calculateEndDateObject,
+  calculatePeriod,
+  getChallengeStatus,
+} from "@/util/dateUtils";
 
 const CHALLENGE_TABS: Tab<"멤버" | "방장">[] = [
   { id: "멤버", label: "멤버" },
@@ -96,12 +43,23 @@ const initialFormData: ChallengeFormData = {
 const ChallengeClient = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"멤버" | "방장">("멤버");
+  const [challenges, setChallenges] = useState<ChallengeMemberResponse[]>([]);
   const [isClient, setIsClient] = useState(false);
   const isDesktop = useMediaQuery({ query: "(min-width: 1024px)" });
   const [isCreatingChallenge, setIsCreatingChallenge] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
+    const fetchChallenges = async () => {
+      try {
+        const data = await getChallengeMembers();
+        setChallenges(data);
+      } catch (error) {
+        console.error("챌린지 목록 조회 실패: ", error);
+        alert("챌린지 목록을 불러오는데 실패했습니다.");
+      }
+    };
+    fetchChallenges();
   }, []);
 
   const handleCreateChallenge = async (formData: typeof initialFormData) => {
@@ -142,6 +100,27 @@ const ChallengeClient = () => {
     return null;
   }
 
+  const filteredChallenges = challenges.filter((challenge) => {
+    if (activeTab === "방장") return challenge.role === "owner";
+    if (activeTab === "멤버") return challenge.role === "member";
+    return false;
+  });
+
+  const mappedChallenges: Challenge[] = filteredChallenges.map((c) => ({
+    id: c.id,
+    status: getChallengeStatus(c.startDate, c.endDate),
+    location: c.location,
+    title: c.title,
+    currentParticipants: c.currentParticipants,
+    maxParticipants: c.participants,
+    category: c.category,
+    description: c.description,
+    period: calculatePeriod(c.startDate, c.endDate),
+    participants: `${c.currentParticipants}/${c.participants}명`,
+    startDate: c.startDate,
+    image: c.image || "/images/charactors/gamza.png", // 기본 이미지
+  }));
+
   const challengeContent = (
     <>
       <Tabs
@@ -162,12 +141,12 @@ const ChallengeClient = () => {
 
         <div className="flex justify-between items-center mb-2">
           <p className="text-gray-600 dark:text-gray-400">
-            전체 챌린지 ({mockChallenges.length})
+            전체 챌린지 ({mappedChallenges.length})
           </p>
         </div>
 
         <div>
-          {mockChallenges.map((challenge) => (
+          {mappedChallenges.map((challenge) => (
             <div
               key={challenge.id}
               className="cursor-pointer"
