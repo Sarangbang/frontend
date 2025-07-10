@@ -121,13 +121,11 @@ const ChallengeClient = () => {
     try {
       const result = await createChallenge(requestData);
       console.log("챌린지 등록 성공: ", result);
-
+      setIsCreatingChallenge(false);
       router.push("/challenge");
     } catch (error) {
       console.error("챌린지 등록 실패: ", error);
       alert("챌린지 등록에 실패했습니다. 다시 시도해주세요.");
-    } finally {
-      setIsCreatingChallenge(false);
     }
   };
 
