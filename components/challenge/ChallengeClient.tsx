@@ -87,10 +87,11 @@ const initialFormData: ChallengeFormData = {
   description: '',
   participants: 0,
   verificationMethod: '',
+  regionId: null as number | null,
   startDate: new Date(),
   endDate: new Date(),
   duration: '',
-  image: null,
+  image: null as File | null,
 };
 
 const ChallengeClient = () => {
@@ -105,6 +106,11 @@ const ChallengeClient = () => {
   }, []);
 
   const handleCreateChallenge = async (formData: typeof initialFormData) => {
+    if (!formData.regionId) {
+      alert("지역 정보가 올바르지 않습니다.");
+      return;
+    }
+
     const calculatedEndDate =
       formData.duration === "직접입력"
         ? formData.endDate
@@ -113,7 +119,7 @@ const ChallengeClient = () => {
     const endDate = formatDateToYYYYMMDD(calculatedEndDate);
 
     const requestData: ChallengeCreateRequest = {
-      location: "서울특별시",
+      regionId: formData.regionId,
       title: formData.title,
       description: formData.description,
       participants: formData.participants,
