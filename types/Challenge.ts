@@ -8,7 +8,7 @@ export interface Challenge {
   category: string;
   description: string;
   period: string;
-  participants: number;
+  participants: string;
   startDate: string;
   image: string;
 }
