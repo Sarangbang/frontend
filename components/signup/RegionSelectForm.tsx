@@ -5,11 +5,22 @@ import { getSidoRegions, getSubRegions } from '@/api/region';
 import { Region } from '@/types/Region';
 
 interface RegionSelectFormProps {
-  onRegionSelect: (regionId: number | null, fullAddress: string) => void;
-  // TODO: initialRegionId prop을 통한 초기 상태 설정 추후 구현
+  onRegionSelect: (regionId: number | null, fullAddress: string, sidoId?: number | null, sigunguId?: number | null, dongId?: number | null) => void;
+  initialRegionId?: number | null;
+  initialFullAddress?: string;
+  selectedSidoId?: number | null;
+  selectedSigunguId?: number | null;
+  selectedDongId?: number | null;
 }
 
-const RegionSelectForm = ({ onRegionSelect }: RegionSelectFormProps) => {
+const RegionSelectForm = ({
+  onRegionSelect,
+  initialRegionId,
+  initialFullAddress,
+  selectedSidoId,
+  selectedSigunguId,
+  selectedDongId,
+}: RegionSelectFormProps) => {
   // 데이터 목록 상태
   const [sidoList, setSidoList] = useState<Region[]>([]);
   const [sigunguList, setSigunguList] = useState<Region[]>([]);
@@ -49,6 +60,32 @@ const RegionSelectForm = ({ onRegionSelect }: RegionSelectFormProps) => {
     fetchSidos();
   }, []);
 
+  // selectedSidoId, selectedSigunguId, selectedDongId가 바뀌면 선택 상태 동기화
+  useEffect(() => {
+    if (selectedSidoId && sidoList.length > 0) {
+      const sido = sidoList.find(s => s.regionId === selectedSidoId) || null;
+      setSelectedSido(sido);
+      if (sido) {
+        getSubRegions(sido.regionId).then(data => setSigunguList(data));
+      }
+    }
+  }, [selectedSidoId, sidoList]);
+  useEffect(() => {
+    if (selectedSigunguId && sigunguList.length > 0) {
+      const sigungu = sigunguList.find(sg => sg.regionId === selectedSigunguId) || null;
+      setSelectedSigungu(sigungu);
+      if (sigungu) {
+        getSubRegions(sigungu.regionId).then(data => setDongList(data));
+      }
+    }
+  }, [selectedSigunguId, sigunguList]);
+  useEffect(() => {
+    if (selectedDongId && dongList.length > 0) {
+      const dong = dongList.find(d => d.regionId === selectedDongId) || null;
+      setSelectedDong(dong);
+    }
+  }, [selectedDongId, dongList]);
+
   // 시/도 선택 시 하위 시/군/구 목록 조회
   const handleSidoSelect = async (sido: Region) => {
     setLoading(true);
@@ -57,7 +94,7 @@ const RegionSelectForm = ({ onRegionSelect }: RegionSelectFormProps) => {
     setSelectedSigungu(null);
     setSelectedDong(null);
     setAllSelected(null);
-    onRegionSelect(null, '');
+    onRegionSelect(null, '', sido.regionId, null, null);
     try {
       const data = await getSubRegions(sido.regionId);
       setSigunguList(data);
@@ -75,7 +112,7 @@ const RegionSelectForm = ({ onRegionSelect }: RegionSelectFormProps) => {
     setSelectedSigungu(sigungu);
     setSelectedDong(null);
     setAllSelected(null);
-    onRegionSelect(null, '');
+    onRegionSelect(null, '', selectedSido?.regionId, sigungu.regionId, null);
     try {
       const data = await getSubRegions(sigungu.regionId);
       setDongList(data);
@@ -90,7 +127,7 @@ const RegionSelectForm = ({ onRegionSelect }: RegionSelectFormProps) => {
   const handleDongSelect = (dong: Region) => {
     setSelectedDong(dong);
     setAllSelected(null);
-    onRegionSelect(dong.regionId, dong.fullAddress);
+    onRegionSelect(dong.regionId, dong.fullAddress, selectedSido?.regionId, selectedSigungu?.regionId, dong.regionId);
   };
 
   // '전체' 버튼 선택
@@ -99,11 +136,11 @@ const RegionSelectForm = ({ onRegionSelect }: RegionSelectFormProps) => {
       setAllSelected('sigungu');
       setSelectedSigungu(null);
       setSelectedDong(null);
-      onRegionSelect(selectedSido.regionId, selectedSido.fullAddress);
+      onRegionSelect(selectedSido.regionId, selectedSido.fullAddress, selectedSido.regionId, null, null);
     } else if (step === 2 && selectedSigungu) {
       setAllSelected('dong');
       setSelectedDong(null);
-      onRegionSelect(selectedSigungu.regionId, selectedSigungu.fullAddress);
+      onRegionSelect(selectedSigungu.regionId, selectedSigungu.fullAddress, selectedSido?.regionId, selectedSigungu.regionId, null);
     }
   };
 
@@ -120,7 +157,7 @@ const RegionSelectForm = ({ onRegionSelect }: RegionSelectFormProps) => {
       setSelectedDong(null);
     }
     setAllSelected(null);
-    onRegionSelect(null, '');
+    onRegionSelect(null, '', null, null, null);
   };
 
   // 초기화 버튼

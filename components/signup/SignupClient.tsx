@@ -33,6 +33,7 @@ const SignupClient = () => {
 
   const handleRegionSelect = (regionId: number | null) => {
     setFormData(prev => ({ ...prev, regionId: regionId ?? undefined }));
+    setError(null); // 지역 선택 시 에러 메시지 제거
   };
 
   const handleSubmit = async () => {
@@ -110,7 +111,6 @@ const SignupClient = () => {
               <div className="mt-6 space-y-4">
                 <button
                   className="flex justify-center w-full px-4 py-3 text-sm font-medium text-white bg-orange-500 border border-transparent rounded-md shadow-sm hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                  disabled={!isJoinEnabled}
                   onClick={handleSubmit}
                 >
                   회원가입(2/2)

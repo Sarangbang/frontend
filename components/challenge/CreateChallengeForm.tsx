@@ -45,17 +45,28 @@ const CreateChallengeForm = ({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // 지역 단계별 선택 regionId 상태
+  const [selectedSidoId, setSelectedSidoId] = useState<number | null>(null);
+  const [selectedSigunguId, setSelectedSigunguId] = useState<number | null>(null);
+  const [selectedDongId, setSelectedDongId] = useState<number | null>(null);
+
   // 지역 선택 완료 핸들러
   const [regionStepSelected, setRegionStepSelected] = useState(false);
   const handleRegionSelect = (
     regionId: number | null,
     fullAddress: string,
+    sidoId?: number | null,
+    sigunguId?: number | null,
+    dongId?: number | null,
   ) => {
     setFormData(prev => ({
       ...prev,
       regionId: regionId,
       regionAddress: fullAddress,
     }));
+    setSelectedSidoId(sidoId ?? null);
+    setSelectedSigunguId(sigunguId ?? null);
+    setSelectedDongId(dongId ?? null);
     setRegionStepSelected(!!regionId);
   };
 
@@ -280,7 +291,12 @@ const CreateChallengeForm = ({
             <h2 className="text-2xl font-bold mb-6 dark:text-white">
               챌린지 참여 지역
             </h2>
-            <RegionSelectForm onRegionSelect={handleRegionSelect} />
+            <RegionSelectForm
+              onRegionSelect={handleRegionSelect}
+              selectedSidoId={selectedSidoId}
+              selectedSigunguId={selectedSigunguId}
+              selectedDongId={selectedDongId}
+            />
           </div>
         );
       case 5: // 챌린지 시작일, 기간
@@ -497,7 +513,6 @@ const CreateChallengeForm = ({
           <button
             onClick={handleNext}
             className="w-full bg-[#F4724F] text-white py-3 rounded-lg text-lg font-semibold"
-            disabled={step === 4 && !regionStepSelected}
           >
             다음 ({step}/{totalSteps - 1})
           </button>
