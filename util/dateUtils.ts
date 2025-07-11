@@ -1,3 +1,5 @@
+import { DateRange } from "react-day-picker";
+
 // 핵심 로직: 종료일 Date 객체 계산
 const getCalculatedEndDate = (start: Date, duration: string): Date => {
   const end = new Date(start);
@@ -40,3 +42,50 @@ export function formatRange(startDate: Date, endDate: Date): string {
       .replace(/\.$/, "");
   return `${format(startDate)} ~ ${format(endDate)}`;
 }
+
+export const calculatePeriod = (startDateStr: string, endDateStr: string): string => {
+  const startDate = new Date(startDateStr);
+  const endDate = new Date(endDateStr);
+
+  const diffInMs = endDate.getTime() - startDate.getTime();
+  const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+  if (diffInDays < 0) return "종료";
+
+  const years = endDate.getFullYear() - startDate.getFullYear();
+  const months = endDate.getMonth() - startDate.getMonth();
+  const totalMonths = years * 12 + months;
+
+  if (totalMonths > 0) {
+    return `${totalMonths}개월`;
+  }
+
+  const weeks = Math.floor(diffInDays / 7);
+  if (weeks > 0) {
+    return `${weeks}주`;
+  }
+
+  return `${Math.ceil(diffInDays)}일`;
+};
+
+export const getChallengeStatus = (
+  startDateStr: string,
+  endDateStr: string,
+): "예정" | "진행중" | "종료" => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const startDate = new Date(startDateStr);
+  startDate.setHours(0, 0, 0, 0);
+
+  const endDate = new Date(endDateStr);
+  endDate.setHours(0, 0, 0, 0);
+
+  if (today < startDate) {
+    return "예정";
+  }
+  if (today > endDate) {
+    return "종료";
+  }
+  return "진행중";
+};

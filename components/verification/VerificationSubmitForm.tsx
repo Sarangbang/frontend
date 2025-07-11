@@ -12,9 +12,8 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
-  const [description, setDescription] = useState('');
+  const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // TODO: Fetch challenge details based on challengeId
@@ -30,32 +29,31 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
     };
   }, [imagePreview]);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       if (imagePreview) {
         URL.revokeObjectURL(imagePreview);
       }
-      setImageFile(file);
+      setImage(file);
       setImagePreview(URL.createObjectURL(file));
     }
   };
 
   const removeImage = () => {
-    setImageFile(null);
+    setImage(null);
     setImagePreview(null);
   }
 
   const handleSubmit = async () => {
-    if (!imageFile) {
-      alert('인증 사진을 업로드해주세요.');
+    if (!image) {
+      alert("이미지를 등록해주세요.");
       return;
     }
 
     setIsSubmitting(true);
     const formData = new FormData();
-    formData.append('image', imageFile);
-    formData.append('description', description);
+    formData.append('image', image);
     // formData.append('challengeId', challengeId); // 백엔드 API 사양에 따라 추가
 
     try {
@@ -89,34 +87,21 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
                   <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">사진을 업로드하세요.</span></p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">JPG, PNG 파일 (최대 10MB)</p>
                 </div>
-                <input id="dropzone-file" type="file" className="hidden" accept="image/png, image/jpeg" onChange={handleFileChange} />
+                <input id="dropzone-file" type="file" className="hidden" accept="image/png, image/jpeg" onChange={handleImageChange} />
               </label>
             )}
           </div>
         </section>
-
-        <section className="flex-grow flex flex-col">
-          <h2 className="text-lg font-semibold mb-2 dark:text-gray-200">인증내용(선택)</h2>
-          <div className="relative flex-grow">
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              maxLength={300}
-              placeholder="오늘의 챌린지는 어떠셨나요? 소감을 간단하게 작성해주세요!"
-              className="w-full h-full p-3 border border-gray-200 rounded-lg resize-none dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-black"
-            />
-            <p className="absolute bottom-3 right-3 text-sm text-gray-400">{description.length}/300</p>
-          </div>
-        </section>
       </div>
-
-      <button
-        onClick={handleSubmit}
-        disabled={!imageFile || isSubmitting}
-        className="w-full bg-[#F47150] text-white font-bold py-3 rounded-lg mt-6 hover:bg-[#d96443] transition-colors disabled:bg-[#F4715080]"
-      >
-        {isSubmitting ? '제출 중...' : '인증 완료하기'}
-      </button>
+      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto">
+        <button
+          onClick={handleSubmit}
+          disabled={!image || isSubmitting}
+          className="w-full bg-[#F47150] text-white font-bold py-3 rounded-lg mt-6 hover:bg-[#d96443] transition-colors disabled:bg-[#F4715080]"
+        >
+          {isSubmitting ? '제출 중...' : '인증 완료하기'}
+        </button>
+      </div>
     </div>
   );
 
