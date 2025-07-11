@@ -99,13 +99,13 @@ const CategorySection = () => {
         // 기본 모드: 스와이프 기능을 제공하는 Swiper 컴포넌트
         <Swiper
           spaceBetween={10} // 각 카테고리 아이콘(슬라이드) 사이의 간격을 10px로 설정합니다.
-          slidesPerView={4} // 한 화면에 동시에 보여줄 아이콘(슬라이드)의 개수를 4개로 설정합니다.
+          slidesPerView="auto" // 한 화면에 보여줄 슬라이드 개수를 자동으로 조정합니다.
           className="w-full"
         >
           {/* categories 상태에 저장된 배열을 순회하며 각 카테고리에 대한 슬라이드를 만듭니다. */}
           {categories.map((category) => (
             // 각 슬라이드는 고유한 key 값을 가져야 합니다. 여기서는 categoryId를 사용합니다.
-            <SwiperSlide key={category.categoryId}>
+            <SwiperSlide key={category.categoryId} style={{ width: 'auto' }}>
               {/* 재사용 컴포넌트인 CategoryCircle에 필요한 정보(이미지, 이름, 배경색)를 전달합니다. */}
               <CategoryCircle
                 image={category.categoryImageUrl}
