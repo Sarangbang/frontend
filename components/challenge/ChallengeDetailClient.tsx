@@ -223,7 +223,7 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
                 <header className="p-4 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-2">
                     <Image
-                      src="/images/charactors/Rectangle.png"
+                      src="/images/charactors/default_wakeup.png"
                       alt="Challenge Icon"
                       width={24}
                       height={24}
@@ -247,7 +247,7 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
               </button>
               <div className="flex items-center gap-2">
                 <Image
-                  src="/images/charactors/Rectangle.png"
+                  src="/images/charactors/default_wakeup.png"
                   alt="Challenge Icon"
                   width={24}
                   height={24}

@@ -8,7 +8,7 @@ import ChallengeCard from "./ChallengeCard";
 import {
   Challenge,
   ChallengeCreateRequest,
-  ChallengeFormData,
+  ChallengeFormData
 } from "@/types/Challenge";
 import Sidebar from "../common/Sidebar";
 import CreateChallengeForm from "./CreateChallengeForm";
@@ -30,7 +30,7 @@ const mockChallenges: Challenge[] = [
     period: "3개월",
     participants: "10명",
     startDate: "2025-07-20",
-    image: "/images/charactors/Rectangle.png",
+    image: "/images/charactors/default_wakeup.png",
   },
   {
     id: 2,
@@ -44,7 +44,7 @@ const mockChallenges: Challenge[] = [
     period: "3개월",
     participants: "10명",
     startDate: "2025-04-20",
-    image: "/images/charactors/Rectangle.png",
+    image: "/images/charactors/default_wakeup.png",
   },
   {
     id: 3,
@@ -58,7 +58,7 @@ const mockChallenges: Challenge[] = [
     period: "3개월",
     participants: "10명",
     startDate: "2025-03-20",
-    image: "/images/charactors/Rectangle.png",
+    image: "/images/charactors/default_wakeup.png",
   },
   {
     id: 4,
@@ -72,7 +72,7 @@ const mockChallenges: Challenge[] = [
     period: "3개월",
     participants: "10명",
     startDate: "2025-03-20",
-    image: "/images/charactors/Rectangle.png",
+    image: "/images/charactors/default_wakeup.png",
   },
 ];
 
@@ -80,18 +80,6 @@ const CHALLENGE_TABS: Tab<"멤버" | "방장">[] = [
   { id: "멤버", label: "멤버" },
   { id: "방장", label: "방장" },
 ];
-
-const initialFormData: ChallengeFormData = {
-  category: 0,
-  title: '',
-  description: '',
-  participants: 0,
-  verificationMethod: '',
-  startDate: new Date(),
-  endDate: new Date(),
-  duration: '',
-  image: null,
-};
 
 const ChallengeClient = () => {
   const router = useRouter();
@@ -104,37 +92,40 @@ const ChallengeClient = () => {
     setIsClient(true);
   }, []);
 
-  const handleCreateChallenge = async (formData: typeof initialFormData) => {
+  const handleCreateChallenge = async (formData: ChallengeFormData) => {
     const calculatedEndDate =
       formData.duration === "직접입력"
         ? formData.endDate
         : calculateEndDateObject(formData.startDate, formData.duration);
 
     const endDate = formatDateToYYYYMMDD(calculatedEndDate);
-
+    
+    const imageField =
+      formData.image instanceof File
+        ? formData.image.name // 추후 실제 파일 업로드 후 URL로 바꾸기
+        : formData.image;     // 아마 default URL 이거나 null
+    
     const requestData: ChallengeCreateRequest = {
-      location: "서울특별시",
+      regionId: 1,
+      categoryId: formData.categoryId,
       title: formData.title,
       description: formData.description,
       participants: formData.participants,
       method: formData.verificationMethod,
       startDate: formatDateToYYYYMMDD(formData.startDate),
       endDate: endDate,
-      image: formData.image?.name || "default.png", // 실제로는 업로드 후 경로 필요
+      image: imageField,
       status: true,
-      categoryId: formData.category,
     };
 
     try {
       const result = await createChallenge(requestData);
       console.log("챌린지 등록 성공: ", result);
-
+      setIsCreatingChallenge(false);
       router.push("/challenge");
     } catch (error) {
       console.error("챌린지 등록 실패: ", error);
       alert("챌린지 등록에 실패했습니다. 다시 시도해주세요.");
-    } finally {
-      setIsCreatingChallenge(false);
     }
   };
 
