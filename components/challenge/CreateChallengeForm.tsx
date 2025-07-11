@@ -32,7 +32,7 @@ const CreateChallengeForm = ({
       categoryId: 0,
       title: '',
       description: '',
-      participants: null,
+      participants: '',
       verificationMethod: '',
       startDate: new Date(),
       endDate: new Date(),
@@ -107,10 +107,15 @@ const CreateChallengeForm = ({
 
     // 'name'이 "category"나 "participants"일 경우,
     // 해당 필드를 숫자로 변환하여 상태를 업데이트합니다.
-    if (name === "categoryId" || name === "participants") {
-      setFormData((prev) => ({
+    if (name === "participants") {
+        setFormData((prev) => ({
+          ...prev,
+          participants: value === '' ? '' : Number(value)
+        }));
+    } else if (name === "categoryId") {
+        setFormData((prev) => ({
         ...prev,
-        [name]: Number(value), // ✅ [name]을 사용해 동적으로 필드를 선택
+        [name]: Number(value),
       }));
     } else if (name === "duration") {
       setFormData((prev) => ({
@@ -521,6 +526,7 @@ const CreateChallengeForm = ({
                 image: formData.image instanceof File
                   ? formData.image
                   : formData.image || defaultImageUrl,
+                participants: formData.participants === '' ? 0 : formData.participants,
               };
 
               // 최종 제출
