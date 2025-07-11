@@ -34,7 +34,8 @@ const CreateChallengeForm = ({
     description: "",
     participants: "",
     verificationMethod: "",
-    region: "", // 지역 정보 추가
+    regionId: null as number | null,
+    regionAddress: "",
     startDate: new Date(),
     duration: "",
     endDate: new Date(),
@@ -46,9 +47,16 @@ const CreateChallengeForm = ({
 
   // 지역 선택 완료 핸들러
   const [regionStepSelected, setRegionStepSelected] = useState(false);
-  const handleRegionSelect = (regionLabel: string) => {
-    setFormData((prev) => ({ ...prev, region: regionLabel }));
-    setRegionStepSelected(true);
+  const handleRegionSelect = (
+    regionId: number | null,
+    fullAddress: string,
+  ) => {
+    setFormData(prev => ({
+      ...prev,
+      regionId: regionId,
+      regionAddress: fullAddress,
+    }));
+    setRegionStepSelected(!!regionId);
   };
 
   const handleNext = () => {
@@ -76,7 +84,7 @@ const CreateChallengeForm = ({
         }
         break;
       case 4:
-        if (!formData.region) {
+        if (!formData.regionId) {
           alert("챌린지 참여 지역을 선택해주세요.");
           return;
         }
@@ -269,13 +277,10 @@ const CreateChallengeForm = ({
       case 4: // 챌린지 참여 지역
         return (
           <div>
-            <h2 className="text-2xl font-bold mb-6 dark:text-white">챌린지 참여 지역</h2>
-            <RegionSelectForm
-              onRegionSelect={handleRegionSelect}
-              initialRegion={formData.region}
-              showLogo={false}
-              showButton={false}
-            />
+            <h2 className="text-2xl font-bold mb-6 dark:text-white">
+              챌린지 참여 지역
+            </h2>
+            <RegionSelectForm onRegionSelect={handleRegionSelect} />
           </div>
         );
       case 5: // 챌린지 시작일, 기간
@@ -432,7 +437,7 @@ const CreateChallengeForm = ({
               <div>
                 <p className="font-bold">챌린지 참여 지역</p>
                 <p className="text-gray-600 dark:text-gray-300 mt-1.5">
-                  {formData.region}
+                  {formData.regionAddress}
                 </p>
               </div>
               <div>

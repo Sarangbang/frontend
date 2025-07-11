@@ -14,7 +14,6 @@ export interface Challenge {
 }
 
 export interface ChallengeCreateRequest {
-  location: string;
   title: string;
   description: string;
   participants: number;
@@ -24,6 +23,7 @@ export interface ChallengeCreateRequest {
   image: string;
   status: boolean;
   categoryId: number;
+  regionId: number;
 }
 
 export interface ChallengeFormData {
@@ -36,6 +36,7 @@ export interface ChallengeFormData {
   endDate: Date;
   duration: string;
   image: File | null;
+  regionId: number | null;
 }
 
 const initialFormData: ChallengeFormData = {
@@ -48,4 +49,5 @@ const initialFormData: ChallengeFormData = {
   endDate: new Date(),
   duration: '',
   image: null,
+  regionId: null,
 };
