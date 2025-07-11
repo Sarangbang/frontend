@@ -146,18 +146,24 @@ const ChallengeClient = () => {
         </div>
 
         <div>
-          {mappedChallenges.map((challenge) => (
-            <div
-              key={challenge.id}
-              className="cursor-pointer"
-              onClick={() => router.push(`/challenge/${challenge.id}`)}
-            >
-              <ChallengeCard
-                challenge={challenge}
-                isLeaderView={activeTab === "방장"}
-              />
+          {mappedChallenges.length === 0 ? (
+            <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+              참여한 챌린지가 없습니다.
             </div>
-          ))}
+          ) : (
+            mappedChallenges.map((challenge) => (
+              <div
+                key={challenge.id}
+                className="cursor-pointer"
+                onClick={() => router.push(`/challenge/${challenge.id}`)}
+              >
+                <ChallengeCard
+                  challenge={challenge}
+                  isLeaderView={activeTab === "방장"}
+                />
+              </div>
+            ))
+          )}
         </div>
       </div>
     </>

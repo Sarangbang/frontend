@@ -26,8 +26,8 @@ const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-4">
       <div className="flex">
-        <div className="relative w-24 h-24 mr-4 flex-shrink-0">
-          <Image src={image} alt={title} width={96} height={96} className="rounded-full object-cover" />
+        <div className="relative w-24 h-24 mr-4 flex-shrink-0 overflow-hidden">
+          <Image src={image} alt={title} width={96} height={96} className="rounded-full object-cover w-full h-full" />
         </div>
         <div className="flex-1">
           <div className="flex items-center mb-1">
