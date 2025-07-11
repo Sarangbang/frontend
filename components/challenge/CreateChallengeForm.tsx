@@ -32,7 +32,7 @@ const CreateChallengeForm = ({
       categoryId: 0,
       title: '',
       description: '',
-      participants: 2,
+      participants: null,
       verificationMethod: '',
       startDate: new Date(),
       endDate: new Date(),
@@ -245,11 +245,14 @@ const CreateChallengeForm = ({
             <h2 className="text-2xl font-bold mb-4 dark:text-white">
               참여 인원을 입력해주세요.
             </h2>
+            <p className="text-sm text-gray-500 mb-4 dark:text-gray-400">
+              최소 2명 이상의 인원을 입력해주세요.
+            </p>
             <div className="relative flex items-center">
               <input
                 type="number"
                 name="participants"
-                value={formData.participants}
+                value={formData.participants ?? ''}
                 min={2}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-lg pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
@@ -499,7 +502,6 @@ const CreateChallengeForm = ({
             onClick={() => {
               // ✅ categoryId와 기본 이미지 URL 매핑
               const categoryImageMap: Record<number, string> = {
-                1: "/images/charactors/category_all.png",
                 2: "/images/charactors/default_wakeup.png",
                 3: "/images/charactors/default_study.png",
                 4: "/images/charactors/default_health.png",

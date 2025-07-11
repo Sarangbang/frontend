@@ -18,7 +18,7 @@ export interface ChallengeCreateRequest {
   categoryId: number;
   title: string;
   description: string | null;
-  participants: number;
+  participants: number | null;
   method: string;
   startDate: string;
   endDate: string;
@@ -30,7 +30,7 @@ export interface ChallengeFormData {
   categoryId: number;
   title: string;
   description: string;
-  participants: number;
+  participants: number | null;
   verificationMethod: string;
   startDate: Date;
   endDate: Date;
