@@ -4,12 +4,11 @@ export interface Challenge {
   location: string;
   title: string;
   currentParticipants: number;
-  maxParticipants: number;
+  participants: number; // 최대 참여자 수 (백엔드의 participants와 매칭)
   category: string;
   description: string;
-  period: string;
-  participants: string;
   startDate: string;
+  endDate: string;
   image: string;
 }
 
@@ -49,3 +48,33 @@ const initialFormData: ChallengeFormData = {
   duration: '',
   image: null,
 };
+
+// Spring Boot Page 객체 구조에 맞는 페이지네이션 응답 타입
+export interface PageResponse<T> {
+  content: T[];
+  pageable: {
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    pageNumber: number;
+    pageSize: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+}

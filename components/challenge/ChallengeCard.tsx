@@ -1,6 +1,8 @@
 import Image from 'next/image';
+import { useState } from 'react';
 import { Challenge } from '@/types/Challenge';
 import { ClockIcon, UserGroupIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import { calculatePeriod, formatPeriod } from '@/util/dateUtils';
 
 interface ChallengeCardProps {
   challenge: Challenge;
@@ -8,7 +10,38 @@ interface ChallengeCardProps {
 }
 
 const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
-  const { status, location, title, currentParticipants, maxParticipants, category, description, period, participants, startDate, image } = challenge;
+  const { status, location, title, currentParticipants, participants, category, description, startDate, endDate, image } = challenge;
+  const [imageError, setImageError] = useState(false);
+
+  // 기간 계산
+  const periodDays = calculatePeriod(startDate, endDate);
+  const formattedPeriod = formatPeriod(periodDays);
+
+  // 이미지 경로 처리 함수
+  const getImageSrc = (imagePath: string): string => {
+    // 이미지 에러가 발생했거나 이미지가 없으면 기본 이미지 사용
+    if (imageError || !imagePath || imagePath.trim() === '') {
+      return '/images/charactors/gamza.png';
+    }
+    
+    // 이미지가 절대 URL인지 확인 (http:// 또는 https://로 시작)
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    
+    // 이미지가 이미 /로 시작하는지 확인
+    if (imagePath.startsWith('/')) {
+      return imagePath;
+    }
+    
+    // 파일명만 있는 경우 /images/ 접두사 추가
+    return `/images/challenges/${imagePath}`;
+  };
+
+  // 이미지 에러 핸들러
+  const handleImageError = () => {
+    setImageError(true);
+  };
 
   const getStatusChipStyle = (status: '예정' | '진행중' | '종료') => {
     switch (status) {
@@ -27,7 +60,14 @@ const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-4">
       <div className="flex">
         <div className="relative w-24 h-24 mr-4 flex-shrink-0">
-          <Image src={image} alt={title} width={96} height={96} className="rounded-full object-cover" />
+          <Image 
+            src={getImageSrc(image)} 
+            alt={title} 
+            width={96} 
+            height={96} 
+            className="rounded-full object-cover"
+            onError={handleImageError}
+          />
         </div>
         <div className="flex-1">
           <div className="flex items-center mb-1">
@@ -36,16 +76,16 @@ const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
             </span>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{location} · {category}</p>
-          <h3 className="text-lg font-bold text-gray-800 dark:text-white my-1">{title} [{currentParticipants}/{maxParticipants}]</h3>
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white my-1">{title} [{currentParticipants}/{participants}]</h3>
           <p className="text-sm text-gray-600 dark:text-gray-300">{description}</p>
           <div className="mt-2 space-y-1 text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center">
               <ClockIcon className="w-4 h-4 mr-1.5" />
-              <span>기간: {period}</span>
+              <span>기간: {formattedPeriod}</span>
             </div>
             <div className="flex items-center">
               <UserGroupIcon className="w-4 h-4 mr-1.5" />
-              <span>참여자: {participants}</span>
+              <span>참여자: {currentParticipants}/{participants}명</span>
             </div>
             <div className="flex items-center">
               <CalendarIcon className="w-4 h-4 mr-1.5" />
