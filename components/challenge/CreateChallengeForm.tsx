@@ -227,21 +227,6 @@ const CreateChallengeForm = ({
                 {formData.title.length}/50
               </span>
             </div>
-            <h2 className="text-2xl font-bold mt-8 mb-4 dark:text-white">
-              챌린지 소개글(선택)
-            </h2>
-            <div className="relative">
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                maxLength={500}
-                className="w-full p-3 border border-gray-300 rounded-lg h-32 resize-none dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              />
-              <span className="absolute right-3 bottom-3 text-sm text-gray-400 dark:text-gray-500">
-                {formData.description.length}/500
-              </span>
-            </div>
           </div>
         );
       case 3: // 참여 인원, 인증 방법
@@ -422,14 +407,6 @@ const CreateChallengeForm = ({
                   {formData.title}
                 </p>
               </div>
-              {formData.description && (
-                <div>
-                  <p className="font-bold">소개글</p>
-                  <p className="text-gray-600 dark:text-gray-300 mt-1.5 whitespace-pre-wrap">
-                    {formData.description}
-                  </p>
-                </div>
-              )}
               <div>
                 <p className="font-bold">참여인원</p>
                 <p className="text-gray-600 dark:text-gray-300 mt-1.5">

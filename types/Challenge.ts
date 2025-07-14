@@ -1,6 +1,8 @@
+export type ChallengeStatus = "예정" | "진행중" | "종료";
+
 export interface Challenge {
   id: number;
-  status: '예정' | '진행중' | '종료';
+  status: ChallengeStatus;
   location: string;
   title: string;
   currentParticipants: number;
@@ -24,6 +26,20 @@ export interface ChallengeCreateRequest {
   endDate: string;
   image: string | null;
   status: boolean;
+}
+
+export interface ChallengeSummaryResponse {
+  id: number;
+  title: string;
+  location: string;
+  image: string;
+  participants: number;
+  category: string;
+  currentParticipants: number;
+  role: "owner" | "member";
+  startDate: string;
+  endDate: string;
+  description: string;
 }
 
 export interface ChallengeFormData {
