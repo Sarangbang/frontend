@@ -36,7 +36,7 @@ const RegionSelectForm = ({
     null,
   );
 
-  // 기타 UI 상태
+  // 기타 UI 상태on
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,7 +53,6 @@ const RegionSelectForm = ({
         setSidoList(data);
       } catch (err) {
         setError('지역 정보를 불러오는 데 실패했습니다.');
-        console.error(err);
       }
       setLoading(false);
     };
@@ -100,7 +99,6 @@ const RegionSelectForm = ({
       setSigunguList(data);
     } catch (err) {
       setError('하위 지역 정보를 불러오는 데 실패했습니다.');
-      console.error(err);
     }
     setLoading(false);
   };
@@ -118,7 +116,6 @@ const RegionSelectForm = ({
       setDongList(data);
     } catch (err) {
       setError('하위 지역 정보를 불러오는 데 실패했습니다.');
-      console.error(err);
     }
     setLoading(false);
   };
@@ -170,19 +167,21 @@ const RegionSelectForm = ({
     <>
       {selectedSido ? (
         <span
-          className="cursor-pointer hover:underline"
+          className="hover:underline"
+          style={{ userSelect: 'none', cursor: 'default' }}
           onClick={() => handlePathClick(0)}
         >
           {selectedSido.regionName}
         </span>
       ) : (
-        '활동지역 선택'
+        <span style={{ userSelect: 'none', cursor: 'default' }}>활동지역 선택</span>
       )}
       {selectedSigungu && (
         <>
           <span className="mx-2 text-gray-400">{'>'}</span>
           <span
-            className="cursor-pointer hover:underline"
+            className="hover:underline"
+            style={{ userSelect: 'none', cursor: 'default' }}
             onClick={() => handlePathClick(1)}
           >
             {selectedSigungu.regionName}
@@ -192,13 +191,13 @@ const RegionSelectForm = ({
       {selectedDong && (
         <>
           <span className="mx-2 text-gray-400">{'>'}</span>
-          <span>{selectedDong.regionName}</span>
+          <span style={{ userSelect: 'none', cursor: 'default' }}>{selectedDong.regionName}</span>
         </>
       )}
       {allSelected && (
         <>
           <span className="mx-2 text-gray-400">{'>'}</span>
-          <span>전체</span>
+          <span style={{ userSelect: 'none', cursor: 'default' }}>전체</span>
         </>
       )}
     </>
@@ -247,7 +246,7 @@ const RegionSelectForm = ({
   return (
     <>
       <div className="relative flex items-center justify-center mb-4 bg-gray-100 rounded-lg px-4 min-h-[56px] py-4 text-base font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-200">
-        <div className="flex-1 flex justify-center text-center font-bold text-orange-700 dark:text-orange-400">
+        <div className="flex-1 flex justify-center text-center font-bold text-orange-700 dark:text-orange-400" style={{ userSelect: 'none' }}>
           {regionPathJSX}
         </div>
         {step > 0 && (

@@ -14,40 +14,28 @@ export interface Challenge {
 }
 
 export interface ChallengeCreateRequest {
+  regionId: number;
+  categoryId: number;
   title: string;
-  description: string;
-  participants: number;
+  description: string | null;
+  participants: number | '';
   method: string;
   startDate: string;
   endDate: string;
-  image: string;
+  image: string | null;
   status: boolean;
-  categoryId: number;
-  regionId: number;
 }
 
 export interface ChallengeFormData {
-  category: number;
+  categoryId: number;
   title: string;
   description: string;
-  participants: number;
+  participants: number | '';
   verificationMethod: string;
+  regionAddress: string;
   startDate: Date;
   endDate: Date;
+  image: File | null | string;
   duration: string;
-  image: File | null;
   regionId: number | null;
 }
-
-const initialFormData: ChallengeFormData = {
-  category: 0,
-  title: '',
-  description: '',
-  participants: 0,
-  verificationMethod: '',
-  startDate: new Date(),
-  endDate: new Date(),
-  duration: '',
-  image: null,
-  regionId: null,
-};

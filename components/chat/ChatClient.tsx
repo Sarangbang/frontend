@@ -20,7 +20,7 @@ const groupChats = [
     lastMessage: '책은 어떻게 읽나요?',
     timestamp: '오후 9:00',
     unreadCount: 20,
-    avatar: '/images/charactors/gamza.png',
+    avatar: '/images/charactors/default_study.png',
   },
   {
     id: 2,
@@ -31,7 +31,7 @@ const groupChats = [
     lastMessage: '아 지금 일어났다',
     timestamp: '오후 3:00',
     unreadCount: 100,
-    avatar: '/images/charactors/image 22.png',
+    avatar: '/images/charactors/default_wakeup.png',
   },
   {
     id: 3,
@@ -42,7 +42,7 @@ const groupChats = [
     lastMessage: 'int가 뭐죠',
     timestamp: '6월 21일',
     unreadCount: 101,
-    avatar: '/images/charactors/image 23.png',
+    avatar: '/images/charactors/default_wakeup.png',
   },
 ];
 
@@ -54,7 +54,7 @@ const oneOnOneChats = [
     lastMessage: '집에 가고 싶다',
     timestamp: '오후 6:09',
     unreadCount: 1,
-    avatar: '/images/charactors/gamza.png',
+    avatar: '/images/charactors/default_wakeup.png',
   },
   {
     id: 2,
@@ -63,7 +63,7 @@ const oneOnOneChats = [
     lastMessage: '잠온다',
     timestamp: '오후 6:06',
     unreadCount: 2,
-    avatar: '/images/charactors/image 24.png',
+    avatar: '/images/charactors/default_wakeup.png',
   },
   {
     id: 3,
@@ -72,7 +72,7 @@ const oneOnOneChats = [
     lastMessage: '운동 가야징',
     timestamp: '오후 3:21',
     unreadCount: 4,
-    avatar: '/images/charactors/image 25.png',
+    avatar: '/images/charactors/default_wakeup.png',
   },
 ];
 
