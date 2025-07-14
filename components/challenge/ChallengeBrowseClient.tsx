@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeftIcon } from "@heroicons/react/24/solid";
+import toast from 'react-hot-toast';
 import ChallengeCard from "./ChallengeCard";
 import { Challenge } from "@/types/Challenge";
 import { CategoryDto } from "@/types/Category";
@@ -30,7 +31,7 @@ const ChallengeBrowseClient = () => {
         const categoryData = await fetchCategories();
         setCategories(categoryData);
       } catch (error) {
-        console.error("카테고리 데이터를 불러오는데 실패했습니다:", error);
+        toast.error("카테고리 데이터를 불러오는데 실패했습니다.");
       }
     };
     loadCategories();
@@ -60,7 +61,7 @@ const ChallengeBrowseClient = () => {
         setTotalCount(response.totalElements);
         setHasMore(!response.last);
       } catch (error) {
-        console.error("챌린지 데이터를 불러오는데 실패했습니다:", error);
+        toast.error("챌린지 데이터를 불러오는데 실패했습니다.");
       } finally {
         setIsLoading(false);
       }
@@ -85,7 +86,7 @@ const ChallengeBrowseClient = () => {
       setCurrentPage(nextPage);
       setHasMore(!response.last);
     } catch (error) {
-      console.error("추가 챌린지를 불러오는 데 실패했습니다:", error);
+      toast.error("추가 챌린지를 불러오는 데 실패했습니다.");
     } finally {
       setIsLoadingMore(false);
     }
@@ -119,13 +120,13 @@ const ChallengeBrowseClient = () => {
   };
 
   return (
-    <>
+    <div className="bg-white dark:bg-gray-900 min-h-screen">
       {/* 헤더, 카테고리 바 (이전과 동일) */}
-      <div className="flex items-center p-4 border-b border-gray-200 dark:border-gray-700 lg:hidden">
+      <div className="flex items-center p-4 border-b border-gray-200 dark:border-gray-700">
         <button onClick={handleGoBack} className="mr-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
           <ArrowLeftIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
         </button>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">챌린지 둘러보기</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Challenge</h1>
       </div>
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex overflow-x-auto space-x-4 pb-2">
@@ -191,7 +192,7 @@ const ChallengeBrowseClient = () => {
           </>
         )}
       </div>
-    </>
+    </div>
   );
 };
 

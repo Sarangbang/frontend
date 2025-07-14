@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/common/ThemeProvider";
+import { Toaster } from 'react-hot-toast';
 
-const gmarket = localFont({
+
+const gmarketSans = localFont({
   src: [
     {
       path: '../fonts/GmarketSansLight.otf',
@@ -33,14 +35,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${gmarket.variable} font-sans bg-white dark:bg-gray-900`}>
+    <html lang="ko" suppressHydrationWarning>
+      <body className={`${gmarketSans.className} bg-white dark:bg-gray-900`}>
         <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-        >
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
