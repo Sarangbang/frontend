@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import { useMediaQuery } from 'react-responsive';
 import { useRouter } from 'next/navigation';
@@ -7,7 +6,6 @@ import { ChevronLeftIcon, CloudArrowUpIcon, XCircleIcon } from '@heroicons/react
 import Image from 'next/image';
 import Sidebar from '@/components/common/Sidebar';
 import { submitVerification } from '@/api/verification';
-
 const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
@@ -19,7 +17,6 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
 
   // TODO: Fetch challenge details based on challengeId
   const challengeTitle = '책..읽읍시다'; 
-
   useEffect(() => {
     setIsClient(true);
     // 컴포넌트 언마운트 시 메모리 누수 방지를 위해 object URL 해제
@@ -68,7 +65,6 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
       setIsSubmitting(false);
     }
   };
-
   const mainContent = (
     <div className="p-4 flex flex-col h-full">
       <div className="flex-grow flex flex-col">
@@ -121,7 +117,6 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
   );
 
   if (!isClient) return null;
-
   return (
     <>
       {isDesktop ? (
@@ -130,7 +125,7 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
           <div className="flex-1 ml-64">
             <main className="w-2/4 mx-auto pt-8">
                <div className="flex items-center mb-8">
-                <Image src="/images/charactors/default_wakeup.png" alt={challengeTitle} width={32} height={32} className="mr-3" />
+                <Image src="/images/charactors/gamza.png" alt={challengeTitle} width={32} height={32} className="mr-3" />
                 <h1 className="text-3xl font-bold dark:text-white">{challengeTitle}</h1>
               </div>
               {mainContent}
@@ -144,7 +139,7 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
               <button onClick={() => router.back()} className="mr-4">
                 <ChevronLeftIcon className="w-6 h-6 text-gray-800 dark:text-gray-200" />
               </button>
-              <Image src="/images/charactors/default_wakeup.png" alt={challengeTitle} width={24} height={24} className="mr-2" />
+              <Image src="/images/charactors/gamza.png" alt={challengeTitle} width={24} height={24} className="mr-2" />
               <h1 className="text-xl font-bold dark:text-white">{challengeTitle}</h1>
             </div>
           </header>
@@ -154,5 +149,4 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
     </>
   );
 };
-
 export default VerificationSubmitForm; 

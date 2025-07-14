@@ -8,7 +8,7 @@ interface ChallengeCardProps {
 }
 
 const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
-  const { status, location, title, currentParticipants, maxParticipants, category, description, period, participants, startDate, image } = challenge;
+  const { status, location, title, currentParticipants, maxParticipants, category, period, participants, startDate, image } = challenge;
 
   const getStatusChipStyle = (status: '예정' | '진행중' | '종료') => {
     switch (status) {
@@ -26,8 +26,8 @@ const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-4">
       <div className="flex">
-        <div className="relative w-24 h-24 mr-4 flex-shrink-0">
-          <Image src={image} alt={title} width={96} height={96} className="rounded-full object-cover" />
+        <div className="relative w-24 h-24 mr-4 flex-shrink-0 overflow-hidden">
+          <Image src={image} alt={title} width={96} height={96} className="rounded-full object-cover w-full h-full" />
         </div>
         <div className="flex-1">
           <div className="flex items-center mb-1">
@@ -35,9 +35,9 @@ const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
               {status}
             </span>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{location} · {category}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{location}</p>
           <h3 className="text-lg font-bold text-gray-800 dark:text-white my-1">{title} [{currentParticipants}/{maxParticipants}]</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300">{description}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{category}</p>
           <div className="mt-2 space-y-1 text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center">
               <ClockIcon className="w-4 h-4 mr-1.5" />
