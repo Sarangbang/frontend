@@ -28,7 +28,7 @@ export interface ChallengeCreateRequest {
   status: boolean;
 }
 
-export interface ChallengeMemberResponse {
+export interface ChallengeSummaryResponse {
   id: number;
   title: string;
   location: string;

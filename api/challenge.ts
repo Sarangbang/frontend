@@ -1,5 +1,5 @@
 import apiClient from "./apiClient";
-import { ChallengeCreateRequest, ChallengeMemberResponse } from "@/types/Challenge";
+import { ChallengeCreateRequest, ChallengeSummaryResponse } from "@/types/Challenge";
 
 /**
  * 신규 챌린지를 등록합니다
@@ -11,7 +11,7 @@ export const createChallenge = async (data: ChallengeCreateRequest) => {
     return response.data;
 };
 
-export const getChallengeMembers = async (): Promise<ChallengeMemberResponse[]> => {
-  const response = await apiClient.get<ChallengeMemberResponse[]>("/challenge-members");
+export const getChallengeSummary = async (): Promise<ChallengeSummaryResponse[]> => {
+  const response = await apiClient.get<ChallengeSummaryResponse[]>("/challenge-members");
   return response.data;
 };

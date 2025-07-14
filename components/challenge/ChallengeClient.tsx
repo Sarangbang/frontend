@@ -43,7 +43,6 @@ const ChallengeClient = () => {
         const data = await getChallengeMembers();
         setChallenges(data);
       } catch (error) {
-        console.error("챌린지 목록 조회 실패: ", error);
         alert("챌린지 목록을 불러오는데 실패했습니다.");
       }
     };
