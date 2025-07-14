@@ -14,6 +14,7 @@ import {
   calculateEndDateObject,
   formatRange,
 } from "@/util/dateUtils";
+import RegionSelectForm from '@/components/signup/RegionSelectForm';
 
 interface CreateChallengeFormProps {
   onClose: () => void;
@@ -34,14 +35,44 @@ const CreateChallengeForm = ({
       description: '',
       participants: '',
       verificationMethod: '',
+      regionId: null as number | null,
+      regionAddress: "",
       startDate: new Date(),
       endDate: new Date(),
       image: null,
       duration: '',
     }
   );
+
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 지역 단계별 선택 regionId 상태
+  const [selectedSidoId, setSelectedSidoId] = useState<number | null>(null);
+  const [selectedSigunguId, setSelectedSigunguId] = useState<number | null>(null);
+  const [selectedDongId, setSelectedDongId] = useState<number | null>(null);
+
+  const [categories, setCategories] = useState<CategoryName[]>([]);
+
+  // 지역 선택 완료 핸들러
+  const [regionStepSelected, setRegionStepSelected] = useState(false);
+  const handleRegionSelect = (
+    regionId: number | null,
+    fullAddress: string,
+    sidoId?: number | null,
+    sigunguId?: number | null,
+    dongId?: number | null,
+  ) => {
+    setFormData(prev => ({
+      ...prev,
+      regionId: regionId,
+      regionAddress: fullAddress,
+    }));
+    setSelectedSidoId(sidoId ?? null);
+    setSelectedSigunguId(sigunguId ?? null);
+    setSelectedDongId(dongId ?? null);
+    setRegionStepSelected(!!regionId);
+  };
 
   const handleNext = () => {
     switch (step) {
@@ -68,6 +99,12 @@ const CreateChallengeForm = ({
         }
         break;
       case 4:
+        if (!formData.regionId) {
+          alert("챌린지 참여 지역을 선택해주세요.");
+          return;
+        }
+        break;
+      case 5:
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -142,7 +179,6 @@ const CreateChallengeForm = ({
     }
   };
 
-  const [categories, setCategories] = useState<CategoryName[]>([]);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -156,7 +192,6 @@ const CreateChallengeForm = ({
 
         setCategories(filtered);
       } catch (error) {
-        console.error("카테고리 불러오기 실패: ", error);
       }
     };
 
@@ -272,7 +307,21 @@ const CreateChallengeForm = ({
             </div>
           </div>
         );
-      case 4: // 챌린지 시작일, 기간
+      case 4: // 챌린지 참여 지역
+        return (
+          <div>
+            <h2 className="text-2xl font-bold mb-6 dark:text-white">
+              챌린지 참여 지역
+            </h2>
+            <RegionSelectForm
+              onRegionSelect={handleRegionSelect}
+              selectedSidoId={selectedSidoId}
+              selectedSigunguId={selectedSigunguId}
+              selectedDongId={selectedDongId}
+            />
+          </div>
+        );
+      case 5: // 챌린지 시작일, 기간
         return (
           <div>
             <h2 className="text-2xl font-bold mb-4">챌린지 시작일</h2>
@@ -350,7 +399,7 @@ const CreateChallengeForm = ({
               )}
           </div>
         );
-      case 5: // 대표 이미지
+      case 6: // 대표 이미지
         return (
           <div>
             <h2 className="text-2xl font-bold dark:text-white">
@@ -387,11 +436,11 @@ const CreateChallengeForm = ({
             </div>
           </div>
         );
-      case 6: // 요약
-        const selectedCategory = categories.find(
-          (c) => c.categoryId === formData.categoryId
-        );
-        const categoryName = selectedCategory?.categoryName ?? "";
+      case 7: // 요약
+      const selectedCategory = categories.find(
+        (c) => c.categoryId === formData.categoryId
+      );
+      const categoryName = selectedCategory?.categoryName ?? "";
         return (
           <div>
             <div className="space-y-7 text-lg dark:text-white">
@@ -417,6 +466,12 @@ const CreateChallengeForm = ({
                 <p className="font-bold">인증방법</p>
                 <p className="text-gray-600 dark:text-gray-300 mt-1.5 whitespace-pre-wrap">
                   {formData.verificationMethod}
+                </p>
+              </div>
+              <div>
+                <p className="font-bold">챌린지 참여 지역</p>
+                <p className="text-gray-600 dark:text-gray-300 mt-1.5">
+                  {formData.regionAddress}
                 </p>
               </div>
               <div>
@@ -455,7 +510,7 @@ const CreateChallengeForm = ({
     }
   };
 
-  const totalSteps = 6;
+  const totalSteps = 7;
 
   const formContent = (
     <>

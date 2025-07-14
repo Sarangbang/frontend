@@ -28,6 +28,7 @@ const CHALLENGE_TABS: Tab<"멤버" | "방장">[] = [
   { id: "방장", label: "방장" },
 ];
 
+
 const ChallengeClient = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"멤버" | "방장">("멤버");
@@ -50,6 +51,11 @@ const ChallengeClient = () => {
   }, []);
 
   const handleCreateChallenge = async (formData: ChallengeFormData) => {
+    if (!formData.regionId) {
+      alert("지역 정보가 올바르지 않습니다.");
+      return;
+    }
+    
     const calculatedEndDate =
       formData.duration === "직접입력"
         ? formData.endDate
@@ -63,7 +69,7 @@ const ChallengeClient = () => {
         : formData.image;     // 아마 default URL 이거나 null
     
     const requestData: ChallengeCreateRequest = {
-      regionId: 1,
+      regionId: formData.regionId,
       categoryId: formData.categoryId,
       title: formData.title,
       description: formData.description,
@@ -77,11 +83,9 @@ const ChallengeClient = () => {
 
     try {
       const result = await createChallenge(requestData);
-      console.log("챌린지 등록 성공: ", result);
       setIsCreatingChallenge(false);
       router.push("/challenge");
     } catch (error) {
-      console.error("챌린지 등록 실패: ", error);
       alert("챌린지 등록에 실패했습니다. 다시 시도해주세요.");
     }
   };

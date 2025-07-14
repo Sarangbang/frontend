@@ -48,8 +48,10 @@ export interface ChallengeFormData {
   description: string;
   participants: number | '';
   verificationMethod: string;
+  regionAddress: string;
   startDate: Date;
   endDate: Date;
   image: File | null | string;
   duration: string;
+  regionId: number | null;
 }
