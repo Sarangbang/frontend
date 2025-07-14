@@ -30,15 +30,18 @@ const ChallengeBrowseClient = () => {
 
   useEffect(() => {
     setIsClient(true);
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
     
-    const checkDesktop = () => {
-      setIsDesktop(window.innerWidth >= 1024);
+    const handleResize = (event: MediaQueryListEvent) => {
+      setIsDesktop(event.matches);
     };
+
+    setIsDesktop(mediaQuery.matches);
+    mediaQuery.addEventListener('change', handleResize);
     
-    checkDesktop();
-    window.addEventListener('resize', checkDesktop);
-    
-    return () => window.removeEventListener('resize', checkDesktop);
+    return () => {
+      mediaQuery.removeEventListener('change', handleResize);
+    };
   }, []);
 
   // 카테고리 데이터 불러오기
@@ -147,14 +150,6 @@ const ChallengeBrowseClient = () => {
 
   const challengeContent = (
     <>
-      {/* 모바일/태블릿 헤더 */}
-      <div className="flex items-center p-4 border-b border-gray-200 dark:border-gray-700 lg:hidden">
-        <button onClick={handleGoBack} className="mr-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
-          <ArrowLeftIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-        </button>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">챌린지 둘러보기</h1>
-      </div>
-
       {/* 데스크톱 헤더 */}
       <header className="hidden lg:flex items-center p-4 border-b-2 mb-4">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">챌린지 둘러보기</h1>
@@ -238,8 +233,17 @@ const ChallengeBrowseClient = () => {
           </div>
         </div>
       ) : (
-        <div className="pb-16">
-          {challengeContent}
+        <div className="pt-16 pb-16">
+          {/* 모바일/태블릿 헤더 */}
+          <div className="fixed top-0 left-0 right-0 z-10 flex items-center p-4 border-b border-gray-200 bg-white dark:bg-gray-900 lg:hidden">
+            <button onClick={handleGoBack} className="mr-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
+              <ArrowLeftIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+            </button>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">챌린지 둘러보기</h1>
+          </div>
+          <main>
+            {challengeContent}
+          </main>
           <BottomNav />
         </div>
       )}

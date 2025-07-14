@@ -14,16 +14,18 @@ export default function MainClient() {
 
   useEffect(() => {
     setIsClient(true);
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
     
-    // 화면 크기 확인
-    const checkDesktop = () => {
-      setIsDesktop(window.innerWidth >= 1024);
+    const handleResize = (event: MediaQueryListEvent) => {
+      setIsDesktop(event.matches);
     };
+
+    setIsDesktop(mediaQuery.matches);
+    mediaQuery.addEventListener('change', handleResize);
     
-    checkDesktop();
-    window.addEventListener('resize', checkDesktop);
-    
-    return () => window.removeEventListener('resize', checkDesktop);
+    return () => {
+      mediaQuery.removeEventListener('change', handleResize);
+    };
   }, []);
 
   if (!isClient) {
