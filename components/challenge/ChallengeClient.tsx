@@ -9,13 +9,13 @@ import {
   Challenge,
   ChallengeCreateRequest,
   ChallengeFormData,
-  ChallengeMemberResponse
+  ChallengeSummaryResponse
 } from "@/types/Challenge";
 import Sidebar from "../common/Sidebar";
 import CreateChallengeForm from "./CreateChallengeForm";
 import ContentHeader from "../common/ContentHeader";
 import Tabs, { type Tab } from "../common/Tabs";
-import { createChallenge, getChallengeMembers } from "@/api/challenge";
+import { createChallenge, getChallengeSummary } from "@/api/challenge";
 import {
   formatDateToYYYYMMDD,
   calculateEndDateObject,
@@ -31,7 +31,7 @@ const CHALLENGE_TABS: Tab<"멤버" | "방장">[] = [
 const ChallengeClient = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"멤버" | "방장">("멤버");
-  const [challenges, setChallenges] = useState<ChallengeMemberResponse[]>([]);
+  const [challenges, setChallenges] = useState<ChallengeSummaryResponse[]>([]);
   const [isClient, setIsClient] = useState(false);
   const isDesktop = useMediaQuery({ query: "(min-width: 1024px)" });
   const [isCreatingChallenge, setIsCreatingChallenge] = useState(false);
@@ -40,7 +40,7 @@ const ChallengeClient = () => {
     setIsClient(true);
     const fetchChallenges = async () => {
       try {
-        const data = await getChallengeMembers();
+        const data = await getChallengeSummary();
         setChallenges(data);
       } catch (error) {
         alert("챌린지 목록을 불러오는데 실패했습니다.");
