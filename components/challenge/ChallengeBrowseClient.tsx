@@ -118,16 +118,14 @@ const ChallengeBrowseClient = () => {
     return category ? category.categoryName : "전체";
   };
 
-  console.log(challenges.length);
-
   return (
-    <div className="bg-white dark:bg-gray-900 min-h-screen">
+    <>
       {/* 헤더, 카테고리 바 (이전과 동일) */}
-      <div className="flex items-center p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center p-4 border-b border-gray-200 dark:border-gray-700 lg:hidden">
         <button onClick={handleGoBack} className="mr-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
           <ArrowLeftIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
         </button>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Challenge</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">챌린지 둘러보기</h1>
       </div>
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex overflow-x-auto space-x-4 pb-2">
@@ -193,7 +191,7 @@ const ChallengeBrowseClient = () => {
           </>
         )}
       </div>
-    </div>
+    </>
   );
 };
 
