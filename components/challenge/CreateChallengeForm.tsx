@@ -6,8 +6,9 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { ko } from "date-fns/locale";
 import Image from "next/image";
-import { getCategoryNames } from "@/api/categoryName";
-import { CategoryName } from "@/types/CategoryName";
+import { getCategoryNames } from "@/api/category";
+import { CategoryName } from "@/types/Category";
+import { ChallengeFormData } from "@/types/Challenge";
 import {
   formatDateToYYYYMMDD,
   calculateEndDateObject,
@@ -26,46 +27,55 @@ const CreateChallengeForm = ({
   isDesktop,
 }: CreateChallengeFormProps) => {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    category: 0,
-    categoryName: "",
-    title: "",
-    participants: "",
-    verificationMethod: "",
-    startDate: new Date(),
-    duration: "",
-    endDate: new Date(),
-    image: null as File | null,
-  });
-
+  const [formData, setFormData] = useState<ChallengeFormData>(
+    {
+      categoryId: 0,
+      title: '',
+      description: '',
+      participants: '',
+      verificationMethod: '',
+      startDate: new Date(),
+      endDate: new Date(),
+      image: null,
+      duration: '',
+    }
+  );
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleNext = () => {
     switch (step) {
       case 1:
-        if (!formData.category) {
+        if (!formData.categoryId) {
           alert("챌린지 주제를 선택해주세요.");
           return;
         }
         break;
       case 2:
-        if (!formData.title) {
-          alert("챌린지 제목을 입력해주세요.");
+        if (!formData.title || formData.title.trim().length < 2) {
+          alert("챌린지 제목은 2자 이상이어야 합니다.");
           return;
         }
         break;
       case 3:
-        if (!formData.participants) {
-          alert("참여 인원을 입력해주세요.");
+        if (!formData.participants || formData.participants < 2) {
+          alert("참여 인원은 2명 이상이어야 합니다.");
           return;
         }
-        if (!formData.verificationMethod) {
-          alert("인증방법을 입력해주세요.");
+        if (formData.verificationMethod.trim().length < 10) {
+          alert("인증 방법은 최소 10자 이상 입력해주세요.");
           return;
         }
         break;
       case 4:
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (formData.startDate < today) {
+          alert("챌린지 시작일은 오늘이후여야 합니다.");
+          return;
+        }
+
         if (!formData.duration) {
           alert("챌린지 기간을 선택해주세요.");
           return;
@@ -76,6 +86,10 @@ const CreateChallengeForm = ({
         }
         if (formData.duration === "직접입력" && !formData.endDate) {
           alert("종료일을 선택해주세요.");
+          return;
+        }
+        if (formData.endDate < formData.startDate) {
+          alert('종료일은 시작일 이후여야 합니다.');
           return;
         }
         break;
@@ -93,10 +107,24 @@ const CreateChallengeForm = ({
 
     // 'name'이 "category"나 "participants"일 경우,
     // 해당 필드를 숫자로 변환하여 상태를 업데이트합니다.
-    if (name === "category" || name === "participants") {
+    if (name === "participants") {
+        setFormData((prev) => ({
+          ...prev,
+          participants: value === '' ? '' : Number(value)
+        }));
+    } else if (name === "categoryId") {
+        setFormData((prev) => ({
+        ...prev,
+        [name]: Number(value),
+      }));
+    } else if (name === "duration") {
       setFormData((prev) => ({
         ...prev,
-        [name]: Number(value), // ✅ [name]을 사용해 동적으로 필드를 선택
+        duration: value,
+        endDate:
+          value === "직접입력"
+            ? prev.startDate
+            : calculateEndDateObject(prev.startDate, value),
       }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -120,8 +148,13 @@ const CreateChallengeForm = ({
     const loadCategories = async () => {
       try {
         const data = await getCategoryNames();
-        const sorted = data.sort((a, b) => a.categoryId - b.categoryId);
-        setCategories(sorted);
+
+        // '전체' 카테고리 제거 후 정렬
+        const filtered = data
+          .filter((c) => c.categoryName !== "전체")
+          .sort((a, b) => a.categoryId - b.categoryId);
+
+        setCategories(filtered);
       } catch (error) {
         console.error("카테고리 불러오기 실패: ", error);
       }
@@ -153,13 +186,13 @@ const CreateChallengeForm = ({
                 >
                   <input
                     type="radio"
-                    name="category"
+                    name="categoryId"
                     value={category.categoryId}
-                    checked={formData.category === category.categoryId}
+                    checked={formData.categoryId === category.categoryId}
                     onChange={() =>
                       setFormData((prev) => ({
                         ...prev,
-                        category: category.categoryId,
+                        categoryId: category.categoryId,
                         categoryName: category.categoryName,
                       }))
                     }
@@ -202,11 +235,15 @@ const CreateChallengeForm = ({
             <h2 className="text-2xl font-bold mb-4 dark:text-white">
               참여 인원을 입력해주세요.
             </h2>
+            <p className="text-sm text-gray-500 mb-4 dark:text-gray-400">
+              최소 2명 이상의 인원을 입력해주세요.
+            </p>
             <div className="relative flex items-center">
               <input
                 type="number"
                 name="participants"
-                value={formData.participants}
+                value={formData.participants ?? ''}
+                min={2}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-lg pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
@@ -351,13 +388,17 @@ const CreateChallengeForm = ({
           </div>
         );
       case 6: // 요약
+        const selectedCategory = categories.find(
+          (c) => c.categoryId === formData.categoryId
+        );
+        const categoryName = selectedCategory?.categoryName ?? "";
         return (
           <div>
             <div className="space-y-7 text-lg dark:text-white">
               <div>
                 <p className="font-bold">챌린지 주제</p>
                 <p className="text-gray-600 dark:text-gray-300 mt-1.5">
-                  {formData.categoryName}
+                  {categoryName}
                 </p>
               </div>
               <div>
@@ -440,11 +481,39 @@ const CreateChallengeForm = ({
           </button>
         ) : (
           <button
-            onClick={() => onSubmit(formData)}
-            className="w-full bg-[#F4724F] text-white py-3 rounded-lg text-lg font-semibold"
-          >
-            챌린지 생성
-          </button>
+            onClick={() => {
+              // ✅ categoryId와 기본 이미지 URL 매핑
+              const categoryImageMap: Record<number, string> = {
+                2: "/images/charactors/default_wakeup.png",
+                3: "/images/charactors/default_study.png",
+                4: "/images/charactors/default_health.png",
+                5: "/images/charactors/default_life.png",
+                6: "/images/charactors/default_mind.png",
+                7: "/images/charactors/default_hobby.png",
+                8: "/images/charactors/default_communication.png",
+                9: "/images/charactors/default_money.png",
+                10: "/images/charactors/default_general.png",
+              };
+
+              // 이미지 미지정 시, 카테고리에 맞는 기본 이미지로 설정
+              const defaultImageUrl = categoryImageMap[formData.categoryId!];
+              
+              const payload = {
+                ...formData,
+                image: formData.image instanceof File
+                  ? formData.image
+                  : formData.image || defaultImageUrl,
+                participants: formData.participants === '' ? 0 : formData.participants,
+              };
+
+              // 최종 제출
+              onSubmit(payload);
+            }}
+  className="w-full bg-[#F4724F] text-white py-3 rounded-lg text-lg font-semibold"
+>
+  챌린지 생성
+</button>
+
         )}
       </footer>
     </>

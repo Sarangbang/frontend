@@ -16,16 +16,16 @@ export interface Challenge {
 }
 
 export interface ChallengeCreateRequest {
-  location: string;
+  regionId: number;
+  categoryId: number;
   title: string;
-  description: string;
-  participants: number;
+  description: string | null;
+  participants: number | '';
   method: string;
   startDate: string;
   endDate: string;
-  image: string;
+  image: string | null;
   status: boolean;
-  categoryId: number;
 }
 
 export interface ChallengeMemberResponse {
@@ -43,25 +43,13 @@ export interface ChallengeMemberResponse {
 }
 
 export interface ChallengeFormData {
-  category: number;
+  categoryId: number;
   title: string;
   description: string;
-  participants: number;
+  participants: number | '';
   verificationMethod: string;
   startDate: Date;
   endDate: Date;
+  image: File | null | string;
   duration: string;
-  image: File | null;
 }
-
-const initialFormData: ChallengeFormData = {
-  category: 0,
-  title: '',
-  description: '',
-  participants: 0,
-  verificationMethod: '',
-  startDate: new Date(),
-  endDate: new Date(),
-  duration: '',
-  image: null,
-};

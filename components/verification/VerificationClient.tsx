@@ -12,17 +12,17 @@ import ContentHeader from '../common/ContentHeader';
 import Tabs, { type Tab } from '../common/Tabs';
 
 const mockVerifiableChallenges = [
-  { id: 1, location: '용인시/중동', title: '책..읽읍시다', currentParticipants: 4, maxParticipants: 10, image: '/images/charactors/Rectangle.png', isVerified: false },
-  { id: 2, location: '용인시/중동', title: '6시 기상 챌린지', currentParticipants: 2, maxParticipants: 5, image: '/images/charactors/image 22.png', isVerified: true },
-  { id: 3, location: '용인시/중동', title: '책..읽읍시다', currentParticipants: 4, maxParticipants: 10, image: '/images/charactors/Rectangle.png', isVerified: true },
+  { id: 1, location: '용인시/중동', title: '책..읽읍시다', currentParticipants: 4, maxParticipants: 10, image: '/images/charactors/default_wakeup.png', isVerified: false },
+  { id: 2, location: '용인시/중동', title: '6시 기상 챌린지', currentParticipants: 2, maxParticipants: 5, image: '/images/charactors/default_wakeup.png', isVerified: true },
+  { id: 3, location: '용인시/중동', title: '책..읽읍시다', currentParticipants: 4, maxParticipants: 10, image: '/images/charactors/default_wakeup.png', isVerified: true },
 ];
 
 const mockVerifiedImages = [
-  { id: 1, src: '/images/charactors/image 23.png', title: '책..읽읍시다', date: '2025-06-20' },
-  { id: 2, src: '/images/charactors/image 24.png', title: '6시 기상 챌린지', date: '2025-06-18' },
-  { id: 3, src: '/images/charactors/image 23.png', title: '책..읽읍시다', date: '2025-06-12' },
-  { id: 4, src: '/images/charactors/image 23.png', title: '책..읽읍시다', date: '2025-06-11' },
-  { id: 5, src: '/images/charactors/image 25.png', title: '6시 기상 챌린지', date: '2025-06-10' },
+  { id: 1, src: '/images/charactors/default_wakeup.png', title: '책..읽읍시다', date: '2025-06-20' },
+  { id: 2, src: '/images/charactors/default_wakeup.png', title: '6시 기상 챌린지', date: '2025-06-18' },
+  { id: 3, src: '/images/charactors/default_wakeup.png', title: '책..읽읍시다', date: '2025-06-12' },
+  { id: 4, src: '/images/charactors/default_wakeup.png', title: '책..읽읍시다', date: '2025-06-11' },
+  { id: 5, src: '/images/charactors/default_wakeup.png', title: '6시 기상 챌린지', date: '2025-06-10' },
 ];
 
 const VERIFICATION_TABS: Tab<'챌린지 인증' | '인증완료 내역'>[] = [
