@@ -9,7 +9,6 @@ import { ChallengeCreateRequest, Challenge, PageResponse } from '@/types/Challen
  */
 export const fetchAllChallenges = async (page: number = 0, size: number = 10): Promise<PageResponse<Challenge>> => {
     const response = await apiClient.get(`/challenges/all?page=${page}&size=${size}&sort=id,desc`);
-    console.log(page, size);
     return response.data; // 전체 페이지 응답 반환
 };
 

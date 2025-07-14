@@ -9,6 +9,8 @@ import { Challenge } from "@/types/Challenge";
 import { CategoryDto } from "@/types/Category";
 import { fetchAllChallenges, fetchChallengesByCategory } from "@/api/challenge";
 import { fetchCategories } from "@/api/category";
+import Sidebar from "../common/Sidebar";
+import BottomNav from "../common/BottomNav";
 
 const ChallengeBrowseClient = () => {
   const router = useRouter();
@@ -23,6 +25,21 @@ const ChallengeBrowseClient = () => {
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const observer = useRef<IntersectionObserver | null>(null);
+  const [isClient, setIsClient] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
 
   // 카테고리 데이터 불러오기
   useEffect(() => {
@@ -51,6 +68,7 @@ const ChallengeBrowseClient = () => {
       setIsLoading(true);
       setChallenges([]);
       setCurrentPage(0);
+      setHasMore(true);
       
       try {
         const response = await (selectedCategoryId === 0
@@ -119,15 +137,29 @@ const ChallengeBrowseClient = () => {
     return category ? category.categoryName : "전체";
   };
 
-  return (
-    <div className="bg-white dark:bg-gray-900 min-h-screen">
-      {/* 헤더, 카테고리 바 (이전과 동일) */}
-      <div className="flex items-center p-4 border-b border-gray-200 dark:border-gray-700">
+  if (!isClient) {
+    return (
+      <div className="bg-white dark:bg-gray-900 min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+      </div>
+    );
+  }
+
+  const challengeContent = (
+    <>
+      {/* 모바일/태블릿 헤더 */}
+      <div className="flex items-center p-4 border-b border-gray-200 dark:border-gray-700 lg:hidden">
         <button onClick={handleGoBack} className="mr-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
           <ArrowLeftIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
         </button>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Challenge</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">챌린지 둘러보기</h1>
       </div>
+
+      {/* 데스크톱 헤더 */}
+      <header className="hidden lg:flex items-center p-4 border-b-2 mb-4">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">챌린지 둘러보기</h1>
+      </header>
+
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex overflow-x-auto space-x-4 pb-2">
           <button
@@ -165,9 +197,10 @@ const ChallengeBrowseClient = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 gap-4">
-              {challenges.map((challenge) => (
+              {challenges.map((challenge, index) => (
                 <div
-                  key={challenge.id}
+                  key={`${challenge.id}-${index}`}
+                  ref={index === challenges.length - 1 ? lastChallengeElementRef : null}
                   className="cursor-pointer"
                   onClick={() => handleChallengeClick(challenge.id)}
                 >
@@ -176,8 +209,6 @@ const ChallengeBrowseClient = () => {
               ))}
             </div>
             
-            <div ref={lastChallengeElementRef} />
-
             {isLoadingMore && (
               <div className="flex justify-center items-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
@@ -192,6 +223,26 @@ const ChallengeBrowseClient = () => {
           </>
         )}
       </div>
+    </>
+  );
+
+  return (
+    <div className="bg-white dark:bg-gray-900 min-h-screen">
+      {isDesktop ? (
+        <div className="flex">
+          <Sidebar />
+          <div className="flex-1 ml-64">
+            <main className="max-w-4xl mx-auto px-4 py-8">
+              {challengeContent}
+            </main>
+          </div>
+        </div>
+      ) : (
+        <div className="pb-16">
+          {challengeContent}
+          <BottomNav />
+        </div>
+      )}
     </div>
   );
 };
