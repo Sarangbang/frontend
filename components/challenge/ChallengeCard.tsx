@@ -17,6 +17,26 @@ const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
   const periodDays = calculatePeriod(startDate, endDate);
   const formattedPeriod = formatPeriod(periodDays);
 
+  const getDynamicStatus = (startDateStr: string, endDateStr: string): '예정' | '진행중' | '종료' => {
+    const today = new Date();
+    const start = new Date(startDateStr);
+    const end = new Date(endDateStr);
+
+    today.setHours(0, 0, 0, 0);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+
+    if (today < start) {
+      return '예정';
+    } else if (today >= start && today <= end) {
+      return '진행중';
+    } else {
+      return '종료';
+    }
+  };
+
+  const dynamicStatus = getDynamicStatus(startDate, endDate);
+
   // 이미지 경로 처리 함수
   const getImageSrc = (imagePath: string): string => {
     // 이미지 에러가 발생했거나 이미지가 없으면 기본 이미지 사용
@@ -71,8 +91,8 @@ const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
         </div>
         <div className="flex-1">
           <div className="flex items-center mb-1">
-            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusChipStyle(status)}`}>
-              {status}
+            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusChipStyle(dynamicStatus)}`}>
+              {dynamicStatus}
             </span>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{location} · {category}</p>
@@ -94,7 +114,7 @@ const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
           </div>
         </div>
       </div>
-      {isLeaderView && (status === '예정' || status === '진행중') && (
+      {isLeaderView && (dynamicStatus === '예정' || dynamicStatus === '진행중') && (
         <div className="flex justify-end mt-3">
           <button className="bg-white text-gray-700 text-sm font-semibold px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
             챌린지 종료

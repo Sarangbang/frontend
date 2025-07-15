@@ -1,10 +1,10 @@
 export interface Challenge {
   id: number;
-  status: '예정' | '진행중' | '종료';
+  status: boolean;
   location: string;
   title: string;
   currentParticipants: number;
-  participants: number; // 최대 참여자 수 (백엔드의 participants와 매칭)
+  participants: number;
   category: string;
   description: string;
   startDate: string;
