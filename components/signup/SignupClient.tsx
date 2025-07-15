@@ -13,7 +13,6 @@ const SignupClient = () => {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<SignUpRequest>>({
     email: '',
     password: '',
