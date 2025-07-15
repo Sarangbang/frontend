@@ -63,36 +63,35 @@ const ChallengeBrowseClient = () => {
     setSelectedCategoryId(categoryId ? parseInt(categoryId) : 0);
   }, [searchParams]);
 
+  const loadInitialChallenges = useCallback(async (categoryId: number) => {
+    setIsLoading(true);
+    setChallenges([]);
+    setCurrentPage(0);
+    setHasMore(true);
+    
+    try {
+      const response = await (categoryId === 0
+        ? fetchAllChallenges(0, 10)
+        : fetchChallengesByCategory(categoryId, 0, 10));
+      
+      setChallenges(response.content);
+      setTotalCount(response.totalElements);
+      setHasMore(!response.last);
+    } catch (error) {
+      toast.error("챌린지 데이터를 불러오는데 실패했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   // 카테고리 변경 시 초기 챌린지 데이터 로드
   useEffect(() => {
     if (selectedCategoryId === null) return;
-
-    const loadInitialChallenges = async () => {
-      setIsLoading(true);
-      setChallenges([]);
-      setCurrentPage(0);
-      setHasMore(true);
-      
-      try {
-        const response = await (selectedCategoryId === 0
-          ? fetchAllChallenges(0, 10)
-          : fetchChallengesByCategory(selectedCategoryId, 0, 10));
-        
-        setChallenges(response.content);
-        setTotalCount(response.totalElements);
-        setHasMore(!response.last);
-      } catch (error) {
-        toast.error("챌린지 데이터를 불러오는데 실패했습니다.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadInitialChallenges();
-  }, [selectedCategoryId]);
+    loadInitialChallenges(selectedCategoryId);
+  }, [selectedCategoryId, loadInitialChallenges]);
 
   const loadMoreChallenges = useCallback(async () => {
-    if (isLoadingMore || !hasMore) return;
+    if (isLoadingMore || !hasMore || selectedCategoryId === null) return;
     
     setIsLoadingMore(true);
     const nextPage = currentPage + 1;
@@ -100,7 +99,7 @@ const ChallengeBrowseClient = () => {
     try {
       const response = await (selectedCategoryId === 0
         ? fetchAllChallenges(nextPage, 10)
-        : fetchChallengesByCategory(selectedCategoryId!, nextPage, 10));
+        : fetchChallengesByCategory(selectedCategoryId, nextPage, 10));
         
       setChallenges(prev => [...prev, ...response.content]);
       
@@ -127,8 +126,12 @@ const ChallengeBrowseClient = () => {
   }, [isLoadingMore, hasMore, loadMoreChallenges]);
 
   const handleCategorySelect = (categoryId: number) => {
-    const path = categoryId === 0 ? '/challenges/all' : `/challenges/all?categoryId=${categoryId}`;
-    router.push(path);
+    if (categoryId === selectedCategoryId) {
+      loadInitialChallenges(categoryId);
+    } else {
+      const path = categoryId === 0 ? '/challenges/all' : `/challenges/all?categoryId=${categoryId}`;
+      router.push(path);
+    }
   };
 
   const handleGoBack = () => router.back();
