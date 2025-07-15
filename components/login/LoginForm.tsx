@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { login } from '@/api/auth';
 import { useRouter } from 'next/navigation';
 import { LoginRequest } from '@/types/Login';
+import toast from 'react-hot-toast';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -13,6 +14,13 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem('signupSuccess')) {
+      toast.success('회원가입이 완료되었습니다');
+      localStorage.removeItem('signupSuccess');
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
