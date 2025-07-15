@@ -13,6 +13,7 @@ const SignupClient = () => {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<SignUpRequest>>({
     email: '',
     password: '',
@@ -44,6 +45,7 @@ const SignupClient = () => {
     }
     try {
       await signUp(formData as SignUpRequest);
+      alert('회원가입이 완료되었습니다');
       router.push('/login');
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
