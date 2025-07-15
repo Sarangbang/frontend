@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 
@@ -32,14 +33,21 @@ const CategoryCircle = ({
   image,
   label,
   bgColor,
+  categoryId,
+  onClick,
 }: {
   image: string;
   label: string;
   bgColor: string;
+  categoryId: number;
+  onClick: (categoryId: number) => void;
 }) => (
-  <div className="text-center flex flex-col items-center">
+  <div 
+    className="text-center flex flex-col items-center cursor-pointer"
+    onClick={() => onClick(categoryId)}
+  >
     <div
-      className={`w-24 h-24 rounded-full flex items-center justify-center ${bgColor} relative overflow-hidden`}
+      className={`w-24 h-24 rounded-full flex items-center justify-center ${bgColor} relative overflow-hidden transition-transform hover:scale-105`}
     >
       <Image src={image} alt={label} width={60} height={60} objectFit="contain" />
     </div>
@@ -48,6 +56,7 @@ const CategoryCircle = ({
 );
 
 const CategorySection = () => {
+  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [showAll, setShowAll] = useState(false);
 
@@ -55,13 +64,33 @@ const CategorySection = () => {
     const getCategories = async () => {
       const categoriesData = await fetchCategories();
       const categoriesWithBgColor = addBgColorsToCategories(categoriesData);
-      setCategories(categoriesWithBgColor);
+      
+      // "전체" 카테고리를 맨 앞에 추가
+      const allCategory: Category = {
+        categoryId: 0,
+        categoryName: '전체',
+        categoryImageUrl: '/images/charactors/gamza.png', // 기존 이미지 재사용
+        bgColor: 'bg-gray-100 dark:bg-gray-700',
+      };
+      
+      setCategories([allCategory, ...categoriesWithBgColor]);
     };
     getCategories();
   }, []);
 
   const toggleShowAll = () => {
     setShowAll(!showAll);
+  };
+
+  // 카테고리 클릭 핸들러
+  const handleCategoryClick = (categoryId: number) => {
+    if (categoryId === 0) {
+      // "전체" 카테고리 클릭 시 새로운 챌린지 조회 페이지로 이동
+      router.push('/challenges/all');
+    } else {
+      // 특정 카테고리 클릭 시 해당 카테고리로 필터링된 페이지로 이동
+      router.push(`/challenges/all?categoryId=${categoryId}`);
+    }
   };
 
   return (
@@ -92,6 +121,8 @@ const CategorySection = () => {
               image={category.categoryImageUrl}
               label={category.categoryName}
               bgColor={category.bgColor}
+              categoryId={category.categoryId}
+              onClick={handleCategoryClick}
             />
           ))}
         </div>
@@ -111,6 +142,8 @@ const CategorySection = () => {
                 image={category.categoryImageUrl}
                 label={category.categoryName}
                 bgColor={category.bgColor}
+                categoryId={category.categoryId}
+                onClick={handleCategoryClick}
               />
             </SwiperSlide>
           ))}
