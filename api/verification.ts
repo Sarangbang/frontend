@@ -1,4 +1,5 @@
 import apiClient from './apiClient';
+import { TodayVerificationStatusResponse, VerificationCreateRequest, VerificationResponse } from '@/types/Verification';
 
 export const submitVerification = async (formData: FormData) => {
 	console.log(formData);
@@ -14,4 +15,14 @@ export const submitVerification = async (formData: FormData) => {
   //   console.error('인증 제출에 실패했습니다.', error);
   //   throw error;
   // }
-}; 
+};
+
+export const getTodayVerifications = async () : Promise<TodayVerificationStatusResponse[]> => {
+  const response = await apiClient.get<TodayVerificationStatusResponse[]>('/challenge-verifications/status');
+  return response.data;
+};
+
+export const createChallengeVerification = async (data: VerificationCreateRequest) => {  
+  const response = await apiClient.post<VerificationResponse>('/challenge-verifications', data);
+  return response.data;
+};
