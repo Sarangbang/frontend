@@ -47,8 +47,8 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
             id: member.id,
             nickname: member.nickname,
             role: member.role,
-            title: member.title,
-            method: member.method,
+            title: member.challengeTitle,
+            method: member.challengeMethod,
             status: member.status,
           })),
         );

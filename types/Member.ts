@@ -3,7 +3,7 @@ export type Member = {
     nickname: string,
     role: string,
     status: boolean,
-    title: string,
-    method: string,
+    challengeTitle: string,
+    challengeMethod: string,
     imageUrl: string | null,
 };
