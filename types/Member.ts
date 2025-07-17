@@ -2,6 +2,8 @@ export type Member = {
     id: number,
     nickname: string,
     role: string,
-    verified: boolean,
+    status: boolean,
+    challengeTitle: string,
+    challengeMethod: string,
     imageUrl: string | null,
 };
