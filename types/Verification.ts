@@ -26,3 +26,9 @@ export interface VerificationResponse {
     status: ChallengeVerificationStatus;
     userId: string;
 }
+
+export interface Verification {
+  imgUrl: string;
+  title: string;
+  verifiedAt: string;
+} 

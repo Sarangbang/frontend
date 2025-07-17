@@ -18,14 +18,29 @@ import toast from 'react-hot-toast';
 const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('멤버');
+
   const searchParams = useSearchParams();
   const [currentDate, setCurrentDate] = useState(new Date('2025-06-20'));
+  const [currentDate, setCurrentDate] = useState(new Date()); // 오늘 날짜로 변경
+
   const [isVerified, setIsVerified] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
   const [memberList, setMemberList] = useState<Member[]>([]);
   const [isMaster, setIsMaster] = useState(true); // 방장 여부 (임시)
+  const [challengeTitle, setChallengeTitle] = useState<string>('');
+  const [challengeMethod, setChallengeMethod] = useState<string>('');
+
+  // 오늘 날짜인지 판별하는 함수
+  const isToday = () => {
+    const today = new Date();
+    return (
+      currentDate.getFullYear() === today.getFullYear() &&
+      currentDate.getMonth() === today.getMonth() &&
+      currentDate.getDate() === today.getDate()
+    );
+  };
 
   useEffect(() => {
     setIsClient(true);
@@ -41,21 +56,29 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
       }
     
     if(challengeId) {
+    if (challengeId && currentDate) {
       const fetchMembers = async () => {
-        const data = await getChallengeMembers(challengeId);
+        const dateStr = currentDate.toISOString().slice(0, 10); // YYYY-MM-DD
+        const data = await getChallengeMembers(challengeId, dateStr);
         setMemberList(
           data.map((member: Member) => ({
             id: member.id,
             nickname: member.nickname,
             role: member.role,
-            //verified: member.verified,
-            //imageUrl: member.imageUrl,
+            title: member.challengeTitle,
+            method: member.challengeMethod,
+            status: member.status,
           })),
-        )
-      }
+        );
+        // challengeTitle, challengeMethod 추출 (첫 번째 멤버 기준)
+        if (data.length > 0) {
+          if (data[0].challengeTitle) setChallengeTitle(data[0].challengeTitle);
+          if (data[0].challengeMethod) setChallengeMethod(data[0].challengeMethod);
+        }
+      };
       fetchMembers();
     }
-  }, [challengeId, searchParams]); // 챌린지 id변경, 쿼리 변경 시 실행
+  }, [challengeId, currentDate, searchParams]); // currentDate도 의존성에 추가
 
   const handleCancelVerification = (memberId: number) => {
     setMemberList(currentMembers =>
@@ -114,7 +137,7 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
       <div className="p-4 flex-1">
         {activeTab === '멤버' && (
           <div>
-            <div className="flex justify-between items-center my-4">
+            <div className="flex justify-between items-center my-6">
               <button
                 onClick={() =>
                   setCurrentDate(
@@ -133,8 +156,9 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
                     new Date(currentDate.setDate(currentDate.getDate() + 1)),
                   )
                 }
+                disabled={isToday()}
               >
-                <ChevronRightIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+                <ChevronRightIcon className={`w-6 h-6 ${isToday() ? 'text-gray-300 dark:text-gray-600' : 'text-gray-600 dark:text-gray-400'}`} />
               </button>
             </div>
             <div className="grid grid-cols-[repeat(auto-fit,minmax(6rem,1fr))] gap-6 text-center">
@@ -143,12 +167,12 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
                   <div
                     onClick={() => openImageOverlay(member)}
                     className={`relative w-24 h-24 rounded-full border-4 ${
-                      member.verified ? 'border-blue-500' : 'border-red-500'
+                      member.status ? 'border-blue-500' : 'border-red-500'
                     } ${member.imageUrl ? 'cursor-pointer' : ''}`}
                   >
                     <Image
                       src={
-                        member.verified
+                        member.status
                           ? '/images/expressions/smile.png'
                           : '/images/expressions/sad.png'
                       }
@@ -157,11 +181,25 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
                       className="rounded-full object-cover"
                     />
                   </div>
-                  <p className="mt-2 font-semibold dark:text-white">
+                  <p className="mt-2 font-semibold dark:text-white text-sm">
                     {member.nickname}
                   </p>
                 </div>
               ))}
+            </div>
+            {/* 인증 방법 영역 추가 */}
+            <div className="mt-15">
+              <div className="bg-gray-100 text-gray-800 rounded-md p-4 text-center">
+                <div className="font-bold text-lg mb-2">⭐ 인증 방법 ⭐</div>
+                <div className="text-sm">
+                  {(challengeMethod || '인증 방법 정보가 없습니다.').split('\n').map((line, idx) => (
+                    <span key={idx}>
+                      {line}
+                      <br />
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -191,7 +229,7 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
                   <p className="font-semibold dark:text-white">
                     {member.nickname}
                   </p>
-                  {isMaster && member.verified && member.imageUrl && (
+                  {isMaster && member.status && member.imageUrl && (
                     <button
                       onClick={() => handleCancelVerification(member.id)}
                       className="px-3 py-1 bg-orange-500 text-white rounded-md text-sm font-semibold hover:bg-orange-600"
@@ -210,12 +248,12 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
         <div className="p-4 sticky bottom-0 bg-white dark:bg-gray-800">
           <button
             onClick={handleVerificationClick}
-            disabled={isVerified}
+            disabled={!isToday() || isVerified}
             className={`w-full py-3 rounded-lg text-white font-bold text-lg ${
-              isVerified ? 'bg-gray-400' : 'bg-orange-500'
+              !isToday() ? 'bg-gray-400' : isVerified ? 'bg-gray-400' : 'bg-orange-500'
             }`}
           >
-            {isVerified ? '인증완료' : '챌린지 인증'}
+            {!isToday() ? '인증 불가' : isVerified ? '인증완료' : '챌린지 인증'}
           </button>
         </div>
       )}
@@ -235,15 +273,9 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
             <main className="w-2/4 mx-auto pt-8">
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
                 <header className="p-4 border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center gap-2">
-                    <Image
-                      src="/images/charactors/default_wakeup.png"
-                      alt="Challenge Icon"
-                      width={24}
-                      height={24}
-                    />
-                    <h1 className="text-xl font-bold dark:text-white">
-                      책.. 읽읍시다
+                  <div className="flex justify-center items-center">
+                    <h1 className="text-xl font-bold dark:text-white text-center w-full">
+                      {challengeTitle || '챌린지'}
                     </h1>
                   </div>
                 </header>
@@ -255,21 +287,13 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
       ) : (
         <div className="max-w-md mx-auto bg-white dark:bg-gray-800 min-h-screen flex flex-col">
           <header className="sticky top-0 bg-white dark:bg-gray-800 z-10 p-4 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center">
-              <button onClick={() => router.back()} className="mr-4">
+            <div className="flex justify-center items-center">
+              <button onClick={() => router.back()} className="mr-4 absolute left-0">
                 <ChevronLeftIcon className="w-6 h-6 text-gray-800 dark:text-gray-200" />
               </button>
-              <div className="flex items-center gap-2">
-                <Image
-                  src="/images/charactors/default_wakeup.png"
-                  alt="Challenge Icon"
-                  width={24}
-                  height={24}
-                />
-                <h1 className="text-xl font-bold dark:text-white">
-                  책.. 읽읍시다
-                </h1>
-              </div>
+              <h1 className="text-xl font-bold dark:text-white text-center w-full">
+                {challengeTitle || '챌린지'}
+              </h1>
             </div>
           </header>
           {challengeContent}

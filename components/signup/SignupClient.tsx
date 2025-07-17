@@ -44,6 +44,7 @@ const SignupClient = () => {
     }
     try {
       await signUp(formData as SignUpRequest);
+      localStorage.setItem('signupSuccess', '1');
       router.push('/login');
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {

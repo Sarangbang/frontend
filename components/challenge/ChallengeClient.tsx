@@ -19,7 +19,7 @@ import { createChallenge, getChallengeSummary } from "@/api/challenge";
 import {
   formatDateToYYYYMMDD,
   calculateEndDateObject,
-  calculatePeriod,
+  calculatePeriod2,
   getChallengeStatus,
 } from "@/util/dateUtils";
 
@@ -85,6 +85,7 @@ const ChallengeClient = () => {
       const result = await createChallenge(requestData);
       setIsCreatingChallenge(false);
       router.push("/challenge");
+      window.location.reload();
     } catch (error) {
       alert("챌린지 등록에 실패했습니다. 다시 시도해주세요.");
     }
@@ -102,17 +103,18 @@ const ChallengeClient = () => {
 
   const mappedChallenges: Challenge[] = filteredChallenges.map((c) => ({
     id: c.id,
-    status: getChallengeStatus(c.startDate, c.endDate),
-    location: c.location,
     title: c.title,
+    location: c.location,
     currentParticipants: c.currentParticipants,
-    maxParticipants: c.participants,
+    participants: c.participants,
     category: c.category,
     description: c.description,
-    period: calculatePeriod(c.startDate, c.endDate),
-    participants: `${c.currentParticipants}/${c.participants}명`,
+    period: calculatePeriod2(c.startDate, c.endDate),
+    participantsString: `${c.currentParticipants}/${c.participants}명`,
     startDate: c.startDate,
+    endDate: c.endDate,
     image: c.image || "/images/charactors/gamza.png", // 기본 이미지
+    status: c.status,
   }));
 
   const challengeContent = (

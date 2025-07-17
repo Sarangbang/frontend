@@ -1,5 +1,7 @@
 import apiClient from './apiClient';
+
 import { TodayVerificationStatusResponse, VerificationCreateRequest, VerificationResponse } from '@/types/Verification';
+import toast from 'react-hot-toast';
 
 export const submitVerification = async (formData: FormData) => {
 	console.log(formData);
@@ -26,3 +28,14 @@ export const createChallengeVerification = async (data: VerificationCreateReques
   const response = await apiClient.post<VerificationResponse>('/challenge-verifications', data);
   return response.data;
 };
+
+export const getCompletedVerifications = async () => {
+  try {
+    const response = await apiClient.get('/challenge-verifications/my');
+    return response.data;
+  } catch (error) {
+    toast.error('인증 완료 내역을 불러오는 데 실패했습니다.');
+    throw error;
+  }
+}; 
+

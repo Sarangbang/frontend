@@ -43,7 +43,7 @@ export function formatRange(startDate: Date, endDate: Date): string {
   return `${format(startDate)} ~ ${format(endDate)}`;
 }
 
-export const calculatePeriod = (startDateStr: string, endDateStr: string): string => {
+export const calculatePeriod2 = (startDateStr: string, endDateStr: string): string => {
   const startDate = new Date(startDateStr);
   const endDate = new Date(endDateStr);
 
@@ -89,3 +89,39 @@ export const getChallengeStatus = (
   }
   return "진행중";
 };
+
+// 두 날짜 사이의 기간을 계산하는 함수 (일 단위)
+export function calculatePeriod(startDate: string, endDate: string): number {
+  // 문자열을 Date 객체로 변환
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  
+  // 밀리초 차이를 계산하고 일 단위로 변환
+  const timeDifference = end.getTime() - start.getTime();
+  const dayDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
+  
+  return dayDifference;
+}
+
+// 기간을 한국어로 포맷하는 함수
+export function formatPeriod(days: number): string {
+  if (days < 7) {
+    return `${days}일`;
+  } else if (days < 30) {
+    const weeks = Math.floor(days / 7);
+    const remainingDays = days % 7;
+    if (remainingDays === 0) {
+      return `${weeks}주`;
+    } else {
+      return `${weeks}주 ${remainingDays}일`;
+    }
+  } else {
+    const months = Math.floor(days / 30);
+    const remainingDays = days % 30;
+    if (remainingDays === 0) {
+      return `${months}개월`;
+    } else {
+      return `${months}개월 ${remainingDays}일`;
+    }
+  }
+}

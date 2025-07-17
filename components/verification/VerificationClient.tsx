@@ -4,23 +4,17 @@ import { useState, useEffect } from 'react';
 import { getTodayVerifications } from '@/api/verification';
 import type { TodayVerificationStatusResponse } from '@/types/Verification';
 import { useMediaQuery } from 'react-responsive';
-import { useRouter } from 'next/navigation';
-import { ChevronLeftIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid';
-import Image from 'next/image';
 import Sidebar from '@/components/common/Sidebar';
 import BottomNav from '@/components/common/BottomNav';
 import VerifiableChallengeCard from './VerifiableChallengeCard';
 import ContentHeader from '../common/ContentHeader';
 import Tabs, { type Tab } from '../common/Tabs';
+
 import { getChallengeStatus } from '@/util/dateUtils';
 
-const mockVerifiedImages = [
-  { id: 1, src: '/images/charactors/default_wakeup.png', title: '책..읽읍시다', date: '2025-06-20' },
-  { id: 2, src: '/images/charactors/default_wakeup.png', title: '6시 기상 챌린지', date: '2025-06-18' },
-  { id: 3, src: '/images/charactors/default_wakeup.png', title: '책..읽읍시다', date: '2025-06-12' },
-  { id: 4, src: '/images/charactors/default_wakeup.png', title: '책..읽읍시다', date: '2025-06-11' },
-  { id: 5, src: '/images/charactors/default_wakeup.png', title: '6시 기상 챌린지', date: '2025-06-10' },
-];
+import CompletedVerificationsClient from './CompletedVerificationsClient';
+
+
 
 const VERIFICATION_TABS: Tab<'챌린지 인증' | '인증완료 내역'>[] = [
   { id: '챌린지 인증', label: '챌린지 인증' },
@@ -28,7 +22,6 @@ const VERIFICATION_TABS: Tab<'챌린지 인증' | '인증완료 내역'>[] = [
 ];
 
 const VerificationClient = () => {
-  const router = useRouter();
   const [activeTab, setActiveTab] =
     useState<'챌린지 인증' | '인증완료 내역'>('챌린지 인증');
   const [isClient, setIsClient] = useState(false);
@@ -72,8 +65,7 @@ const VerificationClient = () => {
       return (
         <div>
           <div className="relative my-4">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input type="text" placeholder="참여중인 챌린지 검색" className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-black" />
+            <input type="text" placeholder="참여중인 챌린지 검색" className="w-full pl-4 pr-4 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-black" />
           </div>
           {loading ? (
             <div className="text-center text-gray-500 py-8">로딩 중...</div>
@@ -97,19 +89,7 @@ const VerificationClient = () => {
     }
 
     if (activeTab === '인증완료 내역') {
-      return (
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          {mockVerifiedImages.map(item => (
-            <div key={item.id} className="relative aspect-square">
-              <Image src={item.src} alt={item.title} layout="fill" className="object-cover rounded-lg" />
-              <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-2 rounded-b-lg">
-                <p className="text-sm font-bold truncate">{item.title}</p>
-                <p className="text-xs">{item.date}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      );
+      return <CompletedVerificationsClient />;
     }
     return null;
   };
@@ -133,7 +113,7 @@ const VerificationClient = () => {
         <div className="flex">
           <Sidebar />
           <div className="flex-1 ml-64">
-            <main className="w-2/4 mx-auto">
+            <main className="w-full max-w-2xl mx-auto">
               <ContentHeader
                 title="Challenge"
                 isDesktop={isDesktop}
