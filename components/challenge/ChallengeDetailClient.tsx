@@ -12,10 +12,13 @@ import { useMediaQuery } from 'react-responsive';
 import Sidebar from '../common/Sidebar';
 import getChallengeMembers from '@/api/getChallengeMembers';
 import type { Member } from '@/types/Member';
+import { useSearchParams } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('멤버');
+  const searchParams = useSearchParams();
   const [currentDate, setCurrentDate] = useState(new Date('2025-06-20'));
   const [isVerified, setIsVerified] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -26,6 +29,17 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
 
   useEffect(() => {
     setIsClient(true);
+    // 쿼리 파라미터로 탭 제어
+    const tab = searchParams.get('tab');
+    if (tab === 'photo' || tab === '사진') {
+      setActiveTab('사진');
+    }
+
+    if (typeof window !== 'undefined' && localStorage.getItem('verificationSuccess')) {
+        toast.success('인증이 등록되었습니다');
+        localStorage.removeItem('verificationSuccess');
+      }
+    
     if(challengeId) {
       const fetchMembers = async () => {
         const data = await getChallengeMembers(challengeId);
@@ -41,7 +55,7 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
       }
       fetchMembers();
     }
-  }, [challengeId]); // 챌린지 id변경 시 실행
+  }, [challengeId, searchParams]); // 챌린지 id변경, 쿼리 변경 시 실행
 
   const handleCancelVerification = (memberId: number) => {
     setMemberList(currentMembers =>

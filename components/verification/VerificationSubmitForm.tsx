@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useMediaQuery } from 'react-responsive';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeftIcon, CloudArrowUpIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import Sidebar from '@/components/common/Sidebar';
@@ -16,7 +16,8 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const challengeTitle = '챌린지 인증'; 
+  const searchParams = useSearchParams();
+  const challengeTitle = searchParams.get('title') || '챌린지 인증';
   useEffect(() => {
     setIsClient(true);
     return () => {
@@ -58,8 +59,10 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
 
     try {
       await createChallengeVerification(data);
-      toast.success('인증되었습니다.');
-      router.push(`/challenge/${challengeId}`);
+      localStorage.setItem('verificationSuccess', '1');
+      setTimeout(() => {
+        router.push(`/challenge/${challengeId}?tab=photo`);
+      }, 30);
     } catch (error) {
       toast.error('인증을 실패했습니다. 다시 시도해주세요.');
     } finally {

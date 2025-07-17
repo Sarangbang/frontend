@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/common/ThemeProvider";
+import { Toaster } from 'react-hot-toast';
 
 const gmarket = localFont({
   src: [
@@ -40,6 +41,7 @@ export default function RootLayout({
           defaultTheme="light"
           enableSystem={false}
         >
+          <Toaster position="top-center" />
           {children}
         </ThemeProvider>
       </body>

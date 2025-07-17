@@ -58,7 +58,7 @@ const VerifiableChallengeCard = ({ challenge }: VerifiableChallengeCardProps) =>
           인증완료
         </button>
       ) : (
-        <Link href={`/verification/${challenge.id}`}>
+        <Link href={{ pathname: `/verification/${challenge.id}`, query: { title: challenge.title } }}>
           <button className="bg-[#F4724F] text-white text-sm font-semibold px-8 py-3 rounded-lg hover:bg-[#e56b49] transition-colors w-32 min-w-[80px] max-w-xs text-center">
             인증하기
           </button>
