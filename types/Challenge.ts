@@ -56,6 +56,32 @@ export interface ChallengeFormData {
   regionId: number | null;
 }
 
+export interface ChallengeDetail {
+  challengeId: number;
+  title: string;
+  description:string;
+  imageUrl: string;
+  method: string;
+  maxParticipants: number;
+  currentParticipants: number;
+  startDate: string;
+  endDate: string;
+  challengeStatus: 'ACTIVE' | 'INACTIVE';
+  location: string;
+  category: {
+    categoryId: number;
+    categoryName: string;
+    imageUrl: string;
+  };
+}
+
+export interface ChallengeJoinRequest {
+  introduction: string;
+  reason: string;
+  commitment: string;
+  challengeId: number;
+}
+
 // Spring Boot Page 객체 구조에 맞는 페이지네이션 응답 타입
 export interface PageResponse<T> {
   content: T[];

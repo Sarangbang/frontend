@@ -25,6 +25,31 @@ const gmarket = localFont({
 export const metadata: Metadata = {
   title: "일심동네",
   description: "우리 동네 사람들과 함께하는 챌린지",
+  icons: {
+    icon: "/images/favicon_io/favicon-32x32.png",
+    shortcut: "/images/favicon_io/favicon.ico",
+    apple: "/images/favicon_io/apple-touch-icon.png",
+    other: [
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '16x16',
+        url: '/images/favicon_io/favicon-16x16.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '192x192',
+        url: '/images/favicon_io/android-chrome-192x192.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '512x512',
+        url: '/images/favicon_io/android-chrome-512x512.png',
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -34,6 +59,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="manifest" href="/images/favicon_io/site.webmanifest" />
+      </head>
       <body className={`${gmarket.variable} font-sans bg-white dark:bg-gray-900`}>
         <ThemeProvider
           attribute="class"
