@@ -11,6 +11,7 @@ import { fetchAllChallenges, fetchChallengesByCategory } from "@/api/challenge";
 import { fetchCategories } from "@/api/category";
 import Sidebar from "../common/Sidebar";
 import BottomNav from "../common/BottomNav";
+import ChallengeApplyModal from "./ChallengeApplyModal";
 
 const ChallengeBrowseClient = () => {
   const router = useRouter();
@@ -27,6 +28,8 @@ const ChallengeBrowseClient = () => {
   const observer = useRef<IntersectionObserver | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedChallengeId, setSelectedChallengeId] = useState<number | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -135,7 +138,18 @@ const ChallengeBrowseClient = () => {
   };
 
   const handleGoBack = () => router.back();
-  const handleChallengeClick = (challengeId: number) => router.push(`/challenge/${challengeId}`);
+  const handleChallengeClick = (challengeId: number) => {
+    setSelectedChallengeId(challengeId);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedChallengeId(null);
+    if(selectedCategoryId !== null) {
+      loadInitialChallenges(selectedCategoryId);
+    }
+  };
 
   const getSelectedCategoryName = () => {
     if (selectedCategoryId === null || selectedCategoryId === 0) return "전체";
@@ -249,6 +263,12 @@ const ChallengeBrowseClient = () => {
           </main>
           <BottomNav />
         </div>
+      )}
+      {isModalOpen && selectedChallengeId && (
+        <ChallengeApplyModal
+          challengeId={selectedChallengeId}
+          onClose={handleCloseModal}
+        />
       )}
     </div>
   );
