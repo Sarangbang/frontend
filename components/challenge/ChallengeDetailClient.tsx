@@ -12,11 +12,16 @@ import { useMediaQuery } from 'react-responsive';
 import Sidebar from '../common/Sidebar';
 import getChallengeMembers from '@/api/getChallengeMembers';
 import type { Member } from '@/types/Member';
+import { useSearchParams } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('멤버');
-  const [currentDate, setCurrentDate] = useState(new Date()); // 오늘 날짜로 변경
+
+  const searchParams = useSearchParams();
+  const [currentDate, setCurrentDate] = useState(new Date());
+
   const [isVerified, setIsVerified] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
@@ -38,6 +43,18 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
 
   useEffect(() => {
     setIsClient(true);
+    // 쿼리 파라미터로 탭 제어
+    const tab = searchParams.get('tab');
+    if (tab === 'photo' || tab === '사진') {
+      setActiveTab('사진');
+    }
+
+    if (typeof window !== 'undefined' && localStorage.getItem('verificationSuccess')) {
+        toast.success('인증이 등록되었습니다');
+        localStorage.removeItem('verificationSuccess');
+      }
+    
+    if(challengeId) {
     if (challengeId && currentDate) {
       const fetchMembers = async () => {
         const dateStr = currentDate.toISOString().slice(0, 10); // YYYY-MM-DD
@@ -60,7 +77,7 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
       };
       fetchMembers();
     }
-  }, [challengeId, currentDate]); // currentDate도 의존성에 추가
+  }}, [challengeId, currentDate, searchParams]);
 
   const handleCancelVerification = (memberId: number) => {
     setMemberList(currentMembers =>

@@ -1,11 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useMediaQuery } from 'react-responsive';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeftIcon, CloudArrowUpIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import Sidebar from '@/components/common/Sidebar';
-import { submitVerification } from '@/api/verification';
+import { createChallengeVerification } from '@/api/verification';
+import toast from 'react-hot-toast';
 const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
@@ -15,11 +16,10 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // TODO: Fetch challenge details based on challengeId
-  const challengeTitle = '책..읽읍시다'; 
+  const searchParams = useSearchParams();
+  const challengeTitle = searchParams.get('title') || '챌린지 인증';
   useEffect(() => {
     setIsClient(true);
-    // 컴포넌트 언마운트 시 메모리 누수 방지를 위해 object URL 해제
     return () => {
       if (imagePreview) {
         URL.revokeObjectURL(imagePreview);
@@ -50,17 +50,21 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
     }
 
     setIsSubmitting(true);
-    const formData = new FormData();
-    formData.append('image', imageFile);
-    formData.append('description', description);
-    // formData.append('challengeId', challengeId); // 백엔드 API 사양에 따라 추가
+
+    const data = {
+      challengeId: Number(challengeId),
+      imgUrl: 'test', // 추후 이미지 업로드 구현 후 개발
+      content: description,
+    };
 
     try {
-      await submitVerification(formData);
-      alert('인증이 성공적으로 제출되었습니다.');
-      router.push(`/challenge/${challengeId}`); // 성공 시 챌린지 상세 페이지로 이동
+      await createChallengeVerification(data);
+      localStorage.setItem('verificationSuccess', '1');
+      setTimeout(() => {
+        router.push(`/challenge/${challengeId}?tab=photo`);
+      }, 30);
     } catch (error) {
-      alert('인증 제출에 실패했습니다. 다시 시도해주세요.');
+      toast.error('인증을 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }

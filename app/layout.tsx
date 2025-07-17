@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/common/ThemeProvider";
+
 import "./globals.css";
+
 import { Toaster } from 'react-hot-toast';
 
 const gmarket = localFont({

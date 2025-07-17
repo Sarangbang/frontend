@@ -1,19 +1,20 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getTodayVerifications } from '@/api/verification';
+import type { TodayVerificationStatusResponse } from '@/types/Verification';
 import { useMediaQuery } from 'react-responsive';
 import Sidebar from '@/components/common/Sidebar';
 import BottomNav from '@/components/common/BottomNav';
 import VerifiableChallengeCard from './VerifiableChallengeCard';
 import ContentHeader from '../common/ContentHeader';
 import Tabs, { type Tab } from '../common/Tabs';
+
+import { getChallengeStatus } from '@/util/dateUtils';
+
 import CompletedVerificationsClient from './CompletedVerificationsClient';
 
-const mockVerifiableChallenges = [
-  { id: 1, location: '용인시/중동', title: '책..읽읍시다', currentParticipants: 4, maxParticipants: 10, image: '/images/charactors/default_wakeup.png', isVerified: false },
-  { id: 2, location: '용인시/중동', title: '6시 기상 챌린지', currentParticipants: 2, maxParticipants: 5, image: '/images/charactors/default_wakeup.png', isVerified: true },
-  { id: 3, location: '용인시/중동', title: '책..읽읍시다', currentParticipants: 4, maxParticipants: 10, image: '/images/charactors/default_wakeup.png', isVerified: true },
-];
+
 
 const VERIFICATION_TABS: Tab<'챌린지 인증' | '인증완료 내역'>[] = [
   { id: '챌린지 인증', label: '챌린지 인증' },
@@ -25,10 +26,39 @@ const VerificationClient = () => {
     useState<'챌린지 인증' | '인증완료 내역'>('챌린지 인증');
   const [isClient, setIsClient] = useState(false);
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
+  const [verifiableChallenges, setVerifiableChallenges] = useState<TodayVerificationStatusResponse[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setIsClient(true);
+    const fetchChallenges = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getTodayVerifications();
+        setVerifiableChallenges(data);
+      } catch (err) {
+        setError('챌린지 목록을 불러오지 못했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchChallenges();
   }, []);
+
+  // ChallengeSummaryResponse -> VerifiableChallenge 변환
+  const toVerifiableChallenge = (challenge: TodayVerificationStatusResponse) => ({
+    id: challenge.challengeId,
+    location: challenge.location,
+    title: challenge.title,
+    currentParticipants: challenge.currentParticipants,
+    maxParticipants: challenge.participants,
+    image: challenge.image,
+    verifyStatus: challenge.verifyStatus,
+    startDate: challenge.startDate,
+    endDate: challenge.endDate,
+  });
 
   const renderContent = () => {
     if (activeTab === '챌린지 인증') {
@@ -37,10 +67,23 @@ const VerificationClient = () => {
           <div className="relative my-4">
             <input type="text" placeholder="참여중인 챌린지 검색" className="w-full pl-4 pr-4 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-black" />
           </div>
-          <p className="text-gray-600 dark:text-gray-300 mb-2">전체 챌린지 ({mockVerifiableChallenges.length})</p>
-          {mockVerifiableChallenges.map(challenge => (
-            <VerifiableChallengeCard key={challenge.id} challenge={challenge} />
-          ))}
+          {loading ? (
+            <div className="text-center text-gray-500 py-8">로딩 중...</div>
+          ) : error ? (
+            <div className="text-center text-red-500 py-8">{error}</div>
+          ) : (
+            <>
+              {verifiableChallenges.length === 0 ? (
+                <div className="text-center text-gray-400 py-8">참여 중인 챌린지가 없습니다.</div>
+              ) : (
+                verifiableChallenges
+                  .filter(challenge => getChallengeStatus(challenge.startDate, challenge.endDate) === '진행중')
+                  .map(challenge => (
+                    <VerifiableChallengeCard key={challenge.challengeId} challenge={toVerifiableChallenge(challenge)} />
+                  ))
+              )}
+            </>
+          )}
         </div>
       );
     }

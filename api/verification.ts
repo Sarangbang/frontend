@@ -1,4 +1,6 @@
 import apiClient from './apiClient';
+
+import { TodayVerificationStatusResponse, VerificationCreateRequest, VerificationResponse } from '@/types/Verification';
 import toast from 'react-hot-toast';
 
 export const submitVerification = async (formData: FormData) => {
@@ -17,6 +19,16 @@ export const submitVerification = async (formData: FormData) => {
   // }
 };
 
+export const getTodayVerifications = async () : Promise<TodayVerificationStatusResponse[]> => {
+  const response = await apiClient.get<TodayVerificationStatusResponse[]>('/challenge-verifications/status');
+  return response.data;
+};
+
+export const createChallengeVerification = async (data: VerificationCreateRequest) => {  
+  const response = await apiClient.post<VerificationResponse>('/challenge-verifications', data);
+  return response.data;
+};
+
 export const getCompletedVerifications = async () => {
   try {
     const response = await apiClient.get('/challenge-verifications/my');
@@ -26,3 +38,4 @@ export const getCompletedVerifications = async () => {
     throw error;
   }
 }; 
+
