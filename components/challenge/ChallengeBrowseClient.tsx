@@ -274,4 +274,4 @@ const ChallengeBrowseClient = () => {
   );
 };
 
-export default ChallengeBrowseClient; 
+export default ChallengeBrowseClient;
