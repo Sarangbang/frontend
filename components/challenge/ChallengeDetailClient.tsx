@@ -20,8 +20,7 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
   const [activeTab, setActiveTab] = useState('멤버');
 
   const searchParams = useSearchParams();
-  const [currentDate, setCurrentDate] = useState(new Date('2025-06-20'));
-  const [currentDate, setCurrentDate] = useState(new Date()); // 오늘 날짜로 변경
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   const [isVerified, setIsVerified] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -78,7 +77,7 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
       };
       fetchMembers();
     }
-  }, [challengeId, currentDate, searchParams]); // currentDate도 의존성에 추가
+  }}, [challengeId, currentDate, searchParams]);
 
   const handleCancelVerification = (memberId: number) => {
     setMemberList(currentMembers =>
