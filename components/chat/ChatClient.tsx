@@ -89,7 +89,7 @@ export default function ChatClient() {
   const [activeTab, setActiveTab] = useState<'group' | 'dm'>('group');
   const [searchTerm, setSearchTerm] = useState('');
   const [isClient, setIsClient] = useState(false);
-  const [inRoom, setInRoom] = useState(false);
+  const [inRoom, setInRoom] = useState<Chat | null>(null);
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
 
   useEffect(() => {
@@ -101,70 +101,76 @@ export default function ChatClient() {
     chat.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleEnterRoom = (chat: Chat) => {
+    setInRoom(chat);
+  };
+
+  const handleBackToList = () => {
+    setInRoom(null);
+  };
+
   const chatInterface = (
     <div className="flex-1 flex flex-col bg-white dark:bg-black h-screen">
-      <ContentHeader
-        title="Challenge"
-        isDesktop={isDesktop}
-        isClient={isClient}
-      >
-        <button className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
-          <MessageSquarePlus className="w-6 h-6 dark:text-white" />
-        </button>
-      </ContentHeader>
-      <Tabs
-        tabs={CHAT_TABS}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
-      <div className="p-4">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="채팅방을 입력해주세요"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full p-2 pl-10 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-          />
-          <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+      {inRoom ? (
+          <ChatRoom onBack={handleBackToList} username="사용자" roomId={String(inRoom.id)} />
+      ) : (
+        <>
+          <ContentHeader
+            title="Challenge"
+            isDesktop={isDesktop}
+            isClient={isClient}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            <button className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
+              <MessageSquarePlus className="w-6 h-6 dark:text-white" />
+            </button>
+          </ContentHeader>
+          <Tabs
+            tabs={CHAT_TABS}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
+          <div className="p-4">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="채팅방을 입력해주세요"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full p-2 pl-10 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              />
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+          </div>
+          <div className="flex-1 overflow-y-auto relative">
+            <div
+              className="absolute inset-0 bg-contain bg-no-repeat bg-center opacity-30 dark:opacity-10"
+              style={{
+                backgroundImage: "url('/images/chat-background.png')",
+              }}
             />
-          </svg>
-        </div>
-      </div>
-      <div className="flex-1 overflow-y-auto relative">
-        <div
-          className="absolute inset-0 bg-contain bg-no-repeat bg-center opacity-30 dark:opacity-10"
-          style={{
-            backgroundImage: "url('/images/chat-background.png')",
-          }}
-        />
-        <div className="relative z-10">
-          {inRoom ? (
-            <ChatRoom onBack={() => setInRoom(false)} username="사용자" />
-          ) : (
-            filteredChats.length > 0 && (
-              <ChatList chats={filteredChats} onChatClick={() => setInRoom(true)} />
-            )
-          )}
-        </div>
-      </div>
+            <div className="relative z-10">
+              {filteredChats.length > 0 && (
+                  <ChatList chats={filteredChats} onChatClick={handleEnterRoom} />
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
-
-  if (inRoom) {
-    return <ChatRoom onBack={() => setInRoom(false)} username="사용자" />;
-  }
 
   return (
     <div className="bg-white dark:bg-gray-900 min-h-screen">

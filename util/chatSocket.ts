@@ -1,4 +1,5 @@
 import { ChatMessage } from "../types/Chat";
+import { getWebSocketURL } from "../lib/config";
 
 export class ChatSocket {
   private socket: WebSocket;
@@ -6,22 +7,48 @@ export class ChatSocket {
   private sendQueue: ChatMessage[] = [];
   private isOpen = false;
 
-  constructor(onMessage: (msg: ChatMessage) => void) {
-    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : "";
-    const wsUrl = `ws://localhost:8080/ws/chat?roomId=1${token ? `&token=${token}` : ""}`;
+  constructor(
+    roomId: string,
+    onMessage: (msg: ChatMessage) => void,
+    onOpen?: () => void
+  ) {
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("accessToken") : "";
+    const wsUrl = `${getWebSocketURL()}?roomId=${roomId}${
+      token ? `&token=${token}` : ""
+    }`;
     this.socket = new WebSocket(wsUrl);
     this.onMessage = onMessage;
 
     this.socket.onopen = () => {
       this.isOpen = true;
+      console.log("WebSocket connection established.");
       // 큐에 쌓인 메시지 모두 전송
       this.sendQueue.forEach((msg) => this.send(msg));
       this.sendQueue = [];
+      // onOpen 콜백이 있으면 실행
+      if (onOpen) {
+        onOpen();
+      }
     };
 
     this.socket.onmessage = (event) => {
       const data: ChatMessage = JSON.parse(event.data);
       this.onMessage(data);
+    };
+
+    this.socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    this.socket.onclose = (event) => {
+      console.log("WebSocket connection closed:", event);
+      this.isOpen = false;
+      if (event.wasClean) {
+        console.log(`Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+      } else {
+        console.error('Connection died');
+      }
     };
   }
 
