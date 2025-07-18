@@ -31,6 +31,14 @@ const CompletedVerificationsClient = () => {
     return <div>로딩 중...</div>;
   }
 
+  if (verifications.length === 0) {
+    return (
+      <div className="text-center text-gray-400 py-8">
+        인증완료 내역이 없습니다.
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-2 gap-4 p-4">
       {verifications.map((verification, index) => (
