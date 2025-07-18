@@ -8,6 +8,8 @@ export interface Challenge {
   currentParticipants: number;
   participants: number;
   category: string;
+  categoryId?: number;
+  categoryName?: string;
   description: string;
   startDate: string;
   endDate: string;

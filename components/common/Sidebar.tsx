@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
+import { Moon, Sun } from 'lucide-react';
 
 const NavItem = ({ children, text, href }: { children: React.ReactNode, text: string, href: string }) => (
     <Link href={href} className="w-full">
@@ -16,17 +18,34 @@ const NavItem = ({ children, text, href }: { children: React.ReactNode, text: st
 const Sidebar = () => {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     setIsLoggedIn(!!token);
+    setMounted(true);
   }, []);
 
   return(
     <aside className="w-64 bg-white dark:bg-gray-800 h-screen fixed top-0 left-0 shadow-[1px_0_3px_rgba(0,0,0,0.1)] p-4 flex flex-col z-20">
-      <div className="flex items-center p-4 mb-4">
-        <Image src="/images/charactors/gamza.png" alt="logo" width={40} height={40} />
-        <h1 className="text-2xl font-bold ml-2 dark:text-white">일심동네</h1>
+      <div className="flex items-center justify-between p-4 mb-4">
+        <div className="flex items-center">
+          <Image src="/images/charactors/gamza.png" alt="logo" width={40} height={40} />
+          <h1 className="text-2xl font-bold ml-2 dark:text-white">일심동네</h1>
+        </div>
+        {mounted && (
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-6 w-6 text-yellow-500" />
+            ) : (
+              <Moon className="h-6 w-6 text-gray-900" />
+            )}
+          </button>
+        )}
       </div>
       <nav className="flex flex-col gap-2">
         <NavItem href="/" text="홈">
