@@ -10,12 +10,12 @@ import {
 } from "lucide-react";
 
 import { ChatSocket } from "@/util/chatSocket";
-import { ChatMessage } from "@/types/Chat";
+import { ChatMessage, Sender } from "@/types/Chat";
 import Modal from "../common/Modal";
 
 interface ChatRoomProps {
   onBack: () => void;
-  username: string;
+  sender: Sender;
   roomId: string;
 }
 
@@ -34,7 +34,7 @@ function formatDate(date: Date) {
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
 
-export default function ChatRoom({ onBack, username, roomId }: ChatRoomProps) {
+export default function ChatRoom({ onBack, sender, roomId }: ChatRoomProps) {
   const [messages, setMessages] = useState<(ChatMessage & { timestamp: Date })[]>(
     []
   );
@@ -50,8 +50,8 @@ export default function ChatRoom({ onBack, username, roomId }: ChatRoomProps) {
       chatSocketRef.current?.send({
         type: "ENTER",
         roomId: roomId,
-        sender: username,
-        message: `${username}님이 입장했습니다.`,
+        sender: sender,
+        message: `${sender.nickname}님이 입장했습니다.`,
       });
     };
 
@@ -68,12 +68,12 @@ export default function ChatRoom({ onBack, username, roomId }: ChatRoomProps) {
       chatSocketRef.current?.send({
         type: "LEAVE",
         roomId: roomId,
-        sender: username,
-        message: `${username}님이 퇴장했습니다.`,
+        sender: sender,
+        message: `${sender.nickname}님이 퇴장했습니다.`,
       });
       chatSocketRef.current?.close();
     };
-  }, [username, roomId]);
+  }, [sender, roomId]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -88,7 +88,7 @@ export default function ChatRoom({ onBack, username, roomId }: ChatRoomProps) {
       chatSocketRef.current.send({
         type: "TALK",
         roomId: roomId,
-        sender: username,
+        sender: sender,
         message: input,
       });
       setInput("");
@@ -128,14 +128,14 @@ export default function ChatRoom({ onBack, username, roomId }: ChatRoomProps) {
         </button>
         <div className="flex items-center gap-2">
           <Image
-            src={PROFILE_IMG}
+            src={sender.profileImageUrl || "/images/charactors/gamza.png"}
             alt="상대방 프로필 이미지"
             width={36}
             height={36}
             className="rounded-full border"
           />
           <span className="font-bold text-base text-gray-800 dark:text-white">
-            {NICKNAME}
+            {sender.nickname}
           </span>
         </div>
         <button
@@ -217,7 +217,7 @@ export default function ChatRoom({ onBack, username, roomId }: ChatRoomProps) {
               return renderSystemMessage(msg.message, idx);
             }
 
-            const isMine = msg.sender === username;
+            const isMine = msg.sender.userId === sender.userId;
             const time = formatTime(new Date(msg.timestamp));
             return (
               <div
@@ -228,7 +228,7 @@ export default function ChatRoom({ onBack, username, roomId }: ChatRoomProps) {
               >
                 {!isMine && (
                   <Image
-                    src={PROFILE_IMG}
+                    src={msg.sender.profileImageUrl || "/images/charactors/gamza.png"}
                     alt="상대방 프로필 이미지"
                     width={32}
                     height={32}
@@ -242,7 +242,7 @@ export default function ChatRoom({ onBack, username, roomId }: ChatRoomProps) {
                 >
                   {!isMine && (
                     <span className="text-xs text-gray-600 dark:text-gray-400 font-semibold mb-1 ml-1">
-                      {msg.sender}
+                      {msg.sender.nickname}
                     </span>
                   )}
                   <div className="flex items-end gap-2">

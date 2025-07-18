@@ -10,6 +10,7 @@ import ChatList from './ChatList';
 import Tabs, { type Tab } from '../common/Tabs';
 import ContentHeader from '../common/ContentHeader';
 import ChatRoom from './ChatRoom';
+import { Sender } from '@/types/Chat';
 
 const groupChats = [
   {
@@ -92,6 +93,14 @@ export default function ChatClient() {
   const [inRoom, setInRoom] = useState<Chat | null>(null);
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
 
+  // 임시 sender 객체 (실제 로그인 정보로 대체 필요)
+  // 여기만 쓰면 사용자가 누군지 판별 가능
+  const mySender: Sender = {
+    userId: 'myUserId',
+    nickname: '사용자',
+    profileImageUrl: '/images/charactors/gamza.png',
+  };
+
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -112,7 +121,7 @@ export default function ChatClient() {
   const chatInterface = (
     <div className="flex-1 flex flex-col bg-white dark:bg-black h-screen">
       {inRoom ? (
-          <ChatRoom onBack={handleBackToList} username="사용자" roomId={String(inRoom.id)} />
+          <ChatRoom onBack={handleBackToList} sender={mySender} roomId={String(inRoom.id)} />
       ) : (
         <>
           <ContentHeader
