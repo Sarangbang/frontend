@@ -3,14 +3,15 @@ import { Chat } from './ChatClient';
 
 type ChatListItemProps = {
   chat: Chat;
+  onClick: () => void;
 };
 
-export default function ChatListItem({ chat }: ChatListItemProps) {
+export default function ChatListItem({ chat, onClick }: ChatListItemProps) {
   const unreadCountDisplay =
     chat.unreadCount > 100 ? '100+' : chat.unreadCount;
 
   return (
-    <li className="p-4 flex items-center space-x-4 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+    <li className="p-4 flex items-center space-x-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer" onClick={onClick}>
       <Image
         src={chat.avatar}
         alt={chat.name}

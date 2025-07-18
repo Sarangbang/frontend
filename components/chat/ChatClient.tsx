@@ -9,6 +9,7 @@ import Sidebar from '@/components/common/Sidebar';
 import ChatList from './ChatList';
 import Tabs, { type Tab } from '../common/Tabs';
 import ContentHeader from '../common/ContentHeader';
+import ChatRoom from './ChatRoom';
 
 const groupChats = [
   {
@@ -88,6 +89,7 @@ export default function ChatClient() {
   const [activeTab, setActiveTab] = useState<'group' | 'dm'>('group');
   const [searchTerm, setSearchTerm] = useState('');
   const [isClient, setIsClient] = useState(false);
+  const [inRoom, setInRoom] = useState(false);
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
 
   useEffect(() => {
@@ -148,21 +150,21 @@ export default function ChatClient() {
           }}
         />
         <div className="relative z-10">
-          {filteredChats.length > 0 ? (
-            <ChatList chats={filteredChats} />
+          {inRoom ? (
+            <ChatRoom onBack={() => setInRoom(false)} username="사용자" />
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
-              <p>
-                {activeTab === 'group'
-                  ? '참여중인 그룹 채팅방이 없습니다.'
-                  : '1:1 채팅 내역이 없습니다.'}
-              </p>
-            </div>
+            filteredChats.length > 0 && (
+              <ChatList chats={filteredChats} onChatClick={() => setInRoom(true)} />
+            )
           )}
         </div>
       </div>
     </div>
   );
+
+  if (inRoom) {
+    return <ChatRoom onBack={() => setInRoom(false)} username="사용자" />;
+  }
 
   return (
     <div className="bg-white dark:bg-gray-900 min-h-screen">
