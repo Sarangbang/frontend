@@ -64,9 +64,9 @@ const VerificationClient = () => {
     if (activeTab === '챌린지 인증') {
       return (
         <div>
-          <div className="relative my-4">
+          {/* <div className="relative my-4">
             <input type="text" placeholder="참여중인 챌린지 검색" className="w-full pl-4 pr-4 py-2.5 border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-black" />
-          </div>
+          </div> */}
           {loading ? (
             <div className="text-center text-gray-500 py-8">로딩 중...</div>
           ) : error ? (
