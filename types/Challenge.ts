@@ -26,6 +26,7 @@ export interface ChallengeCreateRequest {
   startDate: string;
   endDate: string;
   image: string | null;
+  imageFile: File | null;
   status: boolean;
 }
 
@@ -53,7 +54,8 @@ export interface ChallengeFormData {
   regionAddress: string;
   startDate: Date;
   endDate: Date;
-  image: File | null | string;
+  image: string | null;
+  imageFile: File | null;
   duration: string;
   regionId: number | null;
 }

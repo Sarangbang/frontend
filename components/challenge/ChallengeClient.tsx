@@ -62,27 +62,23 @@ const ChallengeClient = () => {
         : calculateEndDateObject(formData.startDate, formData.duration);
 
     const endDate = formatDateToYYYYMMDD(calculatedEndDate);
-    
-    const imageField =
-      formData.image instanceof File
-        ? formData.image.name // 추후 실제 파일 업로드 후 URL로 바꾸기
-        : formData.image;     // 아마 default URL 이거나 null
-    
+
     const requestData: ChallengeCreateRequest = {
       regionId: formData.regionId,
       categoryId: formData.categoryId,
       title: formData.title,
       description: formData.description,
-      participants: formData.participants,
+      participants: Number(formData.participants),
       method: formData.verificationMethod,
       startDate: formatDateToYYYYMMDD(formData.startDate),
       endDate: endDate,
-      image: imageField,
+      image: formData.image,
+      imageFile: formData.imageFile,
       status: true,
     };
 
     try {
-      const result = await createChallenge(requestData);
+      await createChallenge(requestData);
       setIsCreatingChallenge(false);
       router.push("/challenge");
       window.location.reload();
