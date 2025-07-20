@@ -41,6 +41,7 @@ const CreateChallengeForm = ({
       endDate: new Date(),
       image: null,
       duration: '',
+      imageFile: null,
     }
   );
 
@@ -171,7 +172,7 @@ const CreateChallengeForm = ({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setFormData((prev) => ({ ...prev, image: file }));
+      setFormData((prev) => ({ ...prev, image: null, imageFile: file }));
       if (imagePreview) {
         URL.revokeObjectURL(imagePreview);
       }
@@ -555,9 +556,8 @@ const CreateChallengeForm = ({
               
               const payload = {
                 ...formData,
-                image: formData.image instanceof File
-                  ? formData.image
-                  : formData.image || defaultImageUrl,
+                image: formData.imageFile ? null : defaultImageUrl,
+                imageFile: formData.imageFile,
                 participants: formData.participants === '' ? 0 : formData.participants,
               };
 

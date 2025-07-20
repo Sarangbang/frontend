@@ -29,9 +29,27 @@ export const fetchChallengesByCategory = async (categoryId: number, page: number
  * @param data Challenge 생성 요청 데이터
  * @returns 생성된 챌린지 정보
  */
-export const createChallenge = async (data: ChallengeCreateRequest) => {  
-    const response = await apiClient.post('/challenges', data);
-    return response.data;
+export const createChallenge = async (data: ChallengeCreateRequest) => {
+  const formData = new FormData();
+  const { imageFile, ...challengeData } = data;
+
+  formData.append(
+    "challengeDTO",
+    new Blob([JSON.stringify(challengeData)], {
+      type: "application/json",
+    })
+  );
+
+  if (imageFile instanceof File) {
+    formData.append("imageFile", imageFile);
+  }
+
+  const response = await apiClient.post("/challenges", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
 };
 
 export const getChallengeSummary = async (): Promise<ChallengeSummaryResponse[]> => {
