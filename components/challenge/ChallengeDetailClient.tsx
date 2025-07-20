@@ -78,7 +78,10 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
     if (challengeId && currentDate) {
       const fetchVerifications = async () => {
         try {
-          const dateStr = currentDate.toISOString().slice(0, 10);
+          const year = currentDate.getFullYear();
+          const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+          const day = String(currentDate.getDate()).padStart(2, '0');
+          const dateStr = `${year}-${month}-${day}`;
           const data = await getVerificationsByDate(challengeId, dateStr);
           setVerificationList(data);
         } catch (error) {
@@ -96,10 +99,10 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
     //인증 취소 로직
   };
 
-  const formattedDate = currentDate
-    .toISOString()
-    .slice(0, 10)
-    .replace(/-/g, '.');
+  const year = currentDate.getFullYear();
+  const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+  const day = String(currentDate.getDate()).padStart(2, '0');
+  const formattedDate = `${year}.${month}.${day}`;
 
   const handleVerificationClick = () => {
     if (!isVerified) {
@@ -361,7 +364,7 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 {selectedMember.verifiedAt
-                  ? new Date(selectedMember.verifiedAt).toLocaleString()
+                  ? new Date(selectedMember.verifiedAt).toLocaleString('ko-KR')
                   : ''}
               </p>
             </div>
