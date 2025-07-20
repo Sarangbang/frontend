@@ -115,3 +115,14 @@ export interface PageResponse<T> {
   numberOfElements: number;
   empty: boolean;
 }
+
+export interface ChallengeVerificationByDate {
+  verificationId: number | null;
+  userId: string;
+  imgUrl: string | null;
+  status: 'APPROVED' | 'REJECTED' | 'PENDING';
+  nickname: string;
+  role: 'owner' | 'member';
+  content: string | null;
+  verifiedAt: string | null;
+}
