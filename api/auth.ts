@@ -12,3 +12,9 @@ export const refreshToken = async (): Promise<RefreshTokenResponse> => {
   const response = await apiClient.post<RefreshTokenResponse>(`/users/refresh`);
   return response.data;
 };
+
+// 로그아웃 API 요청 (refresh token 삭제 및 쿠키 만료)
+export const logout = async (): Promise<{ message: string }> => {
+  const response = await apiClient.post<{ message: string }>(`/users/logout`);
+  return response.data;
+};
