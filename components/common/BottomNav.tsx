@@ -17,7 +17,7 @@ const BottomNav = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
-        const token = localStorage.getItem("accessToken");
+        const token = localStorage.getItem("am");
         setIsLoggedIn(!!token);
     }, []);
 

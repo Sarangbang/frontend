@@ -22,7 +22,7 @@ const Sidebar = () => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
+    const token = localStorage.getItem("am");
     setIsLoggedIn(!!token);
     setMounted(true);
   }, []);

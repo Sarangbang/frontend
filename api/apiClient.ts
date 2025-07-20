@@ -34,7 +34,7 @@ const apiClient = axios.create({
 // 요청 인터셉터: access token을 헤더에 추가
 apiClient.interceptors.request.use((config) => {
     if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('accessToken');
+        const token = localStorage.getItem('am');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -61,7 +61,7 @@ apiClient.interceptors.response.use(
                 processQueue(error, null);
                 
                 // 로컬 스토리지 정리 및 로그인 페이지로 이동
-                localStorage.removeItem('accessToken');
+                localStorage.removeItem('am');
                 if (typeof window !== 'undefined') {
                     alert('세션이 만료되었습니다. 다시 로그인해주세요.');
                     if (window.location.pathname !== '/login') {
@@ -92,7 +92,7 @@ apiClient.interceptors.response.use(
                 const newAccessToken = refreshResponse.data.accessToken;
                 
                 // 새로운 토큰을 로컬 스토리지에 저장
-                localStorage.setItem('accessToken', newAccessToken);
+                localStorage.setItem('am', newAccessToken);
                 
                 // 현재 요청의 헤더에 새로운 토큰 적용
                 if (originalRequest.headers) {
@@ -113,7 +113,7 @@ apiClient.interceptors.response.use(
                 isRefreshing = false;
                 
                 // 로컬 스토리지 정리 및 로그인 페이지로 이동
-                localStorage.removeItem('accessToken');
+                localStorage.removeItem('am');
                 if (typeof window !== 'undefined') {
                     alert('세션이 만료되었습니다. 다시 로그인해주세요.');
                     if (window.location.pathname !== '/login') {

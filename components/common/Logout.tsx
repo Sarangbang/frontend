@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { logout as logoutAPI } from '@/api/auth';
+import { useUserStore } from '@/lib/store/userStore';
 
 const Logout = ({ onLogout }: { onLogout: () => void }) => {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false); // 로딩 상태 관리
+    const { clearUser } = useUserStore(); // Zustand 스토어에서 clearUser 함수 가져오기
 
     const handleLogout = async () => {
         setIsLoading(true);
@@ -14,7 +16,10 @@ const Logout = ({ onLogout }: { onLogout: () => void }) => {
             await logoutAPI();
             
             // 로컬 스토리지에서 access token 삭제
-            localStorage.removeItem('accessToken');
+            localStorage.removeItem('am');
+            
+            // Zustand 스토어에서 사용자 정보 삭제
+            clearUser();
             
             // 성공 메시지 표시
             alert('성공적으로 로그아웃되었습니다.');
@@ -27,7 +32,10 @@ const Logout = ({ onLogout }: { onLogout: () => void }) => {
             console.error('로그아웃 중 오류 발생:', error);
             
             // 에러가 발생해도 보안상 로컬 토큰은 삭제
-            localStorage.removeItem('accessToken');
+            localStorage.removeItem('am');
+            
+            // Zustand 스토어에서 사용자 정보 삭제
+            clearUser();
             
             // 사용자에게 알림 (에러가 있어도 로그아웃 처리)
             alert('로그아웃되었습니다.');

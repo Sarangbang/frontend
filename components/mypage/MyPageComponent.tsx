@@ -9,7 +9,7 @@ export default function MyPageComponent() {
 
     useEffect(() => {
         setIsClient(true);
-        const token = localStorage.getItem("accessToken");
+        const token = localStorage.getItem("am");
         setIsLoggedIn(!!token);
       }, []);
 
