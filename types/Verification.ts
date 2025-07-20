@@ -12,7 +12,7 @@ export interface TodayVerificationStatusResponse {
 
 export interface VerificationCreateRequest {
 	challengeId: number;
-	imgUrl: string;
+	imageFile: File;
 	content: string;
 };
 
