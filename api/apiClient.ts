@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getServerURL } from '@/lib/config'; 
+import { getServerURL } from '@/lib/config';
 
 const apiClient = axios.create({
     baseURL: getServerURL(),
