@@ -34,8 +34,8 @@ const LoginForm = () => {
       const loginData: LoginRequest = { email, password };
       const response = await login(loginData);
 
-      if(response && response.token) {
-        localStorage.setItem('accessToken', response.token);
+      if(response && response.accessToken) {
+        localStorage.setItem('accessToken', response.accessToken);
       }
       setIsLoading(false);
       router.push('/');
