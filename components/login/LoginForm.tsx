@@ -7,6 +7,7 @@ import { login } from '@/api/auth';
 import { useRouter } from 'next/navigation';
 import { LoginRequest } from '@/types/Login';
 import toast from 'react-hot-toast';
+import { getServerURL } from '@/lib/config';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -146,6 +147,10 @@ const LoginForm = () => {
                 type="button"
                 title="카카오 로그인"
                 className="w-12 h-12 bg-[#FEE500] rounded-full flex items-center justify-center cursor-pointer"
+                onClick={() => {
+                  const kakaoLoginUrl = `${getServerURL()}/oauth2/authorization/kakao`;
+                  window.location.href = kakaoLoginUrl;
+                }}
               >
                 <svg
                   className="w-6 h-6"
@@ -163,6 +168,10 @@ const LoginForm = () => {
                 type="button"
                 title="네이버 로그인"
                 className="w-12 h-12 bg-[#03C75A] rounded-full flex items-center justify-center cursor-pointer"
+                onClick={() => {
+                  const naverLoginUrl = `${getServerURL()}/oauth2/authorization/naver`;
+                  window.location.href = naverLoginUrl;
+                }}
               >
                 <span className="text-2xl font-bold text-white">N</span>
               </button>
@@ -171,6 +180,10 @@ const LoginForm = () => {
                 type="button"
                 title="구글 로그인"
                 className="w-12 h-12 bg-white border border-gray-200 rounded-full flex items-center justify-center cursor-pointer"
+                onClick={() => {
+                  const googleLoginUrl = `${getServerURL()}/oauth2/authorization/google`;
+                  window.location.href = googleLoginUrl;
+                }}
               >
                 <svg
                   className="w-6 h-6"
