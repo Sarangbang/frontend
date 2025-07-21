@@ -215,6 +215,7 @@ const RegionSelectForm = ({
     handler: () => void,
   ) => (
     <button
+      type="button"
       key={item.regionId}
       onClick={handler}
       className={`border rounded-md py-3 font-semibold text-base transition-colors

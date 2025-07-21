@@ -62,27 +62,23 @@ const ChallengeClient = () => {
         : calculateEndDateObject(formData.startDate, formData.duration);
 
     const endDate = formatDateToYYYYMMDD(calculatedEndDate);
-    
-    const imageField =
-      formData.image instanceof File
-        ? formData.image.name // 추후 실제 파일 업로드 후 URL로 바꾸기
-        : formData.image;     // 아마 default URL 이거나 null
-    
+
     const requestData: ChallengeCreateRequest = {
       regionId: formData.regionId,
       categoryId: formData.categoryId,
       title: formData.title,
       description: formData.description,
-      participants: formData.participants,
+      participants: Number(formData.participants),
       method: formData.verificationMethod,
       startDate: formatDateToYYYYMMDD(formData.startDate),
       endDate: endDate,
-      image: imageField,
+      image: formData.image,
+      imageFile: formData.imageFile,
       status: true,
     };
 
     try {
-      const result = await createChallenge(requestData);
+      await createChallenge(requestData);
       setIsCreatingChallenge(false);
       router.push("/challenge");
       window.location.reload();
@@ -125,15 +121,15 @@ const ChallengeClient = () => {
         setActiveTab={setActiveTab}
       />
 
-      <div className="p-4">
-        <div className="relative mb-4">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-          <input
-            type="text"
-            placeholder="챌린지명을 입력해주세요"
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-1 focus:ring-black dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:ring-white"
-          />
-        </div>
+        <div className="p-4">
+          {/* <div className="relative mb-4">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
+            <input
+              type="text"
+              placeholder="챌린지명을 입력해주세요"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-1 focus:ring-black dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:ring-white"
+            />
+          </div> */}
 
         <div className="flex justify-between items-center mb-2">
           <p className="text-gray-600 dark:text-gray-400">

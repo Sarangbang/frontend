@@ -7,6 +7,8 @@ import { login } from '@/api/auth';
 import { useRouter } from 'next/navigation';
 import { LoginRequest } from '@/types/Login';
 import toast from 'react-hot-toast';
+import { getServerURL } from '@/lib/config';
+import { useUserStore } from '@/lib/store/userStore';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -14,6 +16,7 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const { setUser } = useUserStore(); // Zustand 스토어에서 setUser 함수 가져오기
 
   useEffect(() => {
     if (typeof window !== 'undefined' && localStorage.getItem('signupSuccess')) {
@@ -33,8 +36,16 @@ const LoginForm = () => {
       const loginData: LoginRequest = { email, password };
       const response = await login(loginData);
 
-      if(response && response.token) {
-        localStorage.setItem('accessToken', response.token);
+      if(response && response.accessToken) {
+        // access token을 localStorage에 저장 (키: 'am')
+        localStorage.setItem('am', response.accessToken);
+        
+        // 사용자 정보를 Zustand 스토어에 저장
+        setUser({
+          uuid: response.uuid,
+          nickname: response.nickname,
+          profileImageUrl: response.profileImageUrl
+        });
       }
       setIsLoading(false);
       router.push('/');
@@ -146,6 +157,10 @@ const LoginForm = () => {
                 type="button"
                 title="카카오 로그인"
                 className="w-12 h-12 bg-[#FEE500] rounded-full flex items-center justify-center cursor-pointer"
+                onClick={() => {
+                  const kakaoLoginUrl = `${getServerURL()}/oauth2/authorization/kakao`;
+                  window.location.href = kakaoLoginUrl;
+                }}
               >
                 <svg
                   className="w-6 h-6"
@@ -163,6 +178,10 @@ const LoginForm = () => {
                 type="button"
                 title="네이버 로그인"
                 className="w-12 h-12 bg-[#03C75A] rounded-full flex items-center justify-center cursor-pointer"
+                onClick={() => {
+                  const naverLoginUrl = `${getServerURL()}/oauth2/authorization/naver`;
+                  window.location.href = naverLoginUrl;
+                }}
               >
                 <span className="text-2xl font-bold text-white">N</span>
               </button>
@@ -171,6 +190,10 @@ const LoginForm = () => {
                 type="button"
                 title="구글 로그인"
                 className="w-12 h-12 bg-white border border-gray-200 rounded-full flex items-center justify-center cursor-pointer"
+                onClick={() => {
+                  const googleLoginUrl = `${getServerURL()}/oauth2/authorization/google`;
+                  window.location.href = googleLoginUrl;
+                }}
               >
                 <svg
                   className="w-6 h-6"

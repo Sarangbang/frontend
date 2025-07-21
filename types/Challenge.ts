@@ -8,6 +8,8 @@ export interface Challenge {
   currentParticipants: number;
   participants: number;
   category: string;
+  categoryId?: number;
+  categoryName?: string;
   description: string;
   startDate: string;
   endDate: string;
@@ -24,6 +26,7 @@ export interface ChallengeCreateRequest {
   startDate: string;
   endDate: string;
   image: string | null;
+  imageFile: File | null;
   status: boolean;
 }
 
@@ -51,7 +54,8 @@ export interface ChallengeFormData {
   regionAddress: string;
   startDate: Date;
   endDate: Date;
-  image: File | null | string;
+  image: string | null;
+  imageFile: File | null;
   duration: string;
   regionId: number | null;
 }
@@ -110,4 +114,15 @@ export interface PageResponse<T> {
   first: boolean;
   numberOfElements: number;
   empty: boolean;
+}
+
+export interface ChallengeVerificationByDate {
+  verificationId: number | null;
+  userId: string;
+  imgUrl: string | null;
+  status: 'APPROVED' | 'REJECTED' | 'PENDING';
+  nickname: string;
+  role: 'owner' | 'member';
+  content: string | null;
+  verifiedAt: string | null;
 }

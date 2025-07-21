@@ -27,6 +27,7 @@ const gmarket = localFont({
 export const metadata: Metadata = {
   title: "일심동네",
   description: "우리 동네 사람들과 함께하는 챌린지",
+  manifest: "/images/favicon_io/site.webmanifest",
   icons: {
     icon: "/images/favicon_io/favicon-32x32.png",
     shortcut: "/images/favicon_io/favicon.ico",
@@ -62,7 +63,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="manifest" href="/images/favicon_io/site.webmanifest" />
       </head>
       <body className={`${gmarket.variable} font-sans bg-white dark:bg-gray-900`}>
         <ThemeProvider
