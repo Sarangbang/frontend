@@ -10,7 +10,8 @@ import ChatList from './ChatList';
 import Tabs, { type Tab } from '../common/Tabs';
 import ContentHeader from '../common/ContentHeader';
 import ChatRoom from './ChatRoom';
-import { Sender } from '@/types/Chat';
+import { Sender, ChatRoomResponse } from '@/types/Chat';
+import { fetchChatRooms } from '@/api/chat';
 
 const groupChats = [
   {
@@ -83,34 +84,41 @@ const CHAT_TABS: Tab<'group' | 'dm'>[] = [
   { id: 'dm', label: '1:1 채팅' },
 ];
 
-export type Chat = (typeof groupChats)[number] | (typeof oneOnOneChats)[number];
-
 export default function ChatClient() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'group' | 'dm'>('group');
   const [searchTerm, setSearchTerm] = useState('');
   const [isClient, setIsClient] = useState(false);
-  const [inRoom, setInRoom] = useState<Chat | null>(null);
+  const [inRoom, setInRoom] = useState<ChatRoomResponse | null>(null);
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
 
   // 임시 sender 객체 (실제 로그인 정보로 대체 필요)
-  // 여기만 쓰면 사용자가 누군지 판별 가능
   const mySender: Sender = {
     userId: 'myUserId',
     nickname: '사용자',
     profileImageUrl: '/images/charactors/gamza.png',
   };
+  const [chatRooms, setChatRooms] = useState<ChatRoomResponse[]>([]);
 
   useEffect(() => {
+    async function loadRooms() {
+      try {
+        const res: ChatRoomResponse[] = await fetchChatRooms();
+        setChatRooms(res);
+      } catch (e) {
+        setChatRooms([]);
+      }
+    }
+    loadRooms();
     setIsClient(true);
   }, []);
 
-  const chats = activeTab === 'group' ? groupChats : oneOnOneChats;
+  const chats = activeTab === 'group' ? chatRooms : [];
   const filteredChats = chats.filter((chat) =>
-    chat.name.toLowerCase().includes(searchTerm.toLowerCase())
+    chat.roomName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleEnterRoom = (chat: Chat) => {
+  const handleEnterRoom = (chat: ChatRoomResponse) => {
     setInRoom(chat);
   };
 
@@ -121,7 +129,7 @@ export default function ChatClient() {
   const chatInterface = (
     <div className="flex-1 flex flex-col bg-white dark:bg-black h-screen">
       {inRoom ? (
-          <ChatRoom onBack={handleBackToList} sender={mySender} roomId={String(inRoom.id)} />
+        <ChatRoom onBack={handleBackToList} sender={mySender} roomId={inRoom.roomName} />
       ) : (
         <>
           <ContentHeader

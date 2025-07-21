@@ -12,3 +12,12 @@ export interface ChatMessage {
   sender: Sender;
   message: string;
 } 
+
+export interface ChatRoomResponse {
+  roomId: string;
+  roomName: string;
+  creatorId: string;
+  participants: string[];
+  createdAt: string;
+  challengeImageUrl?: string;
+}
