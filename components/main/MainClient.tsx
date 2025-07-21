@@ -7,25 +7,14 @@ import CategorySection from './CategorySection';
 import PopularChallengeSection from './PopularChallengeSection';
 import BottomNav from '../common/BottomNav';
 import Sidebar from '../common/Sidebar';
+import { useMediaQuery } from 'react-responsive';
 
 export default function MainClient() {
   const [isClient, setIsClient] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
 
   useEffect(() => {
     setIsClient(true);
-    const mediaQuery = window.matchMedia('(min-width: 1024px)');
-    
-    const handleResize = (event: MediaQueryListEvent) => {
-      setIsDesktop(event.matches);
-    };
-
-    setIsDesktop(mediaQuery.matches);
-    mediaQuery.addEventListener('change', handleResize);
-    
-    return () => {
-      mediaQuery.removeEventListener('change', handleResize);
-    };
   }, []);
 
   if (!isClient) {
@@ -42,7 +31,9 @@ export default function MainClient() {
         <div className="flex">
           <Sidebar />
           <div className="flex-1 ml-64">
-            <main className="max-w-4xl mx-auto px-4 py-8">
+          <main className="w-2/4 mx-auto pt-8">
+          {/* <div className="flex-1 ml-64">
+            <main className="max-w-4xl mx-auto px-4 py-8"> */}
               <Banner />
               <CategorySection />
               <PopularChallengeSection />

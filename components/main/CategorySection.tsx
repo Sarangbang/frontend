@@ -1,13 +1,17 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
+import 'swiper/css/free-mode';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
 
 import { fetchCategories } from '@/api/category';
 import type { Category, CategoryDto } from '@/types/Category';
+import { FreeMode, Pagination } from 'swiper/modules';
 
 const bgColors = [
   'bg-yellow-100 dark:bg-yellow-900',
@@ -92,8 +96,11 @@ const CategorySection = () => {
       router.push(`/challenges/all?categoryId=${categoryId}`);
     }
   };
+  const swiperRef = useRef<any>(null);
+
 
   return (
+    <>
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold flex items-center dark:text-white">
@@ -114,7 +121,7 @@ const CategorySection = () => {
       {showAll ? (
         // 전체보기 모드: 4개씩 줄바꿈하여 그리드 형태로 표시
         // grid-cols-4로 한 줄에 4개씩, gap-4로 간격을 줍니다.
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-[repeat(auto-fit,_minmax(120px,_1fr))]">
           {categories.map((category) => (
             <CategoryCircle
               key={category.categoryId}
@@ -127,29 +134,38 @@ const CategorySection = () => {
           ))}
         </div>
       ) : (
-        // 기본 모드: 스와이프 기능을 제공하는 Swiper 컴포넌트
+        // 기본 모드: 스와이프 형태로 표시
         <Swiper
-          spaceBetween={10} // 각 카테고리 아이콘(슬라이드) 사이의 간격을 10px로 설정합니다.
-          slidesPerView="auto" // 한 화면에 보여줄 슬라이드 개수를 자동으로 조정합니다.
-          className="w-full"
-        >
-          {/* categories 상태에 저장된 배열을 순회하며 각 카테고리에 대한 슬라이드를 만듭니다. */}
+        modules={[FreeMode]}
+        onSwiper={(swiper) => (swiperRef.current = swiper)}
+        onResize={() => swiperRef.current?.update()}
+        observer={true}
+        observeParents={true}
+        slidesPerView="auto"
+        freeMode
+        spaceBetween={16}
+      >
           {categories.map((category) => (
-            // 각 슬라이드는 고유한 key 값을 가져야 합니다. 여기서는 categoryId를 사용합니다.
-            <SwiperSlide key={category.categoryId} style={{ width: 'auto' }}>
-              {/* 재사용 컴포넌트인 CategoryCircle에 필요한 정보(이미지, 이름, 배경색)를 전달합니다. */}
-              <CategoryCircle
-                image={category.categoryImageUrl}
-                label={category.categoryName}
-                bgColor={category.bgColor}
-                categoryId={category.categoryId}
-                onClick={handleCategoryClick}
-              />
+            <SwiperSlide key={category.categoryId} style={{ width: 'clamp(4rem,12vw,6rem)' }}>
+
+              {/* <div className="w-24"> */}
+                <CategoryCircle
+                  image={category.categoryImageUrl}
+                  label={category.categoryName}
+                  bgColor={category.bgColor}
+                  categoryId={category.categoryId}
+                  onClick={handleCategoryClick}
+                />
+              {/* </div> */}
             </SwiperSlide>
           ))}
         </Swiper>
       )}
+
     </div>
+    {/* 이곳에 스와이프를 적용해줘  categories*/}
+
+    </>
   );
 };
 
