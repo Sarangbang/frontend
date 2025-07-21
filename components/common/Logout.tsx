@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { logout as logoutAPI } from '@/api/auth';
 import { useUserStore } from '@/lib/store/userStore';
+import { toast } from 'react-hot-toast';
 
 const Logout = ({ onLogout }: { onLogout: () => void }) => {
     const router = useRouter();
@@ -13,38 +14,24 @@ const Logout = ({ onLogout }: { onLogout: () => void }) => {
         
         try {
             // 백엔드 로그아웃 API 호출 (refresh token 삭제 및 쿠키 만료)
-            await logoutAPI();
-            
-            // 로컬 스토리지에서 access token 삭제
-            localStorage.removeItem('am');
-            
-            // Zustand 스토어에서 사용자 정보 삭제
-            clearUser();
-            
-            // 성공 메시지 표시
-            alert('성공적으로 로그아웃되었습니다.');
-            
-            // 상태 업데이트 및 홈페이지로 이동
-            onLogout();
-            router.push('/');
-            
-        } catch (error) {
-            console.error('로그아웃 중 오류 발생:', error);
-            
-            // 에러가 발생해도 보안상 로컬 토큰은 삭제
-            localStorage.removeItem('am');
-            
-            // Zustand 스토어에서 사용자 정보 삭제
-            clearUser();
-            
-            // 사용자에게 알림 (에러가 있어도 로그아웃 처리)
-            alert('로그아웃되었습니다.');
-            
-            // 상태 업데이트 및 홈페이지로 이동
-            onLogout();
-            router.push('/');
+            await logoutAPI(); 
+
+            toast.success('성공적으로 로그아웃되었습니다.');
+
+        } catch (error) { 
+            toast.success('로그아웃되었습니다.');
             
         } finally {
+            // 로컬 스토리지에서 access token 삭제
+            localStorage.removeItem('am');
+                        
+            // Zustand 스토어에서 사용자 정보 삭제
+            clearUser();
+
+            // 상태 업데이트 및 홈페이지로 이동
+            onLogout();
+            router.push('/');
+
             setIsLoading(false);
         }
     };

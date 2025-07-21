@@ -43,6 +43,7 @@ const LoginForm = () => {
         // 사용자 정보를 Zustand 스토어에 저장
         setUser({
           uuid: response.uuid,
+          nickname: response.nickname,
           profileImageUrl: response.profileImageUrl
         });
       }
