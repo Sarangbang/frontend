@@ -53,7 +53,7 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
 
     const data = {
       challengeId: Number(challengeId),
-      imgUrl: 'test', // 추후 이미지 업로드 구현 후 개발
+      imageFile: imageFile,
       content: description,
     };
 
