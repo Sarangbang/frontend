@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { LoginRequest } from '@/types/Login';
 import toast from 'react-hot-toast';
 import { getServerURL } from '@/lib/config';
+import { useUserStore } from '@/lib/store/userStore';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -15,6 +16,7 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const { setUser } = useUserStore(); // Zustand 스토어에서 setUser 함수 가져오기
 
   useEffect(() => {
     if (typeof window !== 'undefined' && localStorage.getItem('signupSuccess')) {
@@ -34,8 +36,16 @@ const LoginForm = () => {
       const loginData: LoginRequest = { email, password };
       const response = await login(loginData);
 
-      if(response && response.token) {
-        localStorage.setItem('accessToken', response.token);
+      if(response && response.accessToken) {
+        // access token을 localStorage에 저장 (키: 'am')
+        localStorage.setItem('am', response.accessToken);
+        
+        // 사용자 정보를 Zustand 스토어에 저장
+        setUser({
+          uuid: response.uuid,
+          nickname: response.nickname,
+          profileImageUrl: response.profileImageUrl
+        });
       }
       setIsLoading(false);
       router.push('/');

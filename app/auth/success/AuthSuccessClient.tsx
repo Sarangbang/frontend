@@ -12,7 +12,7 @@ const AuthSuccessClient = () => {
         const profileComplete = searchParams.get('profileComplete');
 
         if (accessToken) {
-            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('am', accessToken);
         }
 
         if (profileComplete === 'true') {
