@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { Moon, Sun } from 'lucide-react';
+import { useUserStore } from '@/lib/store/userStore';
 
 const NavItem = ({ children, text, href }: { children: React.ReactNode, text: string, href: string }) => (
     <Link href={href} className="w-full">
@@ -16,14 +17,11 @@ const NavItem = ({ children, text, href }: { children: React.ReactNode, text: st
 )
 
 const Sidebar = () => {
-
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoggedIn } = useUserStore(); // 전역 로그인 상태 사용
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("am");
-    setIsLoggedIn(!!token);
     setMounted(true);
   }, []);
 

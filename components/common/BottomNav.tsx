@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useUserStore } from '@/lib/store/userStore';
 
 const NavItem = ({ children, href }: { children: React.ReactNode, href: string }) => (
     <Link href={href}>
@@ -12,14 +13,7 @@ const NavItem = ({ children, href }: { children: React.ReactNode, href: string }
 )
 
 const BottomNav = () => {
-
-
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-    useEffect(() => {
-        const token = localStorage.getItem("am");
-        setIsLoggedIn(!!token);
-    }, []);
+    const { isLoggedIn } = useUserStore(); // 전역 로그인 상태 사용
 
     return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 shadow-[0_-1px_3px_rgba(0,0,0,0.1)] flex justify-around p-2 h-16 items-center">
