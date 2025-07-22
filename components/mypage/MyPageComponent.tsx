@@ -148,8 +148,10 @@ export default function MyPageComponent() {
                 <div className="flex justify-between items-center border-b pb-2 border-gray-200 dark:border-gray-700">
                   <p className="dark:text-white">{userProfile?.nickname || '로딩중...'}</p>
                   <ArrowTopRightOnSquareIcon
-                    className="w-5 h-5 text-gray-400 cursor-pointer"
-                    onClick={() => router.push('/mypage/nickname')}
+                    className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300"
+                    onClick={() => {
+                      router.push('/mypage/nickname');
+                    }}
                   />
                 </div>
                 {successMessage && (

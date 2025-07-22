@@ -6,12 +6,15 @@ import { XMarkIcon, CameraIcon } from '@heroicons/react/24/outline';
 import { updateNickname, getUserProfile } from '@/api/mypage';
 import { useUserStore } from '@/lib/store/userStore';
 import Image from 'next/image';
+import { useMediaQuery } from 'react-responsive';
+import Sidebar from '../common/Sidebar';
 
 export default function NicknameChangeComponent() {
   const router = useRouter();
   const { user } = useUserStore();
   const [newNickname, setNewNickname] = useState(user?.nickname || '');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -51,60 +54,93 @@ export default function NicknameChangeComponent() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
-      <div className="max-w-md mx-auto">
-        {/* 헤더 */}
-        <header className="flex items-center justify-between px-4 py-3">
-          <button onClick={() => router.back()}>
-            <XMarkIcon className="w-6 h-6 text-gray-900 dark:text-gray-200" />
-          </button>
-          <h1 className="text-lg font-medium text-gray-900 dark:text-white">프로필 수정</h1>
+  const pageContent = (
+    <>
+      {/* 프로필 이미지 */}
+      <div className="flex justify-center mt-8">
+        <div className="relative">
+          <Image
+            src={user?.profileImageUrl || '/images/charactors/gamza.png'}
+            alt="Profile"
+            width={100}
+            height={100}
+            className="rounded-full object-cover"
+          />
+          <div className="absolute bottom-0 right-0 bg-gray-300 dark:bg-gray-600 p-1 rounded-full cursor-pointer">
+            <CameraIcon className="w-5 h-5 text-gray-800 dark:text-gray-200" />
+          </div>
+        </div>
+      </div>
+
+      {/* 닉네임 입력 */}
+      <div className="px-4 mt-8">
+        <label className="block text-sm text-gray-600 dark:text-gray-300 mb-2">
+          닉네임
+        </label>
+        <input
+          type="text"
+          value={newNickname}
+          onChange={(e) => {
+            setNewNickname(e.target.value);
+            if (errorMessage) setErrorMessage(null);
+          }}
+          className="w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-white p-2 border rounded focus:outline-none"
+          style={{ borderColor: '#d9d9d9' }}
+          placeholder="닉네임을 입력하세요"
+        />
+        {errorMessage && (
+          <p className="mt-2 text-sm text-red-500 dark:text-red-400">{errorMessage}</p>
+        )}
+      </div>
+
+      {/* 완료 버튼 - 데스크톱 버전에서만 표시 */}
+      {isDesktop && (
+        <div className="px-4 mt-8">
           <button
             onClick={handleNicknameUpdate}
-            className="text-sm text-gray-900 dark:text-white"
+            className="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600"
           >
             완료
           </button>
-        </header>
+        </div>
+      )}
+    </>
+  );
 
-        {/* 프로필 이미지 */}
-        <div className="flex justify-center mt-8">
-          <div className="relative">
-            <Image
-              src={user?.profileImageUrl || '/images/charactors/gamza.png'}
-              alt="Profile"
-              width={100}
-              height={100}
-              className="rounded-full object-cover"
-            />
-            <div className="absolute bottom-0 right-0 bg-gray-300 dark:bg-gray-600 p-1 rounded-full cursor-pointer">
-              <CameraIcon className="w-5 h-5 text-gray-800 dark:text-gray-200" />
+  return (
+    <div className="min-h-screen bg-white dark:bg-gray-900">
+      {isDesktop ? (
+        <div className="flex">
+          <Sidebar />
+          <div className="flex-1 lg:ml-64">
+            <div className="max-w-2xl mx-auto py-8">
+              <header className="px-4 mb-6">
+                <h1 className="text-2xl font-bold dark:text-white">프로필 수정</h1>
+              </header>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl border p-6" style={{ borderColor: '#d9d9d9' }}>
+                {pageContent}
+              </div>
             </div>
           </div>
         </div>
-
-        {/* 닉네임 입력 */}
-        <div className="px-4 mt-8">
-          <label className="block text-sm text-gray-600 dark:text-gray-300 mb-2">
-            닉네임
-          </label>
-          <input
-            type="text"
-            value={newNickname}
-            onChange={(e) => {
-              setNewNickname(e.target.value);
-              if (errorMessage) setErrorMessage(null);
-            }}
-            className="w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-white p-2 border rounded focus:outline-none"
-            style={{ borderColor: '#d9d9d9' }}
-            placeholder="닉네임을 입력하세요"
-          />
-          {errorMessage && (
-            <p className="mt-2 text-sm text-red-500 dark:text-red-400">{errorMessage}</p>
-          )}
+      ) : (
+        <div className="max-w-md mx-auto">
+          {/* 모바일 헤더 */}
+          <header className="flex items-center justify-between px-4 py-3">
+            <button onClick={() => router.back()}>
+              <XMarkIcon className="w-6 h-6 text-gray-900 dark:text-gray-200" />
+            </button>
+            <h1 className="text-lg font-medium text-gray-900 dark:text-white">프로필 수정</h1>
+            <button
+              onClick={handleNicknameUpdate}
+              className="text-sm text-gray-900 dark:text-white"
+            >
+              완료
+            </button>
+          </header>
+          {pageContent}
         </div>
-      </div>
+      )}
     </div>
   );
 } 
