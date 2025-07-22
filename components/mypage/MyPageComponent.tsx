@@ -1,14 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUserStore } from '@/lib/store/userStore';
 import Image from 'next/image';
 import {
   ChevronLeftIcon,
   CameraIcon,
   ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Logout from '../common/Logout';
 import Sidebar from '../common/Sidebar';
 import BottomNav from '../common/BottomNav';
@@ -20,7 +19,6 @@ export default function MyPageComponent() {
   const [activeTab, setActiveTab] = useState('info');
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
   const [userProfile, setUserProfile] = useState<UserProfileResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -47,17 +45,26 @@ export default function MyPageComponent() {
   }, [pathname]); // pathname이 변경될 때마다 프로필 정보를 다시 불러옵니다.
 
   useEffect(() => {
-    // URL 파라미터에서 nickname_updated 확인
-    if (searchParams.get('nickname_updated') === 'true') {
+    // 닉네임 변경 완료 상태 확인
+    const isNicknameUpdated = localStorage.getItem('nickname_updated');
+    if (isNicknameUpdated === 'true') {
       setShowToast(true);
       // 3초 후 토스트 메시지 숨김
       setTimeout(() => {
         setShowToast(false);
-        // URL에서 파라미터 제거
-        router.replace('/mypage');
       }, 3000);
+      // 상태 초기화
+      localStorage.removeItem('nickname_updated');
     }
-  }, [searchParams, router]);
+  }, []);
+
+  // 닉네임 변경 완료 시 토스트 메시지 표시를 위한 함수
+  const showNicknameUpdateToast = () => {
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
+  };
 
   const changePassword = async() => {
     setIsLoading(true);

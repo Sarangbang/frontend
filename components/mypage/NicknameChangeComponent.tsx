@@ -45,9 +45,12 @@ export default function NicknameChangeComponent() {
         userData.state.user.nickname = newNickname;
         localStorage.setItem('user-storage', JSON.stringify(userData));
       }
+
+      // 닉네임 변경 완료 상태 저장
+      localStorage.setItem('nickname_updated', 'true');
       
-      // 닉네임 변경 완료 상태와 함께 마이페이지로 이동
-      router.push('/mypage?nickname_updated=true');
+      // 마이페이지로 이동
+      router.push('/mypage');
     } catch (err: any) {
       const errorMessage = err?.response?.data?.message || '닉네임 변경에 실패했습니다.';
       setErrorMessage(errorMessage);
