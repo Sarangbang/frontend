@@ -8,79 +8,58 @@ import {
   CameraIcon,
   ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Logout from '../common/Logout';
 import Sidebar from '../common/Sidebar';
 import BottomNav from '../common/BottomNav';
 import { useMediaQuery } from 'react-responsive';
-import { updatePassword, getUserProfile, updateNickname } from '@/api/mypage';
+import { getUserProfile, updatePassword } from '@/api/mypage';
 import { UserProfileResponse } from '@/types/User';
 
 export default function MyPageComponent() {
   const [activeTab, setActiveTab] = useState('info');
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
   const [userProfile, setUserProfile] = useState<UserProfileResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isEditingNickname, setIsEditingNickname] = useState(false);
-  const [newNickname, setNewNickname] = useState('');
-  const [nicknameMessage, setNicknameMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
 
+  // 비밀번호 변경 관련 상태
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordCheck, setNewPasswordCheck] = useState('');
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const data = await getUserProfile();
-        setUserProfile(data);
-        setNewNickname(data.nickname || '');
-      } catch (error) {
-        console.error('Failed to fetch user profile:', error);
-      }
-    };
-
-    fetchUserProfile();
-  }, []);
-
-  const handleNicknameEdit = () => {
-    setIsEditingNickname(true);
-    setNicknameMessage(null);
-  };
-
-  const handleNicknameUpdate = async () => {
+  const fetchUserProfile = async () => {
     try {
-      const res = await updateNickname({ nickname: newNickname });
-      setUserProfile(prev => prev ? { ...prev, nickname: newNickname } : null);
-      
-      // localStorage user-storage 업데이트
-      const userStorage = localStorage.getItem('user-storage');
-      if (userStorage) {
-        const userData = JSON.parse(userStorage);
-        userData.state.user.nickname = newNickname;
-        localStorage.setItem('user-storage', JSON.stringify(userData));
-      }
-      
-      setIsEditingNickname(false);
-      setNicknameMessage(res.message || '닉네임이 성공적으로 변경되었습니다.');
-    } catch (err: any) {
-      let msg = '닉네임 변경에 실패했습니다.';
-      if (err?.response?.data) {
-        if (typeof err.response.data === 'string') {
-          msg = err.response.data;
-        } else if (err.response.data.message) {
-          msg = err.response.data.message;
-        }
-      }
-      setNicknameMessage(msg);
+      const data = await getUserProfile();
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error);
     }
   };
 
+  useEffect(() => {
+    fetchUserProfile();
+  }, [pathname]); // pathname이 변경될 때마다 프로필 정보를 다시 불러옵니다.
+
+  useEffect(() => {
+    // URL 파라미터에서 nickname_updated 확인
+    if (searchParams.get('nickname_updated') === 'true') {
+      setShowToast(true);
+      // 3초 후 토스트 메시지 숨김
+      setTimeout(() => {
+        setShowToast(false);
+        // URL에서 파라미터 제거
+        router.replace('/mypage');
+      }, 3000);
+    }
+  }, [searchParams, router]);
+
   const changePassword = async() => {
-    setIsLoading(true);
-    setPasswordMessage(null);
     if (newPassword !== newPasswordCheck) {
       setPasswordMessage('새 비밀번호가 일치하지 않습니다.');
       setIsLoading(false);
@@ -161,7 +140,7 @@ export default function MyPageComponent() {
           </button>
         </div>
 
-        <div className="w-full p-6 bg-white dark:bg-gray-800 rounded-2xl shadow">
+        <div className="w-full p-6 bg-white dark:bg-gray-800 rounded-2xl border" style={{ borderColor: '#d9d9d9' }}>
           {activeTab === 'info' && (
             <div className="space-y-6">
               <div>
@@ -173,34 +152,14 @@ export default function MyPageComponent() {
               <div>
                 <label className="text-sm text-gray-500">닉네임</label>
                 <div className="flex justify-between items-center border-b pb-2 border-gray-200 dark:border-gray-700">
-                  {isEditingNickname ? (
-                    <div className="flex-1 flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={newNickname}
-                        onChange={(e) => setNewNickname(e.target.value)}
-                        className="flex-1 p-1 border rounded dark:bg-gray-700 dark:text-white"
-                        style={{ borderColor: '#d9d9d9' }}
-                      />
-                      <button
-                        onClick={handleNicknameUpdate}
-                        className="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600"
-                      >
-                        변경
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <p className="dark:text-white">{userProfile?.nickname || '로딩중...'}</p>
-                      <ArrowTopRightOnSquareIcon
-                        className="w-5 h-5 text-gray-400 cursor-pointer"
-                        onClick={handleNicknameEdit}
-                      />
-                    </>
-                  )}
+                  <p className="dark:text-white">{userProfile?.nickname || '로딩중...'}</p>
+                  <ArrowTopRightOnSquareIcon
+                    className="w-5 h-5 text-gray-400 cursor-pointer"
+                    onClick={() => router.push('/mypage/nickname')}
+                  />
                 </div>
-                {nicknameMessage && (
-                  <p className="text-sm mt-2 text-red-500">{nicknameMessage}</p>
+                {successMessage && (
+                  <p className="text-sm mt-2 text-green-500">{successMessage}</p>
                 )}
               </div>
               <div>
@@ -279,23 +238,30 @@ export default function MyPageComponent() {
       {!isDesktop && <BottomNav />}
     </>
   );
-  
+
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div className="bg-white dark:bg-gray-900 min-h-screen">
+      {showToast && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg">
+            닉네임 변경이 완료되었습니다!
+          </div>
+        </div>
+      )}
       {isDesktop ? (
         <div className="flex">
           <Sidebar />
           <div className="flex-1 lg:ml-64">
             <div className="max-w-2xl mx-auto py-8">
               <header className="px-4">
-                  <h1 className="text-2xl font-bold dark:text-white">MyPage</h1>
+                <h1 className="text-2xl font-bold dark:text-white">MyPage</h1>
               </header>
               {myPageContent}
             </div>
           </div>
         </div>
       ) : (
-        <div className="max-w-md mx-auto bg-gray-50 dark:bg-gray-800 flex flex-col">
+        <div className="max-w-md mx-auto bg-white dark:bg-gray-800 flex flex-col">
           <header className="sticky top-0 bg-white dark:bg-gray-800 z-10 p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center space-x-2">
               <button onClick={() => router.back()}>
