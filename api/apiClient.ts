@@ -55,6 +55,17 @@ apiClient.interceptors.response.use(
         // 401 오류이고 아직 재시도하지 않은 요청인 경우
         if (error.response?.status === 401 && !originalRequest._retry) {
             
+            // 로그인 엔드포인트에서 401이 발생한 경우 refresh token 시도하지 않음 (로그인 실패)
+            if (originalRequest.url?.includes('/users/signin')) {
+                return Promise.reject(error);
+            }
+            
+            // 현재 로그인되지 않은 상태(토큰이 없는 경우) refresh token 시도하지 않음
+            const currentToken = localStorage.getItem('am');
+            if (!currentToken) {
+                return Promise.reject(error);
+            }
+            
             // refresh 엔드포인트 자체에서 401이 발생한 경우 바로 로그아웃 처리
             if (originalRequest.url?.includes('/users/refresh')) {
                 isRefreshing = false;
