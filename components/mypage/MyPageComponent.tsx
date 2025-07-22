@@ -37,7 +37,6 @@ export default function MyPageComponent() {
       const data = await getUserProfile();
       setUserProfile(data);
     } catch (error) {
-      console.error('Failed to fetch user profile:', error);
       setToastMessage('사용자 정보를 불러오는 데 실패하였습니다.');
       setToastType('error');
       setShowToast(true);
