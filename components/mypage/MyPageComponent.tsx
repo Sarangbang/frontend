@@ -22,8 +22,9 @@ export default function MyPageComponent() {
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
   const [userProfile, setUserProfile] = useState<UserProfileResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
   // 비밀번호 변경 관련 상태
   const [currentPassword, setCurrentPassword] = useState('');
@@ -37,6 +38,12 @@ export default function MyPageComponent() {
       setUserProfile(data);
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
+      setToastMessage('사용자 정보를 불러오는 데 실패하였습니다.');
+      setToastType('error');
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
     }
   };
 
@@ -48,8 +55,9 @@ export default function MyPageComponent() {
     // 닉네임 변경 완료 상태 확인
     const isNicknameUpdated = localStorage.getItem('nickname_updated');
     if (isNicknameUpdated === 'true') {
+      setToastMessage('닉네임 변경이 완료되었습니다!');
+      setToastType('success');
       setShowToast(true);
-      // 3초 후 토스트 메시지 숨김
       setTimeout(() => {
         setShowToast(false);
       }, 3000);
@@ -161,8 +169,8 @@ export default function MyPageComponent() {
                     }}
                   />
                 </div>
-                {successMessage && (
-                  <p className="text-sm mt-2 text-green-500">{successMessage}</p>
+                {passwordMessage && (
+                  <p className="text-sm mt-2 text-red-500 dark:text-red-400">{passwordMessage}</p>
                 )}
               </div>
               <div>
@@ -246,8 +254,12 @@ export default function MyPageComponent() {
     <div className="bg-white dark:bg-gray-900 min-h-screen">
       {showToast && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg">
-            닉네임 변경이 완료되었습니다!
+          <div className={`px-6 py-3 rounded-lg shadow-lg ${
+            toastType === 'success' 
+              ? 'bg-gray-800 text-white' 
+              : 'bg-red-500 text-white'
+          }`}>
+            {toastMessage}
           </div>
         </div>
       )}

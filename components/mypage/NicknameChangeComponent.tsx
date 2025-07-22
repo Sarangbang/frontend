@@ -15,6 +15,8 @@ export default function NicknameChangeComponent() {
   const [newNickname, setNewNickname] = useState(user?.nickname || '');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -22,7 +24,11 @@ export default function NicknameChangeComponent() {
         const data = await getUserProfile();
         setNewNickname(data.nickname || '');
       } catch (error) {
-        console.error('Failed to fetch user profile:', error);
+        setToastMessage('닉네임 정보를 불러오는 데 실패하였습니다.');
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 3000);
       }
     };
 
@@ -112,6 +118,13 @@ export default function NicknameChangeComponent() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
+      {showToast && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg">
+            {toastMessage}
+          </div>
+        </div>
+      )}
       {isDesktop ? (
         <div className="flex">
           <Sidebar />
