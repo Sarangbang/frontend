@@ -46,15 +46,8 @@ export default function NicknameChangeComponent() {
       // 닉네임 변경 완료 상태와 함께 마이페이지로 이동
       router.push('/mypage?nickname_updated=true');
     } catch (err: any) {
-      let msg = '닉네임 변경에 실패했습니다.';
-      if (err?.response?.data) {
-        if (typeof err.response.data === 'string') {
-          msg = err.response.data;
-        } else if (err.response.data.message) {
-          msg = err.response.data.message;
-        }
-      }
-      setErrorMessage(msg);
+      const errorMessage = err?.response?.data?.message || '닉네임 변경에 실패했습니다.';
+      setErrorMessage(errorMessage);
     }
   };
 

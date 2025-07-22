@@ -60,6 +60,7 @@ export default function MyPageComponent() {
   }, [searchParams, router]);
 
   const changePassword = async() => {
+    setIsLoading(true);
     if (newPassword !== newPasswordCheck) {
       setPasswordMessage('새 비밀번호가 일치하지 않습니다.');
       setIsLoading(false);
@@ -81,15 +82,8 @@ export default function MyPageComponent() {
       setNewPassword('');
       setNewPasswordCheck('');
     } catch (err: any) {
-      let msg = '비밀번호 변경에 실패했습니다.';
-      if (err?.response?.data) {
-        if (typeof err.response.data === 'string') {
-          msg = err.response.data;
-        } else if (err.response.data.message) {
-          msg = err.response.data.message;
-        }
-      }
-      setPasswordMessage(msg);
+      const errorMessage = err?.response?.data?.message || '비밀번호 변경에 실패했습니다.';
+      setPasswordMessage(errorMessage);
     } finally {
       setIsLoading(false);
     }
