@@ -9,6 +9,7 @@ import { LoginRequest } from '@/types/Login';
 import toast from 'react-hot-toast';
 import { getServerURL } from '@/lib/config';
 import { useUserStore } from '@/lib/store/userStore';
+import { ACCESS_TOKEN } from '@/constants/global';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -37,8 +38,8 @@ const LoginForm = () => {
       const response = await login(loginData);
 
       if(response && response.accessToken) {
-        // access token을 localStorage에 저장 (키: 'am')
-        localStorage.setItem('am', response.accessToken);
+        // access token을 localStorage에 저장 (키: ACCESS_TOKEN)
+        localStorage.setItem(ACCESS_TOKEN, response.accessToken);
         
         // 사용자 정보를 Zustand 스토어에 저장
         setUser({
