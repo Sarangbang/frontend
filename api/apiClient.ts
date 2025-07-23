@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { getServerURL } from '@/lib/config';
+import { ACCESS_TOKEN } from '@/constants/global';
 
 // 토큰 갱신 상태 관리
 let isRefreshing = false; // 현재 토큰 갱신 중인지 확인
@@ -34,7 +35,7 @@ const apiClient = axios.create({
 // 요청 인터셉터: access token을 헤더에 추가
 apiClient.interceptors.request.use((config) => {
     if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('am');
+        const token = localStorage.getItem(ACCESS_TOKEN);
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -61,7 +62,7 @@ apiClient.interceptors.response.use(
             }
             
             // 현재 로그인되지 않은 상태(토큰이 없는 경우) refresh token 시도하지 않음
-            const currentToken = localStorage.getItem('am');
+            const currentToken = localStorage.getItem(ACCESS_TOKEN);
             if (!currentToken) {
                 return Promise.reject(error);
             }
@@ -72,7 +73,7 @@ apiClient.interceptors.response.use(
                 processQueue(error, null);
                 
                 // 로컬 스토리지 정리 및 로그인 페이지로 이동
-                localStorage.removeItem('am');
+                localStorage.removeItem(ACCESS_TOKEN);
                 if (typeof window !== 'undefined') {
                     alert('세션이 만료되었습니다. 다시 로그인해주세요.');
                     if (window.location.pathname !== '/login') {
@@ -103,7 +104,7 @@ apiClient.interceptors.response.use(
                 const newAccessToken = refreshResponse.data.accessToken;
                 
                 // 새로운 토큰을 로컬 스토리지에 저장
-                localStorage.setItem('am', newAccessToken);
+                localStorage.setItem(ACCESS_TOKEN, newAccessToken);
                 
                 // 현재 요청의 헤더에 새로운 토큰 적용
                 if (originalRequest.headers) {
@@ -124,7 +125,7 @@ apiClient.interceptors.response.use(
                 isRefreshing = false;
                 
                 // 로컬 스토리지 정리 및 로그인 페이지로 이동
-                localStorage.removeItem('am');
+                localStorage.removeItem(ACCESS_TOKEN);
                 if (typeof window !== 'undefined') {
                     alert('세션이 만료되었습니다. 다시 로그인해주세요.');
                     if (window.location.pathname !== '/login') {
@@ -139,5 +140,28 @@ apiClient.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+// 토큰 갱신 함수 export
+export async function refreshAccessToken() {
+    try {
+        const refreshResponse = await axios.post<{ accessToken: string }>(
+            `${getServerURL()}/users/refresh`,
+            {},
+            { withCredentials: true }
+        );
+        const newAccessToken = refreshResponse.data.accessToken;
+        localStorage.setItem(ACCESS_TOKEN, newAccessToken);
+        return newAccessToken;
+    } catch (refreshError) {
+        localStorage.removeItem(ACCESS_TOKEN);
+        if (typeof window !== 'undefined') {
+            alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login';
+            }
+        }
+        throw refreshError;
+    }
+}
 
 export default apiClient;
