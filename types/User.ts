@@ -19,6 +19,10 @@ export interface UpdatePasswordRequest {
   newPasswordCheck: string;
 }
 
+export interface UpdateProfileImageRequest {
+  avatar: File;
+}
+
 export interface UpdateNicknameRequest {
   nickname: string;
 }

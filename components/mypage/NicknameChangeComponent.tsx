@@ -2,17 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { XMarkIcon, CameraIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { updateNickname, getUserProfile } from '@/api/mypage';
-import { useUserStore } from '@/lib/store/userStore';
 import Image from 'next/image';
 import { useMediaQuery } from 'react-responsive';
 import Sidebar from '../common/Sidebar';
 
 export default function NicknameChangeComponent() {
   const router = useRouter();
-  const { user } = useUserStore();
-  const [newNickname, setNewNickname] = useState(user?.nickname || '');
+  const [newNickname, setNewNickname] = useState('');
+  const [profileImageUrl, setProfileImageUrl] = useState('/images/charactors/gamza.png');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
   const [showToast, setShowToast] = useState(false);
@@ -23,6 +22,9 @@ export default function NicknameChangeComponent() {
       try {
         const data = await getUserProfile();
         setNewNickname(data.nickname || '');
+        if (data.profileImageUrl) {
+          setProfileImageUrl(data.profileImageUrl);
+        }
       } catch (error) {
         setToastMessage('닉네임 정보를 불러오는 데 실패하였습니다.');
         setShowToast(true);
@@ -69,15 +71,12 @@ export default function NicknameChangeComponent() {
       <div className="flex justify-center mt-8">
         <div className="relative">
           <Image
-            src={user?.profileImageUrl || '/images/charactors/gamza.png'}
+            src={profileImageUrl}
             alt="Profile"
             width={100}
             height={100}
             className="rounded-full object-cover"
           />
-          <div className="absolute bottom-0 right-0 bg-gray-300 dark:bg-gray-600 p-1 rounded-full cursor-pointer">
-            <CameraIcon className="w-5 h-5 text-gray-800 dark:text-gray-200" />
-          </div>
         </div>
       </div>
 
