@@ -107,11 +107,7 @@ export default function MyPageComponent() {
   }
 
   const handleCameraClick = () => {
-    if (isDesktop) {
-      fileInputRef.current?.click();
-    } else {
-      setIsActionSheetOpen(true);
-    }
+    setIsActionSheetOpen(true);
   };
 
   const closeActionSheet = () => {
@@ -210,6 +206,32 @@ export default function MyPageComponent() {
           >
             <CameraIcon className="w-5 h-5 text-gray-800 dark:text-gray-200" />
           </div>
+
+          {/* 데스크톱용 액션 시트 */}
+          {isDesktop && isActionSheetOpen && (
+            <div
+              className="absolute top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg z-20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {hasCustomProfileImage && (
+                <>
+                  <button
+                    onClick={handleDeleteProfileImage}
+                    className="w-full text-left p-3 text-red-500 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-xl"
+                  >
+                    프로필 사진 삭제
+                  </button>
+                  <hr className="border-gray-200 dark:border-gray-700" />
+                </>
+              )}
+              <button
+                onClick={handleSelectFromAlbum}
+                className="w-full text-left p-3 text-blue-500 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-xl"
+              >
+                앨범에서 선택
+              </button>
+            </div>
+          )}
         </div>
         <div className="text-center">
           <h2 className="text-2xl font-bold dark:text-white">
@@ -396,13 +418,14 @@ export default function MyPageComponent() {
           </div>
         )}
       </div>
-      {isActionSheetOpen && (
+      {/* 모바일용 액션 시트 */}
+      {!isDesktop && isActionSheetOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-end"
+          className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-50 flex items-end"
           onClick={closeActionSheet}
         >
           <div
-            className="w-full"
+            className="w-full sm:max-w-sm mx-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mx-2 mb-2">
