@@ -38,6 +38,11 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
     }
 
     try {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('5MB 이하 이미지만 업로드할 수 있습니다.');
+        return;
+      }
+      
       const compressed = await compressImage(file, 1); // 압축 실행
       console.log('압축 전 파일 크기:', (file.size / 1024 / 1024).toFixed(2), 'MB');
       console.log('압축 후 파일 크기:', (compressed.size / 1024 / 1024).toFixed(2), 'MB');
