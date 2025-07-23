@@ -3,6 +3,8 @@
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUserStore } from '@/lib/store/userStore';
+import { ACCESS_TOKEN } from '@/constants/global';
+
 
 const AuthSuccessClient = () => {
     const router = useRouter();
@@ -19,7 +21,7 @@ const AuthSuccessClient = () => {
         // 필수 파라미터들이 모두 있는지 확인
         if (accessToken && uuid && nickname) {
             // 액세스 토큰을 localStorage에 저장
-            localStorage.setItem('am', accessToken);
+            localStorage.setItem(ACCESS_TOKEN, accessToken);
             
             // 사용자 정보를 userStore에 저장
             setUser({

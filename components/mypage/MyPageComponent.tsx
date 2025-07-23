@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import {
   ChevronLeftIcon,
@@ -12,7 +12,7 @@ import Logout from '../common/Logout';
 import Sidebar from '../common/Sidebar';
 import BottomNav from '../common/BottomNav';
 import { useMediaQuery } from 'react-responsive';
-import { getUserProfile, updatePassword } from '@/api/mypage';
+import { getUserProfile, updatePassword, updateProfileImage, deleteProfileImage } from '@/api/mypage';
 import { UserProfileResponse } from '@/types/User';
 
 export default function MyPageComponent() {
@@ -20,17 +20,27 @@ export default function MyPageComponent() {
   const router = useRouter();
   const pathname = usePathname();
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
-  const [userProfile, setUserProfile] = useState<UserProfileResponse | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfileResponse | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
+  const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
 
   // 비밀번호 변경 관련 상태
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordCheck, setNewPasswordCheck] = useState('');
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    setPasswordMessage(null); // 탭 변경 시 비밀번호 관련 메시지 초기화
+  };
 
   const fetchUserProfile = async () => {
     try {
@@ -65,16 +75,9 @@ export default function MyPageComponent() {
     }
   }, []);
 
-  // 닉네임 변경 완료 시 토스트 메시지 표시를 위한 함수
-  const showNicknameUpdateToast = () => {
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 3000);
-  };
-
   const changePassword = async() => {
     setIsLoading(true);
+    setPasswordMessage(null); // 메시지 초기화
     if (newPassword !== newPasswordCheck) {
       setPasswordMessage('새 비밀번호가 일치하지 않습니다.');
       setIsLoading(false);
@@ -103,6 +106,82 @@ export default function MyPageComponent() {
     }
   }
 
+  const handleCameraClick = () => {
+    setIsActionSheetOpen(true);
+  };
+
+  const closeActionSheet = () => {
+    setIsActionSheetOpen(false);
+  };
+
+  const handleSelectFromAlbum = () => {
+    fileInputRef.current?.click();
+    closeActionSheet();
+  };
+
+  const handleDeleteProfileImage = async () => {
+    try {
+      await deleteProfileImage();
+      
+      setUserProfile((prev) =>
+        prev
+          ? { ...prev, profileImageUrl: '/images/charactors/gamza.png' }
+          : null,
+      );
+      
+      setToastMessage('프로필 사진이 삭제되었습니다.');
+      setToastType('success');
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+      
+    } catch (error) {
+      setToastMessage('프로필 사진 삭제에 실패했습니다.');
+      setToastType('error');
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+    } finally {
+      closeActionSheet();
+    }
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        const response = await updateProfileImage({ avatar: file });
+        
+        // UI 즉시 업데이트
+        const previewUrl = URL.createObjectURL(file);
+        setUserProfile((prev) =>
+          prev ? { ...prev, profileImageUrl: previewUrl } : null,
+        );
+        
+        setToastMessage('프로필 사진이 변경되었습니다.');
+        setToastType('success');
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 3000);
+        
+      } catch (error) {
+        setToastMessage('프로필 사진 변경에 실패했습니다.');
+        setToastType('error');
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 3000);
+      }
+    }
+  };
+
+  const hasCustomProfileImage =
+    userProfile?.profileImageUrl &&
+    !userProfile.profileImageUrl.includes('gamza.png');
+
   const myPageContent = (
     <>
       <main className="flex-grow flex flex-col items-center w-full p-6 space-y-6">
@@ -114,20 +193,58 @@ export default function MyPageComponent() {
             height={100}
             className="rounded-full object-cover"
           />
-          <div className="absolute bottom-0 right-0 bg-gray-300 p-1 rounded-full cursor-pointer">
-            <CameraIcon className="w-5 h-5 text-gray-800" />
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+            accept="image/*"
+          />
+          <div
+            className="absolute bottom-0 right-0 bg-gray-300 dark:bg-gray-600 p-1 rounded-full cursor-pointer"
+            onClick={handleCameraClick}
+          >
+            <CameraIcon className="w-5 h-5 text-gray-800 dark:text-gray-200" />
           </div>
+
+          {/* 데스크톱용 액션 시트 */}
+          {isDesktop && isActionSheetOpen && (
+            <div
+              className="absolute top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg z-20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {hasCustomProfileImage && (
+                <>
+                  <button
+                    onClick={handleDeleteProfileImage}
+                    className="w-full text-left p-3 text-red-500 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-xl"
+                  >
+                    프로필 사진 삭제
+                  </button>
+                  <hr className="border-gray-200 dark:border-gray-700" />
+                </>
+              )}
+              <button
+                onClick={handleSelectFromAlbum}
+                className="w-full text-left p-3 text-blue-500 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-xl"
+              >
+                앨범에서 선택
+              </button>
+            </div>
+          )}
         </div>
         <div className="text-center">
           <h2 className="text-2xl font-bold dark:text-white">
             {userProfile?.nickname || '로딩중...'}
           </h2>
-          <p className="text-gray-500 dark:text-gray-400">{userProfile?.email || '로딩중...'}</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            {userProfile?.email || '로딩중...'}
+          </p>
         </div>
 
         <div className="flex w-full">
           <button
-            onClick={() => setActiveTab('info')}
+            onClick={() => handleTabChange('info')}
             className={`flex-1 py-2 text-center rounded-l-lg ${
               activeTab === 'info'
                 ? 'bg-gray-300 dark:bg-gray-600 font-semibold'
@@ -137,7 +254,7 @@ export default function MyPageComponent() {
             내 정보
           </button>
           <button
-            onClick={() => setActiveTab('password')}
+            onClick={() => handleTabChange('password')}
             className={`flex-1 py-2 text-center rounded-r-lg ${
               activeTab === 'password'
                 ? 'bg-gray-300 dark:bg-gray-600 font-semibold'
@@ -148,7 +265,10 @@ export default function MyPageComponent() {
           </button>
         </div>
 
-        <div className="w-full p-6 bg-white dark:bg-gray-800 rounded-2xl border" style={{ borderColor: '#d9d9d9' }}>
+        <div
+          className="w-full p-6 bg-white dark:bg-gray-800 rounded-2xl border"
+          style={{ borderColor: '#d9d9d9' }}
+        >
           {activeTab === 'info' && (
             <div className="space-y-6">
               <div>
@@ -160,7 +280,9 @@ export default function MyPageComponent() {
               <div>
                 <label className="text-sm text-gray-500">닉네임</label>
                 <div className="flex justify-between items-center border-b pb-2 border-gray-200 dark:border-gray-700">
-                  <p className="dark:text-white">{userProfile?.nickname || '로딩중...'}</p>
+                  <p className="dark:text-white">
+                    {userProfile?.nickname || '로딩중...'}
+                  </p>
                   <ArrowTopRightOnSquareIcon
                     className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300"
                     onClick={() => {
@@ -168,9 +290,6 @@ export default function MyPageComponent() {
                     }}
                   />
                 </div>
-                {passwordMessage && (
-                  <p className="text-sm mt-2 text-red-500 dark:text-red-400">{passwordMessage}</p>
-                )}
               </div>
               <div>
                 <label className="text-sm text-gray-500">성별</label>
@@ -181,12 +300,18 @@ export default function MyPageComponent() {
               <div>
                 <label className="text-sm text-gray-500">지역</label>
                 <div className="flex justify-between items-center border-b pb-2 border-gray-200 dark:border-gray-700">
-                  <p className="dark:text-white">{userProfile?.region || '로딩중...'}</p>
+                  <p className="dark:text-white">
+                    {userProfile?.region || '로딩중...'}
+                  </p>
                   <ArrowTopRightOnSquareIcon className="w-5 h-5 text-gray-400 cursor-pointer" />
                 </div>
               </div>
               <div className="pt-4">
-                <Logout onLogout={() => { router.push('/login') }} />
+                <Logout
+                  onLogout={() => {
+                    router.push('/login');
+                  }}
+                />
               </div>
             </div>
           )}
@@ -202,7 +327,7 @@ export default function MyPageComponent() {
                   className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   style={{ borderColor: '#d9d9d9' }}
                   value={currentPassword}
-                  onChange={e => setCurrentPassword(e.target.value)}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
                 />
               </div>
               <div>
@@ -214,7 +339,7 @@ export default function MyPageComponent() {
                   className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   style={{ borderColor: '#d9d9d9' }}
                   value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)}
+                  onChange={(e) => setNewPassword(e.target.value)}
                 />
               </div>
               <div>
@@ -226,11 +351,13 @@ export default function MyPageComponent() {
                   className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   style={{ borderColor: '#d9d9d9' }}
                   value={newPasswordCheck}
-                  onChange={e => setNewPasswordCheck(e.target.value)}
+                  onChange={(e) => setNewPasswordCheck(e.target.value)}
                 />
               </div>
               {passwordMessage && (
-                <div className="text-center text-sm mt-2 text-red-500 dark:text-red-400">{passwordMessage}</div>
+                <div className="text-center text-sm mt-2 text-red-500 dark:text-red-400">
+                  {passwordMessage}
+                </div>
               )}
               <div className="pt-4">
                 <button
@@ -250,43 +377,89 @@ export default function MyPageComponent() {
   );
 
   return (
-    <div className="bg-white dark:bg-gray-900 min-h-screen">
-      {showToast && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-          <div className={`px-6 py-3 rounded-lg shadow-lg ${
-            toastType === 'success' 
-              ? 'bg-gray-800 text-white' 
-              : 'bg-red-500 text-white'
-          }`}>
-            {toastMessage}
+    <>
+      <div className="bg-white dark:bg-gray-900 min-h-screen">
+        {showToast && (
+          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+            <div
+              className={`px-6 py-3 rounded-lg shadow-lg ${
+                toastType === 'success'
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-red-500 text-white'
+              }`}
+            >
+              {toastMessage}
+            </div>
           </div>
-        </div>
-      )}
-      {isDesktop ? (
-        <div className="flex">
-          <Sidebar />
-          <div className="flex-1 lg:ml-64">
-            <div className="max-w-2xl mx-auto py-8">
-              <header className="px-4">
-                <h1 className="text-2xl font-bold dark:text-white">MyPage</h1>
-              </header>
-              {myPageContent}
+        )}
+        {isDesktop ? (
+          <div className="flex">
+            <Sidebar />
+            <div className="flex-1 lg:ml-64">
+              <div className="max-w-2xl mx-auto py-8">
+                <header className="px-4">
+                  <h1 className="text-2xl font-bold dark:text-white">MyPage</h1>
+                </header>
+                {myPageContent}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="max-w-md mx-auto bg-white dark:bg-gray-800 flex flex-col">
+            <header className="sticky top-0 bg-white dark:bg-gray-800 z-10 p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center space-x-2">
+                <button onClick={() => router.back()}>
+                  <ChevronLeftIcon className="w-6 h-6 text-gray-800 dark:text-gray-200" />
+                </button>
+                <h1 className="text-xl font-bold dark:text-white">MyPage</h1>
+              </div>
+            </header>
+            {myPageContent}
+          </div>
+        )}
+      </div>
+      {/* 모바일용 액션 시트 */}
+      {!isDesktop && isActionSheetOpen && (
+        <div
+          className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-50 flex items-end"
+          onClick={closeActionSheet}
+        >
+          <div
+            className="w-full sm:max-w-sm mx-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-2 mb-2">
+              <div className="bg-white dark:bg-gray-800 rounded-xl">
+                {hasCustomProfileImage && (
+                  <>
+                    <button
+                      onClick={handleDeleteProfileImage}
+                      className="w-full text-center p-3 text-red-500 dark:text-red-400"
+                    >
+                      프로필 사진 삭제
+                    </button>
+                    <hr className="border-gray-200 dark:border-gray-700" />
+                  </>
+                )}
+                <button
+                  onClick={handleSelectFromAlbum}
+                  className="w-full text-center p-3 text-blue-500 dark:text-blue-400"
+                >
+                  앨범에서 선택
+                </button>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl mt-2">
+                <button
+                  onClick={closeActionSheet}
+                  className="w-full text-center p-3 text-blue-500 dark:text-blue-400 font-semibold"
+                >
+                  닫기
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      ) : (
-        <div className="max-w-md mx-auto bg-white dark:bg-gray-800 flex flex-col">
-          <header className="sticky top-0 bg-white dark:bg-gray-800 z-10 p-4 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center space-x-2">
-              <button onClick={() => router.back()}>
-                <ChevronLeftIcon className="w-6 h-6 text-gray-800 dark:text-gray-200" />
-              </button>
-              <h1 className="text-xl font-bold dark:text-white">MyPage</h1>
-            </div>
-          </header>
-          {myPageContent}
-        </div>
       )}
-    </div>
+    </>
   );
 }
