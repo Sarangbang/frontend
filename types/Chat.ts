@@ -22,6 +22,7 @@ export interface ChatRoomResponse {
   participants: string[];
   createdAt: string;
   challengeImageUrl?: string;
+  unreadCount: number;
 }
 
 // 채팅방 메시지 조회

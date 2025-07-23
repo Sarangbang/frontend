@@ -25,6 +25,11 @@ export default function ChatListItem({ chat, onClick }: ChatListItemProps) {
           {chat.createdAt ? new Date(chat.createdAt).toLocaleString() : ''}
         </p>
       </div>
+      {chat.unreadCount > 0 && (
+        <div className="ml-auto flex items-center justify-center bg-red-500 text-white text-xs rounded-full h-6 w-6">
+          {chat.unreadCount}
+        </div>
+      )}
     </li>
   );
 } 

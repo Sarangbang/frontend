@@ -20,4 +20,12 @@ export async function fetchChatMessages(roomId: string, page?: number): Promise<
   }
   const response = await apiClient.get<MessageHistoryResponseDto>(`/chat/rooms/${roomId}/messages`, { params });
   return response.data;
+}
+
+export async function markAsRead(roomId: string): Promise<void> {
+  try {
+    await apiClient.post(`/chat/rooms/${roomId}/read`);
+  } catch (error) {
+    console.error(`Failed to mark room ${roomId} as read`, error);
+  }
 } 

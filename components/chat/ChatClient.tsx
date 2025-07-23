@@ -11,7 +11,7 @@ import Tabs, { type Tab } from '../common/Tabs';
 import ContentHeader from '../common/ContentHeader';
 import ChatRoom from './ChatRoom';
 import { Sender, ChatRoomResponse } from '@/types/Chat';
-import { fetchChatRooms } from '@/api/chat';
+import { fetchChatRooms, markAsRead } from '@/api/chat';
 import { useUserStore } from '@/lib/store/userStore';
 
 const groupChats = [
@@ -127,6 +127,14 @@ export default function ChatClient() {
   );
 
   const handleEnterRoom = (chat: ChatRoomResponse) => {
+    if (chat.unreadCount > 0) {
+      markAsRead(chat.roomId);
+      setChatRooms(prevRooms =>
+        prevRooms.map(r =>
+          r.roomId === chat.roomId ? { ...r, unreadCount: 0 } : r
+        )
+      );
+    }
     setInRoom(chat);
   };
 
