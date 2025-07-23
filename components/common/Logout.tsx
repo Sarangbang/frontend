@@ -42,7 +42,7 @@ const Logout = ({ onLogout }: { onLogout: () => void }) => {
         <button
             onClick={handleLogout}
             disabled={isLoading} // 로딩 중일 때 버튼 비활성화
-            className={`px-4 py-2 text-white rounded font-semibold shadow-md ${
+            className={`w-full bg-orange-500 text-white py-2 rounded-md hover:bg-orange-600 disabled:opacity-50 ${
                 isLoading 
                     ? 'bg-gray-400 cursor-not-allowed' 
                     : 'bg-orange-500 hover:bg-orange-600'
