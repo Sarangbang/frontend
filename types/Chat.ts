@@ -7,11 +7,13 @@ export interface Sender {
 }
 
 export interface ChatMessage {
+  _id: string;
   type: MessageType;
   roomId: string;
   sender: Sender;
   message: string;
-} 
+  createdAt: string;
+}
 
 export interface ChatRoomResponse {
   roomId: string;
@@ -20,4 +22,10 @@ export interface ChatRoomResponse {
   participants: string[];
   createdAt: string;
   challengeImageUrl?: string;
+}
+
+// 채팅방 메시지 조회
+export interface fetchChatHistory {
+  messages: ChatMessage[];
+  hasNext: boolean;
 }

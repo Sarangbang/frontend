@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
   Ban,
@@ -12,11 +12,14 @@ import {
 import { ChatSocket } from "@/util/chatSocket";
 import { ChatMessage, Sender } from "@/types/Chat";
 import Modal from "../common/Modal";
+import { fetchChatMessages } from "@/api/chat";
 
 interface ChatRoomProps {
   onBack: () => void;
   sender: Sender;
   roomId: string;
+  roomName: string;
+  challengeImageUrl?: string;
 }
 
 const PROFILE_IMG = "/images/charactors/gamza.png";
@@ -34,69 +37,136 @@ function formatDate(date: Date) {
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
 
-export default function ChatRoom({ onBack, sender, roomId }: ChatRoomProps) {
-  const [messages, setMessages] = useState<(ChatMessage & { timestamp: Date })[]>(
-    []
-  );
+export default function ChatRoom({ onBack, sender, roomId, roomName, challengeImageUrl }: ChatRoomProps) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hasNextPage, setHasNextPage] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(0);
+  const [prevScrollHeight, setPrevScrollHeight] = useState<number | null>(null);
   const chatSocketRef = useRef<ChatSocket | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const shouldScrollDownRef = useRef(true);
+
+  const loadMoreMessages = async () => {
+    shouldScrollDownRef.current = false;
+    if (!hasNextPage || isLoadingMore) return;
+
+    setIsLoadingMore(true);
+    if (scrollRef.current) {
+      setPrevScrollHeight(scrollRef.current.scrollHeight);
+    }
+    try {
+      const nextPage = page + 1;
+      const res = await fetchChatMessages(roomId, nextPage);
+      if (res.messages.length > 0) {
+        const sortedNewMessages = res.messages.sort(
+          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+        setMessages((prev) => {
+          const existingIds = new Set(prev.map((m) => m._id));
+          const uniqueNewMessages = sortedNewMessages.filter(
+            (m) => !existingIds.has(m._id)
+          );
+
+          if (uniqueNewMessages.length === 0) {
+            setHasNextPage(false);
+            return prev;
+          }
+
+          return [...uniqueNewMessages, ...prev];
+        });
+        setPage(nextPage);
+      }
+      setHasNextPage(res.hasNext);
+    } catch (error) {
+      console.error("Failed to fetch more messages:", error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   useEffect(() => {
-    const handleSocketOpen = () => {
-      console.log("Socket is open, sending ENTER message.");
-      chatSocketRef.current?.send({
-        type: "ENTER",
-        roomId: roomId,
-        sender: sender,
-        message: `${sender.nickname}님이 입장했습니다.`,
-      });
+    let isMounted = true;
+    const initialLoad = async () => {
+      // 과거 메시지 먼저 불러오기
+      try {
+        const res = await fetchChatMessages(roomId, 0);
+        if (!isMounted) return;
+        setMessages(
+          res.messages
+            .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        );
+        setHasNextPage(res.hasNext);
+      } catch (error) {
+        console.error("Failed to fetch initial messages:", error);
+      }
     };
+    initialLoad();
 
     const chatSocket = new ChatSocket(
       roomId,
       (msg) => {
-        setMessages((prev) => [...prev, { ...msg, timestamp: new Date() }]);
+        setMessages((prev) => [...prev, msg]);
       },
-      handleSocketOpen
+      // handleSocketOpen
     );
     chatSocketRef.current = chatSocket;
 
     return () => {
-      chatSocketRef.current?.send({
-        type: "LEAVE",
-        roomId: roomId,
-        sender: sender,
-        message: `${sender.nickname}님이 퇴장했습니다.`,
-      });
-      chatSocketRef.current?.close();
+      isMounted = false;
+      console.log(`[CLEANUP] Closing socket for room ${roomId}`);
+      chatSocket.close();
     };
-  }, [sender, roomId]);
+  }, [roomId]);
 
   useEffect(() => {
-    if (scrollRef.current) {
+    const chatContainer = scrollRef.current;
+    if (!chatContainer) return;
+
+    const handleScroll = () => {
+      if (chatContainer.scrollTop === 0 && hasNextPage && !isLoadingMore) {
+        loadMoreMessages();
+      }
+    };
+    chatContainer.addEventListener("scroll", handleScroll);
+    return () => chatContainer.removeEventListener("scroll", handleScroll);
+  }, [hasNextPage, isLoadingMore, messages]);
+
+
+  useEffect(() => {
+    if (scrollRef.current && shouldScrollDownRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
+    shouldScrollDownRef.current = true;
   }, [messages]);
 
-  const today = formatDate(new Date());
+  useLayoutEffect(() => {
+    if (prevScrollHeight !== null && scrollRef.current) {
+      scrollRef.current.scrollTop =
+        scrollRef.current.scrollHeight - prevScrollHeight;
+      setPrevScrollHeight(null);
+    }
+  }, [messages, prevScrollHeight]);
 
   const handleSend = () => {
     if (input.trim() && chatSocketRef.current) {
       chatSocketRef.current.send({
+        _id: new Date().toISOString(), // 임시 ID
         type: "TALK",
         roomId: roomId,
         sender: sender,
         message: input,
+        createdAt: new Date().toISOString(),
       });
       setInput("");
     }
   };
 
-  const renderSystemMessage = (message: string, key: number) => (
-    <div key={key} className="flex justify-center my-2">
+  const renderSystemMessage = (message: string) => (
+    <div className="flex justify-center my-2">
       <span className="bg-gray-100 dark:bg-gray-700 text-sm text-gray-500 dark:text-gray-300 px-4 py-2 rounded-xl shadow-sm">
         {message}
       </span>
@@ -128,14 +198,14 @@ export default function ChatRoom({ onBack, sender, roomId }: ChatRoomProps) {
         </button>
         <div className="flex items-center gap-2">
           <Image
-            src={sender.profileImageUrl || "/images/charactors/gamza.png"}
-            alt="상대방 프로필 이미지"
+            src={challengeImageUrl || "/images/charactors/gamza.png"}
+            alt="챌린지 대표 이미지"
             width={36}
             height={36}
             className="rounded-full border"
           />
           <span className="font-bold text-base text-gray-800 dark:text-white">
-            {sender.nickname}
+            {roomName}
           </span>
         </div>
         <button
@@ -195,6 +265,11 @@ export default function ChatRoom({ onBack, sender, roomId }: ChatRoomProps) {
         className="flex-1 overflow-y-auto px-4 py-2 relative"
         ref={scrollRef}
       >
+        {isLoadingMore && (
+          <div className="flex justify-center my-2">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+          </div>
+        )}
         {/* 배경 감자 박스 */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
           <Image
@@ -204,70 +279,83 @@ export default function ChatRoom({ onBack, sender, roomId }: ChatRoomProps) {
             height={200}
           />
         </div>
-        {/* 날짜 구분선 */}
-        <div className="flex justify-center my-4">
-          <span className="bg-gray-100 dark:bg-gray-700 text-xs text-gray-500 dark:text-gray-300 px-4 py-1 rounded-full shadow-sm">
-            {today}
-          </span>
-        </div>
         {/* 메시지 리스트 */}
         <div className="flex flex-col gap-3 relative z-10">
           {messages.map((msg, idx) => {
-            if (msg.type === "ENTER" || msg.type === "LEAVE") {
-              return renderSystemMessage(msg.message, idx);
-            }
+            const showDateSeparator =
+              idx === 0 ||
+              formatDate(new Date(messages[idx - 1].createdAt)) !==
+                formatDate(new Date(msg.createdAt));
 
-            const isMine = msg.sender.userId === sender.userId;
-            const time = formatTime(new Date(msg.timestamp));
-            return (
-              <div
-                key={idx}
-                className={`flex gap-2 ${
-                  isMine ? "justify-end" : "justify-start"
-                }`}
-              >
-                {!isMine && (
-                  <Image
-                    src={msg.sender.profileImageUrl || "/images/charactors/gamza.png"}
-                    alt="상대방 프로필 이미지"
-                    width={32}
-                    height={32}
-                    className="rounded-full border self-start"
-                  />
-                )}
+            const messageContent = () => {
+              if (msg.type === "ENTER" || msg.type === "LEAVE") {
+                return renderSystemMessage(msg.message);
+              }
+
+              const isMine = msg.sender.userId === sender.userId;
+              const time = formatTime(new Date(msg.createdAt));
+              return (
                 <div
-                  className={`flex flex-col max-w-[70%] ${
-                    isMine ? "items-end" : "items-start"
+                  className={`flex gap-2 ${
+                    isMine ? "justify-end" : "justify-start"
                   }`}
                 >
                   {!isMine && (
-                    <span className="text-xs text-gray-600 dark:text-gray-400 font-semibold mb-1 ml-1">
-                      {msg.sender.nickname}
-                    </span>
+                    <Image
+                      src={msg.sender.profileImageUrl || "/images/charactors/gamza.png"}
+                      alt="상대방 프로필 이미지"
+                      width={32}
+                      height={32}
+                      className="rounded-full border self-start"
+                    />
                   )}
-                  <div className="flex items-end gap-2">
-                    {isMine && (
-                      <span className="text-[11px] text-gray-400 mb-1">
-                        {time}
-                      </span>
-                    )}
-                    <div
-                      className={`rounded-xl px-4 py-2 text-sm shadow-sm break-all ${
-                        isMine
-                          ? "bg-[#FDEBE6] text-red-900"
-                          : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-white"
-                      }`}
-                    >
-                      {msg.message}
-                    </div>
+                  <div
+                    className={`flex flex-col max-w-[70%] ${
+                      isMine ? "items-end" : "items-start"
+                    }`}
+                  >
                     {!isMine && (
-                      <span className="text-[11px] text-gray-400 mb-1">
-                        {time}
+                      <span className="text-xs text-gray-600 dark:text-gray-400 font-semibold mb-1 ml-1">
+                        {msg.sender.nickname}
                       </span>
                     )}
+                    <div className="flex items-end gap-2">
+                      {isMine && (
+                        <span className="text-[11px] text-gray-400 mb-1">
+                          {time}
+                        </span>
+                      )}
+                      <div
+                        className={`rounded-xl px-4 py-2 text-sm shadow-sm break-all ${
+                          isMine
+                            ? "bg-[#FDEBE6] text-red-900"
+                            : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-white"
+                        }`}
+                      >
+                        {msg.message}
+                      </div>
+                      {!isMine && (
+                        <span className="text-[11px] text-gray-400 mb-1">
+                          {time}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              );
+            };
+
+            return (
+              <React.Fragment key={msg._id}>
+                {showDateSeparator && (
+                  <div className="flex justify-center my-4">
+                    <span className="bg-gray-100 dark:bg-gray-700 text-xs text-gray-500 dark:text-gray-300 px-4 py-1 rounded-full shadow-sm">
+                      {formatDate(new Date(msg.createdAt))}
+                    </span>
+                  </div>
+                )}
+                {messageContent()}
+              </React.Fragment>
             );
           })}
         </div>

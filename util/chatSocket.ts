@@ -1,9 +1,11 @@
 import { ChatMessage } from "../types/Chat";
 import { getWebSocketURL } from "../lib/config";
+import { ACCESS_TOKEN } from "@/constants/global";
+import { refreshAccessToken } from "@/api/apiClient";
 
 export class ChatSocket {
-  private socket: WebSocket;
-  private onMessage: (msg: ChatMessage) => void;
+  private socket: WebSocket | undefined = undefined;
+  private onMessage: ((msg: ChatMessage) => void) | undefined = undefined;
   private sendQueue: ChatMessage[] = [];
   private isOpen = false;
 
@@ -12,8 +14,16 @@ export class ChatSocket {
     onMessage: (msg: ChatMessage) => void,
     onOpen?: () => void
   ) {
+    this.connect(roomId, onMessage, onOpen);
+  }
+
+  private connect(
+    roomId: string,
+    onMessage: (msg: ChatMessage) => void,
+    onOpen?: () => void
+  ) {
     const token =
-      typeof window !== "undefined" ? localStorage.getItem("accessToken") : "";
+      typeof window !== "undefined" ? localStorage.getItem(ACCESS_TOKEN) : "";
     const wsUrl = `${getWebSocketURL()}?roomId=${roomId}${
       token ? `&token=${token}` : ""
     }`;
@@ -32,9 +42,24 @@ export class ChatSocket {
       }
     };
 
-    this.socket.onmessage = (event) => {
-      const data: ChatMessage = JSON.parse(event.data);
-      this.onMessage(data);
+    this.socket.onmessage = async (event) => {
+      const data: ChatMessage | { type: string } = JSON.parse(event.data);
+      // 401(unauthorized) 메시지 처리
+      if (typeof data === 'object' && 'type' in data && data.type === 'unauthorized') {
+        console.warn('WebSocket unauthorized. Refreshing token...');
+        try {
+          await refreshAccessToken();
+          // 토큰 갱신 후 소켓 재연결
+          this.close();
+          this.connect(roomId, onMessage, onOpen);
+        } catch (e) {
+          // 토큰 갱신 실패 시: 로그아웃 등은 refreshAccessToken에서 처리됨
+        }
+        return;
+      }
+      if (this.onMessage) {
+        this.onMessage(data as ChatMessage);
+      }
     };
 
     this.socket.onerror = (error) => {
@@ -53,7 +78,7 @@ export class ChatSocket {
   }
 
   send(msg: ChatMessage) {
-    if (this.isOpen && this.socket.readyState === WebSocket.OPEN) {
+    if (this.isOpen && this.socket && this.socket.readyState === WebSocket.OPEN) {
       this.socket.send(JSON.stringify(msg));
     } else {
       // 아직 연결 안 됐으면 큐에 저장
@@ -62,6 +87,15 @@ export class ChatSocket {
   }
 
   close() {
-    this.socket.close();
+    if (this.socket) {
+      console.log("소켓 제거")
+      // this.socket.onopen = null;
+      // this.socket.onmessage = null;
+      // this.socket.onerror = null;
+      // this.socket.onclose = null;
+      this.socket.close();
+      console.log(this.socket.readyState);
+      // this.socket = undefined;
+    }
   }
 } 

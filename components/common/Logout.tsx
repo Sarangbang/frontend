@@ -3,6 +3,8 @@ import { useRouter } from 'next/navigation';
 import { logout as logoutAPI } from '@/api/auth';
 import { useUserStore } from '@/lib/store/userStore';
 import { toast } from 'react-hot-toast';
+import { ACCESS_TOKEN } from '@/constants/global';
+
 
 const Logout = ({ onLogout }: { onLogout: () => void }) => {
     const router = useRouter();
@@ -23,7 +25,7 @@ const Logout = ({ onLogout }: { onLogout: () => void }) => {
             
         } finally {
             // 로컬 스토리지에서 access token 삭제
-            localStorage.removeItem('am');
+            localStorage.removeItem(ACCESS_TOKEN);
                         
             // Zustand 스토어에서 사용자 정보 삭제
             clearUser();

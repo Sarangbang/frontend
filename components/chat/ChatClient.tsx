@@ -12,6 +12,7 @@ import ContentHeader from '../common/ContentHeader';
 import ChatRoom from './ChatRoom';
 import { Sender, ChatRoomResponse } from '@/types/Chat';
 import { fetchChatRooms } from '@/api/chat';
+import { useUserStore } from '@/lib/store/userStore';
 
 const groupChats = [
   {
@@ -91,13 +92,20 @@ export default function ChatClient() {
   const [isClient, setIsClient] = useState(false);
   const [inRoom, setInRoom] = useState<ChatRoomResponse | null>(null);
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
+  const user = useUserStore((state) => state.user);
 
-  // 임시 sender 객체 (실제 로그인 정보로 대체 필요)
-  const mySender: Sender = {
-    userId: 'myUserId',
-    nickname: '사용자',
-    profileImageUrl: '/images/charactors/gamza.png',
-  };
+  // userStore에서 Sender 변환
+  const mySender: Sender = user
+    ? {
+        userId: user.uuid,
+        nickname: user.nickname,
+        profileImageUrl: user.profileImageUrl ?? '',
+      }
+    : {
+        userId: '',
+        nickname: '',
+        profileImageUrl: '',
+      };
   const [chatRooms, setChatRooms] = useState<ChatRoomResponse[]>([]);
 
   useEffect(() => {
@@ -129,7 +137,13 @@ export default function ChatClient() {
   const chatInterface = (
     <div className="flex-1 flex flex-col bg-white dark:bg-black h-screen">
       {inRoom ? (
-        <ChatRoom onBack={handleBackToList} sender={mySender} roomId={inRoom.roomName} />
+        <ChatRoom 
+          onBack={handleBackToList} 
+          sender={mySender} 
+          roomId={inRoom.roomId}
+          roomName={inRoom.roomName}
+          challengeImageUrl={inRoom.challengeImageUrl}
+        />
       ) : (
         <>
           <ContentHeader
