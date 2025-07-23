@@ -6,20 +6,24 @@ import { Region } from '@/types/Region';
 
 interface RegionSelectFormProps {
   onRegionSelect: (regionId: number | null, fullAddress: string, sidoId?: number | null, sigunguId?: number | null, dongId?: number | null) => void;
-  initialRegionId?: number | null;
+  onCancel?: () => void;
+  onSubmit?: () => void;
   initialFullAddress?: string;
   selectedSidoId?: number | null;
   selectedSigunguId?: number | null;
   selectedDongId?: number | null;
+  showButtons?: boolean; // 버튼 표시 여부를 제어하는 prop
 }
 
 const RegionSelectForm = ({
   onRegionSelect,
-  initialRegionId,
+  onCancel,
+  onSubmit,
   initialFullAddress,
   selectedSidoId,
   selectedSigunguId,
   selectedDongId,
+  showButtons = false, // 기본값은 false
 }: RegionSelectFormProps) => {
   // 데이터 목록 상태
   const [sidoList, setSidoList] = useState<Region[]>([]);
@@ -59,41 +63,49 @@ const RegionSelectForm = ({
     fetchSidos();
   }, []);
 
-  // selectedSidoId, selectedSigunguId, selectedDongId가 바뀌면 선택 상태 동기화
+  // selectedSido, selectedSigungu가 바뀌면 하위 지역 조회
+  useEffect(() => {
+    if (selectedSido) {
+      getSubRegions(selectedSido.regionId).then(data => setSigunguList(data));
+    }
+  }, [selectedSido]);
+  useEffect(() => {
+    if (selectedSigungu) {
+      getSubRegions(selectedSigungu.regionId).then(data => setDongList(data));
+    }
+  }, [selectedSigungu]);
+
+  // useEffects for syncing selection based on props
   useEffect(() => {
     if (selectedSidoId && sidoList.length > 0) {
       const sido = sidoList.find(s => s.regionId === selectedSidoId) || null;
-      setSelectedSido(sido);
-      if (sido) {
-        getSubRegions(sido.regionId).then(data => setSigunguList(data));
-      }
+      if(sido) handleSidoSelect(sido, true);
     }
   }, [selectedSidoId, sidoList]);
+
   useEffect(() => {
     if (selectedSigunguId && sigunguList.length > 0) {
       const sigungu = sigunguList.find(sg => sg.regionId === selectedSigunguId) || null;
-      setSelectedSigungu(sigungu);
-      if (sigungu) {
-        getSubRegions(sigungu.regionId).then(data => setDongList(data));
-      }
+      if(sigungu) handleSigunguSelect(sigungu, true);
     }
   }, [selectedSigunguId, sigunguList]);
+  
   useEffect(() => {
     if (selectedDongId && dongList.length > 0) {
       const dong = dongList.find(d => d.regionId === selectedDongId) || null;
-      setSelectedDong(dong);
+      if(dong) handleDongSelect(dong);
     }
   }, [selectedDongId, dongList]);
 
   // 시/도 선택 시 하위 시/군/구 목록 조회
-  const handleSidoSelect = async (sido: Region) => {
+  const handleSidoSelect = async (sido: Region, fromInitial = false) => {
     setLoading(true);
     setError(null);
     setSelectedSido(sido);
     setSelectedSigungu(null);
     setSelectedDong(null);
     setAllSelected(null);
-    onRegionSelect(null, '', sido.regionId, null, null);
+    if(!fromInitial) onRegionSelect(null, '', sido.regionId, null, null);
     try {
       const data = await getSubRegions(sido.regionId);
       setSigunguList(data);
@@ -104,13 +116,13 @@ const RegionSelectForm = ({
   };
 
   // 시/군/구 선택 시 하위 동/면/읍 목록 조회
-  const handleSigunguSelect = async (sigungu: Region) => {
+  const handleSigunguSelect = async (sigungu: Region, fromInitial = false) => {
     setLoading(true);
     setError(null);
     setSelectedSigungu(sigungu);
     setSelectedDong(null);
     setAllSelected(null);
-    onRegionSelect(null, '', selectedSido?.regionId, sigungu.regionId, null);
+    if(!fromInitial) onRegionSelect(null, '', selectedSido?.regionId, sigungu.regionId, null);
     try {
       const data = await getSubRegions(sigungu.regionId);
       setDongList(data);
@@ -154,7 +166,7 @@ const RegionSelectForm = ({
       setSelectedDong(null);
     }
     setAllSelected(null);
-    onRegionSelect(null, '', null, null, null);
+    onRegionSelect(null, '');
   };
 
   // 초기화 버튼
@@ -174,7 +186,9 @@ const RegionSelectForm = ({
           {selectedSido.regionName}
         </span>
       ) : (
-        <span style={{ userSelect: 'none', cursor: 'default' }}>활동지역 선택</span>
+        <span style={{ userSelect: 'none', cursor: 'default' }}>
+          {initialFullAddress || '활동지역 선택'}
+        </span>
       )}
       {selectedSigungu && (
         <>
@@ -291,6 +305,25 @@ const RegionSelectForm = ({
           return renderGridItem(item, isSelected, handler);
         })}
       </div>
+
+      {showButtons && (
+        <div className="mt-6 flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={onSubmit}
+            className="w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600 transition-colors"
+          >
+            변경하기
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="w-full bg-gray-200 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-300 transition-colors"
+          >
+            취소
+          </button>
+        </div>
+      )}
     </>
   );
 };

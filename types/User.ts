@@ -26,3 +26,7 @@ export interface UpdateProfileImageRequest {
 export interface UpdateNicknameRequest {
   nickname: string;
 }
+
+export interface UpdateRegionRequest {
+  regionId: number;
+}
