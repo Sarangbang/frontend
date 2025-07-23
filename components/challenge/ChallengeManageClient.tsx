@@ -6,7 +6,29 @@ import Image from "next/image";
 import { ChevronLeftIcon } from "@heroicons/react/24/solid";
 import { fetchChallengeDetail } from "@/api/challenge";
 import { ChallengeDetail } from "@/types/Challenge";
+import { ChallengeApplication } from "@/types/Application";
 import toast from "react-hot-toast";
+import Modal from "@/components/common/Modal";
+
+
+const mockApplications: ChallengeApplication[] = [
+  {
+    applicationId: 1,
+    userId: "101",
+    nickname: "김개발",
+    location: "서울특별시 강남구",
+    appliedAt: "2025-07-23T10:00:00Z",
+    status: "PENDING",
+  },
+  {
+    applicationId: 2,
+    userId: "102",
+    nickname: "박디자이너",
+    location: "부산광역시 해운대구",
+    appliedAt: "2025-07-22T16:30:00Z",
+    status: "APPROVED",
+  },
+];
 
 interface Props {
   challengeId: number;
@@ -16,6 +38,9 @@ const ChallengeManageClient = ({ challengeId }: Props) => {
   const router = useRouter();
   const [challenge, setChallenge] = useState<ChallengeDetail | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [selectedApp, setSelectApp] = useState<ChallengeApplication | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   useEffect(() => {
     setIsClient(true);
@@ -77,14 +102,14 @@ const ChallengeManageClient = ({ challengeId }: Props) => {
             </button>
           </div>
 
-          {/* 참여 신청 리스트
-          {challenge.applications && challenge.applications.length > 0 && (
+          참여 신청 리스트
+          {mockApplications.length > 0&& (
             <div className="mt-8">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                참여 신청 ({challenge.applications.length})
+                참여 신청 ({mockApplications.length})
               </h3>
               <div className="space-y-4">
-                {challenge.applications.map((app) => (
+                {mockApplications.map((app) => (
                   <div
                     key={app.userId}
                     className="flex justify-between items-center p-3 border rounded-lg dark:border-gray-700"
@@ -94,23 +119,44 @@ const ChallengeManageClient = ({ challengeId }: Props) => {
                         {app.nickname}
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {app.address} | {app.appliedAt}
+                        {app.location} | {new Date(app.appliedAt).toLocaleString()}
                       </p>
                     </div>
-                    <button className="text-sm font-medium px-4 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <button 
+                      onClick={() => {
+                        setSelectApp(app);
+                        setIsModalOpen(true);
+                      }}
+                      className="text-sm font-medium px-4 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
                       신청서 보기
                     </button>
                   </div>
                 ))}
               </div>
             </div>
-          )} */}
+          )}
         </main>
       ) : (
         <div className="p-8 text-center text-gray-500 dark:text-gray-400">
           챌린지 정보를 불러오는 중입니다...
         </div>
       )}
+      
+      {selectedApp && (
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title="신청서 상세보기"
+        >
+          <div className="space-y-2">
+            <p><strong>닉네임:</strong> {selectedApp.nickname}</p>
+            <p><strong>지역:</strong> {selectedApp.location}</p>
+            <p><strong>신청일:</strong> {new Date(selectedApp.appliedAt).toLocaleString()}</p>
+            <p><strong>상태:</strong> {selectedApp.status}</p>
+          </div>
+        </Modal>
+)}
+
     </div>
   );
 };
