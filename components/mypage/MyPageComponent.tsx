@@ -36,7 +36,6 @@ export default function MyPageComponent() {
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -204,14 +203,6 @@ export default function MyPageComponent() {
             onChange={handleFileChange}
             style={{ display: 'none' }}
             accept="image/*"
-          />
-          <input
-            type="file"
-            ref={cameraInputRef}
-            onChange={handleFileChange}
-            style={{ display: 'none' }}
-            accept="image/*"
-            capture="user"
           />
           <div
             className="absolute bottom-0 right-0 bg-gray-300 dark:bg-gray-600 p-1 rounded-full cursor-pointer"
