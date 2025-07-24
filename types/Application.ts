@@ -5,4 +5,8 @@ export interface ChallengeApplication {
     location: string;
     appliedAt: string;
     status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    profileImage?: string;
+    introduction?: string;
+    reason?: string;
+    commitment?: string;
 }

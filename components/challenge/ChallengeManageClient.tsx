@@ -20,6 +20,9 @@ const mockApplications: ChallengeApplication[] = [
     location: "서울특별시 강남구",
     appliedAt: "2025-07-23T10:00:00Z",
     status: "PENDING",
+    introduction: "안녕하세요 김개발입니다. 개발의 정석!",
+    reason: "꾸준하게 하고 싶어서 지원했어요 하하하하하 진짜 간절합니다",
+    commitment: "정말 참여 열심히 할께요!!!!!!!!!!!!!!!아자아자",
   },
   {
     applicationId: 2,
@@ -42,6 +45,12 @@ const ChallengeManageClient = ({ challengeId }: Props) => {
   const [isDesktop, setIsDesktop] = useState(false);
   const [selectedApp, setSelectApp] = useState<ChallengeApplication | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const statusLabelMap: Record<ChallengeApplication["status"], string> = {
+    PENDING: "대기중",
+    APPROVED: "승인",
+    REJECTED: "거절",
+  }
 
   useEffect(() => {
     setIsClient(true);
@@ -86,12 +95,12 @@ const ChallengeManageClient = ({ challengeId }: Props) => {
           <p className="text-xs text-gray-400">{challenge?.startDate || '2025.07.22'} 생성</p>
         </div>
         <div className="w-full flex flex-col gap-2 mt-6 px-4">
-          <button
+          {/* <button
             onClick={() => router.push(`/challenge/${challengeId}/edit`)}
             className="w-full h-12 bg-gray-50 text-gray-900 font-medium rounded-xl border border-gray-200 text-base flex items-center justify-center mb-1 hover:bg-gray-100 transition"
           >
             챌린지 정보 수정
-          </button>
+          </button> */}
           <button
             onClick={() => router.push(`/challenge-manage/${challengeId}/members`)}
             className="w-full h-12 bg-white text-pink-600 font-medium rounded-xl border border-pink-200 shadow-sm text-base flex items-center justify-center hover:bg-pink-50 transition"
@@ -180,37 +189,78 @@ const ChallengeManageClient = ({ challengeId }: Props) => {
           }}
           title="신청서 상세보기"
         >
-          <div className="space-y-2">
-            <p><strong>닉네임:</strong> {selectedApp.nickname}</p>
-            <p><strong>지역:</strong> {selectedApp.location}</p>
-            <p><strong>신청일:</strong> {new Date(selectedApp.appliedAt).toLocaleString()}</p>
-            <p><strong>상태:</strong> {selectedApp.status}</p>
-          </div>
-          <div className="flex justify-end gap-2 mt-6">
-            <button
-              className="px-4 py-2 text-sm font-medium rounded-md bg-green-500 text-white hover:bg-green-600"
-              onClick={() => {
-                toast.success("신청이 승인되었습니다.");
-                selectedApp.status = "APPROVED";
-                setIsModalOpen(false);
-                setSelectApp(null);
-              }}
-            >
-              승인
-            </button>
-            <button
-              className="px-4 py-2 text-sm font-medium rounded-md bg-red-500 text-white hover:bg-red-600"
-              onClick={() => {
-                toast.error("신청이 거절되었습니다.");
-                selectedApp.status = "REJECTED";
-                setIsModalOpen(false);
-                setSelectApp(null);
-              }}
-            >
-              거절
-            </button>
+          <div className="px-4 py-6 sm:px-6 sm:py-8">
+            {/* 프로필 */}
+            <div className="flex flex-col items-center gap-2 mb-6">
+              <Image
+                src={selectedApp?.profileImage || "/images/charactors/gamza.png"}
+                alt={selectedApp?.nickname || "프로필"}
+                width={72}
+                height={72}
+                className="rounded-full border border-gray-200 shadow-sm object-cover"
+              />
+              <div className="text-center mt-1.5">
+                <p className="font-bold text-lg text-gray-900">{selectedApp?.nickname}</p>
+                <p className="text-sm text-gray-500">{selectedApp?.location}</p>
+              </div>
+            </div>
+
+            {/* 신청일 / 상태 */}
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm text-gray-500 mb-6">
+              <span><strong>신청일:</strong> {selectedApp ? new Date(selectedApp.appliedAt).toLocaleString() : ''}</span>
+              <span><strong>상태:</strong> {selectedApp ? statusLabelMap[selectedApp.status] : ''}</span>
+            </div>
+
+            {/* 상세 내용 */}
+            <div className="space-y-5 text-[15px] text-gray-800">
+              {selectedApp?.introduction && (
+                <div>
+                  <p className="font-semibold text-gray-700 mb-1">자기소개</p>
+                  <div className="bg-gray-50 rounded-lg p-3 text-gray-800 whitespace-pre-line">{selectedApp.introduction}</div>
+                </div>
+              )}
+              {selectedApp?.reason && (
+                <div>
+                  <p className="font-semibold text-gray-700 mb-1">신청사유</p>
+                  <div className="bg-gray-50 rounded-lg p-3 text-gray-800 whitespace-pre-line">{selectedApp.reason}</div>
+                </div>
+              )}
+              {selectedApp?.commitment && (
+                <div>
+                  <p className="font-semibold text-gray-700 mb-1">다짐</p>
+                  <div className="bg-gray-50 rounded-lg p-3 text-gray-800 whitespace-pre-line">{selectedApp.commitment}</div>
+                </div>
+              )}
+            </div>
+
+            {/* 버튼 */}
+            <div className="flex justify-center sm:justify-end gap-3 mt-10">
+              <button
+                className="px-5 py-2 text-base font-semibold rounded-lg bg-[#F4724F] text-white hover:bg-[#e56b49] transition"
+                onClick={() => {
+                  toast.success("신청이 승인되었습니다.");
+                  if (selectedApp) selectedApp.status = "APPROVED";
+                  setIsModalOpen(false);
+                  setSelectApp(null);
+                }}
+              >
+                승인
+              </button>
+              <button
+                className="px-5 py-2 text-base font-semibold rounded-lg bg-gray-200 text-gray-600 hover:bg-gray-300 transition"
+                onClick={() => {
+                  toast.error("신청이 거절되었습니다.");
+                  if (selectedApp) selectedApp.status = "REJECTED";
+                  setIsModalOpen(false);
+                  setSelectApp(null);
+                }}
+              >
+                거절
+              </button>
+            </div>
           </div>
         </Modal>
+
       )}
     </div>
   );
