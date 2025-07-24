@@ -1,8 +1,9 @@
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Challenge } from '@/types/Challenge';
 import { ClockIcon, UserGroupIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import { calculatePeriod, formatPeriod } from '@/util/dateUtils';
+import { getPresignedUrl } from '@/api/files';
 
 interface ChallengeCardProps {
   challenge: Challenge;
@@ -12,6 +13,28 @@ interface ChallengeCardProps {
 const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
   const { status, location, title, currentParticipants, participants, category, description, startDate, endDate, image } = challenge;
   const [imageError, setImageError] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string>(''); // Presigned URL용 상태 추가
+
+  useEffect(() => {
+    const fetchImageUrl = async () => {
+      try {
+        if (!image || image.startsWith('http') || image.startsWith('/')) {
+          // 절대경로거나 내부 리소스면 그대로 사용
+          setImageUrl(image || '/images/charactors/gamza.png');
+          return;
+        }
+
+        // 상대 경로거나 S3 경로일 경우 Presigned URL 요청
+        const presigned = await getPresignedUrl(image);
+        setImageUrl(presigned);
+      } catch (err) {
+        console.error('Presigned URL 요청 실패: ', err);
+        setImageUrl('/images/charactors/gamza.png');
+      }
+    };
+
+    fetchImageUrl();
+  }, [image]);
 
   // 기간 계산
   const periodDays = calculatePeriod(startDate, endDate);
@@ -38,25 +61,25 @@ const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
   const dynamicStatus = getDynamicStatus(startDate, endDate);
 
   // 이미지 경로 처리 함수
-  const getImageSrc = (imagePath: string): string => {
-    // 이미지 에러가 발생했거나 이미지가 없으면 기본 이미지 사용
-    if (imageError || !imagePath || imagePath.trim() === '') {
-      return '/images/charactors/gamza.png';
-    }
+  // const getImageSrc = (imagePath: string): string => {
+  //   // 이미지 에러가 발생했거나 이미지가 없으면 기본 이미지 사용
+  //   if (imageError || !imagePath || imagePath.trim() === '') {
+  //     return '/images/charactors/gamza.png';
+  //   }
     
-    // 이미지가 절대 URL인지 확인 (http:// 또는 https://로 시작)
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-      return imagePath;
-    }
+  //   // 이미지가 절대 URL인지 확인 (http:// 또는 https://로 시작)
+  //   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+  //     return imagePath;
+  //   }
     
-    // 이미지가 이미 /로 시작하는지 확인
-    if (imagePath.startsWith('/')) {
-      return imagePath;
-    }
+  //   // 이미지가 이미 /로 시작하는지 확인
+  //   if (imagePath.startsWith('/')) {
+  //     return imagePath;
+  //   }
     
-    // 파일명만 있는 경우 /images/ 접두사 추가
-    return `/images/challenges/${imagePath}`;
-  };
+  //   // 파일명만 있는 경우 /images/ 접두사 추가
+  //   return `/images/challenges/${imagePath}`;
+  // };
 
   // 이미지 에러 핸들러
   const handleImageError = () => {
@@ -81,12 +104,13 @@ const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
       <div className="flex">
         <div className="relative w-24 h-24 mr-4 flex-shrink-0">
           <Image 
-            src={getImageSrc(image)} 
+            src={imageUrl} 
             alt={title} 
             width={96} 
             height={96} 
             className="rounded-full object-cover aspect-square"
             onError={handleImageError}
+            unoptimized
           />
         </div>
         <div className="flex-1">
