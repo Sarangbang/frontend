@@ -146,7 +146,6 @@ const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
             onClick={(e) =>
               {
                 e.stopPropagation(); // 이벤트 전파 차단
-                console.log("이동 대상 challenge.id:", challenge.id);  // 반드시 숫자여야 함
                 router.push(`/challenge-manage/${String(challenge.id)}`)
               }
             }

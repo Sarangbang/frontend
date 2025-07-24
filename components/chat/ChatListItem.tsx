@@ -1,19 +1,17 @@
 import Image from 'next/image';
-import { Chat } from './ChatClient';
+import { ChatRoomResponse } from '@/types/Chat';
 
 type ChatListItemProps = {
-  chat: Chat;
+  chat: ChatRoomResponse;
+  onClick: () => void;
 };
 
-export default function ChatListItem({ chat }: ChatListItemProps) {
-  const unreadCountDisplay =
-    chat.unreadCount > 100 ? '100+' : chat.unreadCount;
-
+export default function ChatListItem({ chat, onClick }: ChatListItemProps) {
   return (
-    <li className="p-4 flex items-center space-x-4 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+    <li className="p-4 flex items-center space-x-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer" onClick={onClick}>
       <Image
-        src={chat.avatar}
-        alt={chat.name}
+        src={chat.challengeImageUrl || '/images/charactors/gamza.png'}
+        alt={chat.roomName}
         width={56}
         height={56}
         className="rounded-full"
@@ -37,7 +35,7 @@ export default function ChatListItem({ chat }: ChatListItemProps) {
           )}
         </div>
         <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-          {chat.lastMessage}
+          {chat.createdAt ? new Date(chat.createdAt).toLocaleString() : ''}
         </p>
       </div>
       <div className="flex flex-col items-end space-y-1 text-xs text-gray-400">
