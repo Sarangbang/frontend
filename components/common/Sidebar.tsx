@@ -11,7 +11,7 @@ const NavItem = ({ children, text, href }: { children: React.ReactNode, text: st
     <Link href={href} className="w-full">
         <div className="flex items-center w-full text-gray-600 hover:bg-gray-100 hover:text-blue-500 p-3 rounded-lg cursor-pointer dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-blue-400">
             {children}
-            <span className="ml-4 font-semibold">{text}</span>
+            <span className="ml-4 font-medium">{text}</span>
         </div>
     </Link>
 )

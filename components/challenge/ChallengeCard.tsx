@@ -122,7 +122,7 @@ const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
             </span>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{location} · {challenge.categoryName || category}</p>
-          <h3 className="text-lg font-bold text-gray-800 dark:text-white my-1">{title} [{currentParticipants}/{participants}]</h3>
+          <h3 className="text-lg font-medium text-gray-800 dark:text-white my-1">{title} [{currentParticipants}/{participants}]</h3>
           <p className="text-sm text-gray-600 dark:text-gray-300">{description}</p>
           <div className="mt-2 space-y-1 text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center">

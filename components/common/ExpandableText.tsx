@@ -25,7 +25,7 @@ const ExpandableText = ({ text, maxLength = 100 }: ExpandableTextProps) => {
       </p>
       <button
         onClick={toggleExpanded}
-        className="text-sm font-semibold mt-1 hover:underline"
+        className="text-sm font-medium mt-1 hover:underline"
         style={{ color: '#F47150' }}
       >
         {isExpanded ? '접기' : '더보기'}

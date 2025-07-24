@@ -38,7 +38,7 @@ export default function ChallengeMemberManagePage() {
         <button className="mr-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
           <UserGroupIcon className="w-6 h-6 text-pink-500" />
         </button>
-        <h1 className="text-lg font-bold text-gray-900 dark:text-white">멤버 관리</h1>
+        <h1 className="text-lg font-medium text-gray-900 dark:text-white">멤버 관리</h1>
       </header>
 
       {/* 탭 */}

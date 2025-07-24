@@ -82,19 +82,19 @@ const ChallengeManageClient = ({ challengeId }: Props) => {
           className="rounded-full object-cover mb-2 border border-gray-200"
         />
         <div className="text-center">
-          <h2 className="text-lg font-bold text-gray-900 mb-1">{challenge?.title || '챌..읽읍시다'}</h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-1">{challenge?.title || '챌..읽읍시다'}</h2>
           <p className="text-xs text-gray-400">{challenge?.startDate || '2025.07.22'} 생성</p>
         </div>
         <div className="w-full flex flex-col gap-2 mt-6 px-4">
           <button
             onClick={() => router.push(`/challenge/${challengeId}/edit`)}
-            className="w-full h-12 bg-gray-50 text-gray-900 font-semibold rounded-xl border border-gray-200 text-base flex items-center justify-center mb-1 hover:bg-gray-100 transition"
+            className="w-full h-12 bg-gray-50 text-gray-900 font-medium rounded-xl border border-gray-200 text-base flex items-center justify-center mb-1 hover:bg-gray-100 transition"
           >
             챌린지 정보 수정
           </button>
           <button
             onClick={() => router.push(`/challenge-manage/${challengeId}/members`)}
-            className="w-full h-12 bg-white text-pink-600 font-bold rounded-xl border border-pink-200 shadow-sm text-base flex items-center justify-center hover:bg-pink-50 transition"
+            className="w-full h-12 bg-white text-pink-600 font-medium rounded-xl border border-pink-200 shadow-sm text-base flex items-center justify-center hover:bg-pink-50 transition"
             style={{ boxShadow: '0 1px 4px 0 rgba(0,0,0,0.04)' }}
           >
             챌린지 멤버 관리

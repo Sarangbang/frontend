@@ -130,7 +130,7 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
             <main className="w-2/4 mx-auto pt-8">
                <div className="flex items-center mb-8">
                 <Image src="/images/charactors/gamza.png" alt={challengeTitle} width={32} height={32} className="mr-3" />
-                <h1 className="text-3xl font-bold dark:text-white">{challengeTitle}</h1>
+                <h1 className="text-3xl font-medium dark:text-white">{challengeTitle}</h1>
               </div>
               {mainContent}
             </main>
@@ -144,7 +144,7 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
                 <ChevronLeftIcon className="w-6 h-6 text-gray-800 dark:text-gray-200" />
               </button>
               <Image src="/images/charactors/gamza.png" alt={challengeTitle} width={24} height={24} className="mr-2" />
-              <h1 className="text-xl font-bold dark:text-white">{challengeTitle}</h1>
+              <h1 className="text-xl font-medium dark:text-white">{challengeTitle}</h1>
             </div>
           </header>
           {mainContent}
