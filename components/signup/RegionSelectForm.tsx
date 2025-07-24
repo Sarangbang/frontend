@@ -243,37 +243,22 @@ const RegionSelectForm = ({
     </button>
   );
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[200px]">
-        <p>로딩 중...</p>
-      </div>
-    );
-  }
-  if (error) {
-    return (
-      <div className="flex justify-center items-center min-h-[200px] text-red-500">
-        <p>{error}</p>
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <div className="relative flex items-center justify-center mb-4 bg-gray-100 rounded-lg px-4 min-h-[56px] py-4 text-base font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-200">
-        <div className="flex-1 flex justify-center text-center font-bold text-orange-700 dark:text-orange-400" style={{ userSelect: 'none' }}>
-          {regionPathJSX}
+  const RegionGrid = () => {
+    // 그리드에 표시할 항목
+    let gridItems: Region[] = [];
+    if (step === 0) gridItems = sidoList;
+    else if (step === 1) gridItems = sigunguList;
+    else if (step === 2) gridItems = dongList;
+    
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center min-h-[200px]">
+          <p>로딩 중...</p>
         </div>
-        {step > 0 && (
-          <button
-            className="absolute right-4 text-sm text-orange-500"
-            onClick={handleReset}
-          >
-            초기화
-          </button>
-        )}
-      </div>
+      );
+    }
 
+    return (
       <div className="grid grid-cols-3 gap-2">
         {step > 0 &&
           renderGridItem(
@@ -305,6 +290,34 @@ const RegionSelectForm = ({
           return renderGridItem(item, isSelected, handler);
         })}
       </div>
+    );
+  };
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px] text-red-500">
+        <p>{error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="relative flex items-center justify-center mb-4 bg-gray-100 rounded-lg px-4 min-h-[56px] py-4 text-base font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+        <div className="flex-1 flex justify-center text-center font-bold text-orange-700 dark:text-orange-400" style={{ userSelect: 'none' }}>
+          {regionPathJSX}
+        </div>
+        {step > 0 && (
+          <button
+            className="absolute right-4 text-sm text-orange-500"
+            onClick={handleReset}
+          >
+            초기화
+          </button>
+        )}
+      </div>
+
+      <RegionGrid />
 
       {showButtons && (
         <div className="mt-6 flex flex-col gap-2">

@@ -207,7 +207,7 @@ export default function MyPageComponent() {
         setTimeout(() => setShowToast(false), 3000);
       }
     } else {
-      setToastMessage('지역을 선택해주세요.');
+      setToastMessage('변경할 지역을 선택해주세요.');
       setToastType('error');
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
