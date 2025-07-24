@@ -106,7 +106,12 @@ export default function ChatRoom({ onBack, sender, roomId, roomName, challengeIm
     const chatSocket = new ChatSocket(
       roomId,
       (msg) => {
-        setMessages((prev) => [...prev, msg]);
+        setMessages((prevMessages) => {
+          if (prevMessages.some((m) => m._id === msg._id)) {
+            return prevMessages;
+          }
+          return [...prevMessages, msg];
+        });
       },
       // handleSocketOpen
     );
