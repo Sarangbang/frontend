@@ -1,4 +1,4 @@
-import { UpdateNicknameRequest, UpdatePasswordRequest, UpdateProfileImageRequest, UserProfileResponse } from "@/types/User";
+import { UpdateNicknameRequest, UpdatePasswordRequest, UpdateProfileImageRequest, UserProfileResponse, UpdateRegionRequest } from "@/types/User";
 import apiClient from "./apiClient";
 
 // 로그인 된 사용자 정보 확인
@@ -35,5 +35,11 @@ export const updateProfileImage = async (data: UpdateProfileImageRequest) => {
 // 프로필 사진 삭제
 export const deleteProfileImage = async () => {
   const response = await apiClient.delete("/users/me/avatar");
+  return response.data;
+}
+
+// 지역 변경
+export const updateRegion = async (data: UpdateRegionRequest) => {
+  const response = await apiClient.patch("/users/me/region", data);
   return response.data;
 }
