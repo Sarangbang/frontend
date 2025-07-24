@@ -13,7 +13,7 @@ const PopularChallengeSection = () => {
     return (
     <div className="p-4">
         <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold dark:text-white">인기Challenge 🔥</h2>
+            <h2 className="text-xl font-medium dark:text-white">인기Challenge 🔥</h2>
                 <button 
                     className="text-sm text-gray-500 dark:text-gray-400 cursor-pointer"
                     onClick={handleViewAll}

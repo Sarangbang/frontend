@@ -20,7 +20,7 @@ const ChallengeCard = ({
       </div>
       <div className="p-3">
         <p className="text-xs text-gray-500 dark:text-gray-400">{location}</p>
-        <h3 className="font-bold text-sm truncate dark:text-white">
+        <h3 className="font-medium text-sm truncate dark:text-white">
           {title} [{progress}]
         </h3>
       </div>
