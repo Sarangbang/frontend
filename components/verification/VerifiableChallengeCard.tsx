@@ -46,7 +46,7 @@ const VerifiableChallengeCard = ({ challenge }: VerifiableChallengeCardProps) =>
             </span>
             <p className="text-sm text-gray-500 dark:text-gray-400">{challenge.location}</p>
             
-            <h3 className="text-md font-bold text-gray-800 dark:text-gray-200">{challenge.title} [{challenge.currentParticipants}/{challenge.maxParticipants}]</h3>
+            <h3 className="text-md font-medium text-gray-800 dark:text-gray-200">{challenge.title} [{challenge.currentParticipants}/{challenge.maxParticipants}]</h3>
           </div>
         </div>
       </div>

@@ -24,9 +24,9 @@ export default function Tabs<T extends string>({
           <button
             key={id}
             onClick={() => setActiveTab(id)}
-            className={`flex-1 py-3 text-center text-lg font-semibold cursor-pointer ${
+            className={`flex-1 py-3 text-center text-lg font-medium cursor-pointer ${
               isActive
-                ? 'border-b-2 border-black dark:border-white font-semibold'
+                ? 'border-b-2 border-black dark:border-white font-medium'
                 : 'text-gray-400 dark:text-gray-500'
             }`}
             role="tab"

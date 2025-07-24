@@ -169,7 +169,7 @@ const ChallengeBrowseClient = () => {
     <>
       {/* 데스크톱 헤더 */}
       <header className="hidden lg:flex items-center p-4 border-b-2 mb-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">챌린지 둘러보기</h1>
+        <h1 className="text-2xl font-medium text-gray-900 dark:text-white">챌린지 둘러보기</h1>
       </header>
 
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
