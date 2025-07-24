@@ -22,9 +22,6 @@ interface ChatRoomProps {
   challengeImageUrl?: string;
 }
 
-const PROFILE_IMG = "/images/charactors/gamza.png";
-const NICKNAME = "감자민영";
-
 function formatTime(date: Date) {
   const h = date.getHours();
   const m = date.getMinutes();
@@ -160,6 +157,7 @@ export default function ChatRoom({ onBack, sender, roomId, roomName, challengeIm
         sender: sender,
         message: input,
         createdAt: new Date().toISOString(),
+        unreadCount: 999
       });
       setInput("");
     }

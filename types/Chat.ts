@@ -13,6 +13,7 @@ export interface ChatMessage {
   sender: Sender;
   message: string;
   createdAt: string;
+  unreadCount: number;
 }
 
 export interface ChatRoomResponse {
