@@ -4,35 +4,13 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ChevronLeftIcon } from "@heroicons/react/24/solid";
-import { fetchChallengeDetail } from "@/api/challenge";
+import { fetchChallengeDetail, fetchChallengeApplications, updateApplicationStatus } from "@/api/challenge";
 import { ChallengeDetail } from "@/types/Challenge";
 import { ChallengeApplication } from "@/types/Application";
 import toast from "react-hot-toast";
 import Modal from "@/components/common/Modal";
 import Sidebar from "@/components/common/Sidebar";
 import BottomNav from "@/components/common/BottomNav";
-
-const mockApplications: ChallengeApplication[] = [
-  {
-    applicationId: 1,
-    userId: "101",
-    nickname: "김개발",
-    location: "서울특별시 강남구",
-    appliedAt: "2025-07-23T10:00:00Z",
-    status: "PENDING",
-    introduction: "안녕하세요 김개발입니다. 개발의 정석!",
-    reason: "꾸준하게 하고 싶어서 지원했어요 하하하하하 진짜 간절합니다",
-    commitment: "정말 참여 열심히 할께요!!!!!!!!!!!!!!!아자아자",
-  },
-  {
-    applicationId: 2,
-    userId: "102",
-    nickname: "박디자이너",
-    location: "부산광역시 해운대구",
-    appliedAt: "2025-07-22T16:30:00Z",
-    status: "APPROVED",
-  },
-];
 
 interface Props {
   challengeId: number;
@@ -41,12 +19,15 @@ interface Props {
 const ChallengeManageClient = ({ challengeId }: Props) => {
   const router = useRouter();
   const [challenge, setChallenge] = useState<ChallengeDetail | null>(null);
+  const [applications, setApplications] = useState<ChallengeApplication[]>([]);
   const [isClient, setIsClient] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [selectedApp, setSelectApp] = useState<ChallengeApplication | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [comment, setComment] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const statusLabelMap: Record<ChallengeApplication["status"], string> = {
+  const statusLabelMap: Record<ChallengeApplication["challengeApplyStatus"], string> = {
     PENDING: "대기중",
     APPROVED: "승인",
     REJECTED: "거절",
@@ -66,16 +47,54 @@ const ChallengeManageClient = ({ challengeId }: Props) => {
   }, []);
 
   useEffect(() => {
-    const loadChallenge = async () => {
+    const loadData = async () => {
       try {
-        const data = await fetchChallengeDetail(challengeId);
-        setChallenge(data);
+        // 챌린지 정보와 신청서 목록을 동시에 로드
+        const [challengeData, applicationsData] = await Promise.all([
+          fetchChallengeDetail(challengeId),
+          fetchChallengeApplications(challengeId)
+        ]);
+        
+        setChallenge(challengeData);
+        setApplications(applicationsData);
       } catch (error) {
-        toast.error("챌린지 정보를 불러오는데 실패했습니다.");
+        toast.error("데이터를 불러오는데 실패했습니다.");
       }
     };
-    loadChallenge();
+    
+    loadData();
   }, [challengeId]);
+
+  // 신청서 승인/거절 처리 함수
+  const handleApplicationAction = async (action: 'APPROVED' | 'REJECTED') => {
+    if (!selectedApp || !comment.trim()) {
+      toast.error("코멘트를 입력해주세요.");
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      await updateApplicationStatus(selectedApp.id, action, comment.trim());
+      
+      // 로컬 상태 업데이트
+      setApplications(prev => 
+        prev.map(app => 
+          app.id === selectedApp.id 
+            ? { ...app, challengeApplyStatus: action, comment: comment.trim() }
+            : app
+        )
+      );
+
+      toast.success(action === 'APPROVED' ? "신청이 승인되었습니다." : "신청이 거절되었습니다.");
+      setIsModalOpen(false);
+      setSelectApp(null);
+      setComment("");
+    } catch (error) {
+      toast.error("처리 중 오류가 발생했습니다.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   if (!isClient) return null;
 
@@ -95,12 +114,6 @@ const ChallengeManageClient = ({ challengeId }: Props) => {
           <p className="text-xs text-gray-400">{challenge?.startDate || '2025.07.22'} 생성</p>
         </div>
         <div className="w-full flex flex-col gap-2 mt-6 px-4">
-          {/* <button
-            onClick={() => router.push(`/challenge/${challengeId}/edit`)}
-            className="w-full h-12 bg-gray-50 text-gray-900 font-medium rounded-xl border border-gray-200 text-base flex items-center justify-center mb-1 hover:bg-gray-100 transition"
-          >
-            챌린지 정보 수정
-          </button> */}
           <button
             onClick={() => router.push(`/challenge-manage/${challengeId}/members`)}
             className="w-full h-12 bg-white text-pink-600 font-medium rounded-xl border border-pink-200 shadow-sm text-base flex items-center justify-center hover:bg-pink-50 transition"
@@ -113,38 +126,73 @@ const ChallengeManageClient = ({ challengeId }: Props) => {
 
       {/* 참여 신청자 리스트 */}
       <div className="w-full max-w-md">
-        <h3 className="font-semibold text-gray-900 mb-2">참여 신청 ({mockApplications.length})</h3>
+        <h3 className="font-semibold text-gray-900 mb-2">참여 신청 ({applications.length})</h3>
         <div className="bg-white rounded-2xl border border-gray-200 p-2">
-          {mockApplications.map((app) => (
-            <div
-              key={app.userId}
-              className="flex items-center justify-between px-2 py-3 border-b last:border-b-0 border-gray-100"
-            >
-              <div className="flex items-center gap-3">
-                <Image
-                  src={"/images/charactors/gamza.png"}
-                  alt={app.nickname}
-                  width={40}
-                  height={40}
-                  className="rounded-full border border-gray-200"
-                />
-                <div>
-                  <div className="font-bold text-gray-900 text-sm">{app.nickname}</div>
-                  <div className="text-xs text-gray-500">{app.location}</div>
-                  <div className="text-xs text-gray-400">{new Date(app.appliedAt).toLocaleDateString('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit' })} 신청</div>
+          {applications.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              신청한 사용자가 없습니다.
+            </div>
+          ) : (
+            applications.map((app) => (
+              <div
+                key={app.id}
+                className="flex items-center justify-between px-2 py-3 border-b last:border-b-0 border-gray-100"
+              >
+                                 <div className="flex items-center gap-3">
+                   <div className="w-10 h-10 rounded-full border border-gray-200 overflow-hidden bg-gray-100 flex-shrink-0">
+                     <Image
+                       src={
+                         app.userProfileImageUrl && 
+                         app.userProfileImageUrl.trim() !== '' && 
+                         app.userProfileImageUrl !== 'null' 
+                           ? app.userProfileImageUrl 
+                           : "/images/charactors/gamza.png"
+                       }
+                       alt={app.userNickname}
+                       width={40}
+                       height={40}
+                       className="w-full h-full object-cover"
+                       onError={(e) => {
+                         // 이미지 로드 실패 시 기본 이미지로 대체
+                         const target = e.target as HTMLImageElement;
+                         target.src = "/images/charactors/gamza.png";
+                       }}
+                     />
+                   </div>
+                  <div>
+                    <div className="font-bold text-gray-900 text-sm">{app.userNickname}</div>
+                    <div className="text-xs text-gray-500">{app.userRegion}</div>
+                    <div className="text-xs text-gray-400">
+                      {new Date(app.createdAt).toLocaleDateString('ko-KR', { 
+                        year: '2-digit', 
+                        month: '2-digit', 
+                        day: '2-digit' 
+                      })} 신청
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    app.challengeApplyStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                    app.challengeApplyStatus === 'APPROVED' ? 'bg-green-100 text-green-700' :
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    {statusLabelMap[app.challengeApplyStatus]}
+                  </span>
+                  <button
+                    onClick={() => {
+                      setSelectApp(app);
+                      setComment(app.comment || "");
+                      setIsModalOpen(true);
+                    }}
+                    className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-semibold hover:bg-gray-50 transition"
+                  >
+                    신청서 보기
+                  </button>
                 </div>
               </div>
-              <button
-                onClick={() => {
-                  setSelectApp(app);
-                  setIsModalOpen(true);
-                }}
-                className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-semibold hover:bg-gray-50 transition"
-              >
-                신청서 보기
-              </button>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </main>
@@ -186,33 +234,47 @@ const ChallengeManageClient = ({ challengeId }: Props) => {
           onClose={() => {
             setIsModalOpen(false);
             setSelectApp(null);
+            setComment("");
           }}
           title="신청서 상세보기"
         >
           <div className="px-4 py-6 sm:px-6 sm:py-8">
             {/* 프로필 */}
             <div className="flex flex-col items-center gap-2 mb-6">
-              <Image
-                src={selectedApp?.profileImage || "/images/charactors/gamza.png"}
-                alt={selectedApp?.nickname || "프로필"}
-                width={72}
-                height={72}
-                className="rounded-full border border-gray-200 shadow-sm object-cover"
-              />
+              <div className="w-[72px] h-[72px] rounded-full border border-gray-200 shadow-sm overflow-hidden bg-gray-100">
+                <Image
+                  src={
+                    selectedApp?.userProfileImageUrl && 
+                    selectedApp.userProfileImageUrl.trim() !== '' && 
+                    selectedApp.userProfileImageUrl !== 'null' 
+                      ? selectedApp.userProfileImageUrl 
+                      : "/images/charactors/gamza.png"
+                  }
+                  alt={selectedApp?.userNickname || "프로필"}
+                  width={72}
+                  height={72}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // 이미지 로드 실패 시 기본 이미지로 대체
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/images/charactors/gamza.png";
+                  }}
+                />
+              </div>
               <div className="text-center mt-1.5">
-                <p className="font-bold text-lg text-gray-900">{selectedApp?.nickname}</p>
-                <p className="text-sm text-gray-500">{selectedApp?.location}</p>
+                <p className="font-bold text-lg text-gray-900">{selectedApp?.userNickname}</p>
+                <p className="text-sm text-gray-500">{selectedApp?.userRegion}</p>
               </div>
             </div>
 
             {/* 신청일 / 상태 */}
             <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm text-gray-500 mb-6">
-              <span><strong>신청일:</strong> {selectedApp ? new Date(selectedApp.appliedAt).toLocaleString() : ''}</span>
-              <span><strong>상태:</strong> {selectedApp ? statusLabelMap[selectedApp.status] : ''}</span>
+              <span><strong>신청일:</strong> {selectedApp ? new Date(selectedApp.createdAt).toLocaleString() : ''}</span>
+              <span><strong>상태:</strong> {selectedApp ? statusLabelMap[selectedApp.challengeApplyStatus] : ''}</span>
             </div>
 
             {/* 상세 내용 */}
-            <div className="space-y-5 text-[15px] text-gray-800">
+            <div className="space-y-5 text-[15px] text-gray-800 mb-6">
               {selectedApp?.introduction && (
                 <div>
                   <p className="font-semibold text-gray-700 mb-1">자기소개</p>
@@ -233,34 +295,61 @@ const ChallengeManageClient = ({ challengeId }: Props) => {
               )}
             </div>
 
-            {/* 버튼 */}
-            <div className="flex justify-center sm:justify-end gap-3 mt-10">
-              <button
-                className="px-5 py-2 text-base font-semibold rounded-lg bg-[#F4724F] text-white hover:bg-[#e56b49] transition"
-                onClick={() => {
-                  toast.success("신청이 승인되었습니다.");
-                  if (selectedApp) selectedApp.status = "APPROVED";
-                  setIsModalOpen(false);
-                  setSelectApp(null);
-                }}
-              >
-                승인
-              </button>
-              <button
-                className="px-5 py-2 text-base font-semibold rounded-lg bg-gray-200 text-gray-600 hover:bg-gray-300 transition"
-                onClick={() => {
-                  toast.error("신청이 거절되었습니다.");
-                  if (selectedApp) selectedApp.status = "REJECTED";
-                  setIsModalOpen(false);
-                  setSelectApp(null);
-                }}
-              >
-                거절
-              </button>
-            </div>
+            {/* 기존 코멘트 표시 (이미 처리된 경우) */}
+            {selectedApp?.comment && (
+              <div className="mb-6">
+                <p className="font-semibold text-gray-700 mb-1">방장 코멘트</p>
+                <div className="bg-blue-50 rounded-lg p-3 text-gray-800">{selectedApp.comment}</div>
+              </div>
+            )}
+
+            {/* 코멘트 입력 (PENDING 상태인 경우만) */}
+            {selectedApp?.challengeApplyStatus === 'PENDING' && (
+              <>
+                <div className="mb-6">
+                  <label className="block font-semibold text-gray-700 mb-2">
+                    승인/거절 사유 <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="승인 또는 거절하는 이유를 입력해주세요."
+                    className="w-full h-24 p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-pink-200"
+                    maxLength={100}
+                  />
+                  <div className="text-right text-xs text-gray-500 mt-1">
+                    {comment.length}/100
+                  </div>
+                </div>
+
+                {/* 버튼 */}
+                <div className="flex justify-center sm:justify-end gap-3">
+                  <button
+                    className="px-5 py-2 text-base font-semibold rounded-lg bg-[#F4724F] text-white hover:bg-[#e56b49] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => handleApplicationAction('APPROVED')}
+                    disabled={isProcessing || !comment.trim()}
+                  >
+                    {isProcessing ? '처리중...' : '승인'}
+                  </button>
+                  <button
+                    className="px-5 py-2 text-base font-semibold rounded-lg bg-gray-200 text-gray-600 hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => handleApplicationAction('REJECTED')}
+                    disabled={isProcessing || !comment.trim()}
+                  >
+                    {isProcessing ? '처리중...' : '거절'}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* 이미 처리된 신청서의 경우 */}
+            {selectedApp?.challengeApplyStatus !== 'PENDING' && (
+              <div className="text-center text-gray-500">
+                이미 처리된 신청서입니다.
+              </div>
+            )}
           </div>
         </Modal>
-
       )}
     </div>
   );
