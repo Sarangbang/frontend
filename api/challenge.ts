@@ -1,5 +1,5 @@
 import apiClient from "./apiClient";
-import { ChallengeCreateRequest, Challenge, PageResponse, ChallengeSummaryResponse, ChallengeDetail, ChallengeJoinRequest } from "@/types/Challenge";
+import { ChallengeCreateRequest, Challenge, PageResponse, ChallengeSummaryResponse, ChallengeDetail, ChallengeJoinRequest, PopularChallengeResponse } from "@/types/Challenge";
 
 /**
  * 모든 챌린지를 조회합니다 (무한스크롤용)
@@ -72,5 +72,11 @@ export const joinChallenge = async (challengeId: number, joinData: ChallengeJoin
   } catch (error) {
     throw error;
   }
+};
+
+// 인기 챌린지 조회
+export const getPopularChallenges = async (): Promise<PopularChallengeResponse[]> => {
+  const response = await apiClient.get<PopularChallengeResponse[]>("/challenges/popularity");
+  return response.data;
 };
 
