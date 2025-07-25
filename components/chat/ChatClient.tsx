@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, MessageSquarePlus } from 'lucide-react';
@@ -10,9 +10,10 @@ import ChatList from './ChatList';
 import Tabs, { type Tab } from '../common/Tabs';
 import ContentHeader from '../common/ContentHeader';
 import ChatRoom from './ChatRoom';
-import { Sender, ChatRoomResponse } from '@/types/Chat';
-import { fetchChatRooms, markAsRead } from '@/api/chat';
+import { Sender, ChatRoomResponse, ChatMessage } from '@/types/Chat';
+import { fetchChatRooms, markAsRead, fetchChatMessages } from '@/api/chat';
 import { useUserStore } from '@/lib/store/userStore';
+import { ChatSocket } from '@/util/chatSocket';
 
 const groupChats = [
   {
@@ -94,6 +95,14 @@ export default function ChatClient() {
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
   const user = useUserStore((state) => state.user);
 
+  // --- ChatRoom state management ---
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [hasNextPage, setHasNextPage] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(0);
+  const chatSocketRef = useRef<ChatSocket | null>(null);
+  // --- End of ChatRoom state management ---
+
   // userStore에서 Sender 변환
   const mySender: Sender = user
     ? {
@@ -121,6 +130,134 @@ export default function ChatClient() {
     setIsClient(true);
   }, []);
 
+  // --- WebSocket and message handling logic ---
+  useEffect(() => {
+    if (!inRoom) return;
+
+    let isMounted = true;
+    const initialLoad = async () => {
+      try {
+        setPage(0);
+        setHasNextPage(true);
+        const res = await fetchChatMessages(inRoom.roomId, 0);
+        if (!isMounted) return;
+        setMessages(
+          res.messages
+            .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        );
+        setHasNextPage(res.hasNext);
+        setPage(0);
+      } catch (error) {
+        console.error("Failed to fetch initial messages:", error);
+      }
+    };
+    initialLoad();
+
+    const handleSocketMessage = (data: any) => {
+      const serverMessage = data as ChatMessage;
+      if (serverMessage.type === 'TALK') {
+        setMessages((prevMessages) => {
+
+          // 내가 보낸 낙관적 메시지에 대한 서버의 응답인지 확인
+          if (serverMessage.sender.userId === mySender.userId) {
+            const optimisticMessageIndex = prevMessages.findLastIndex(
+              (msg) =>
+                msg.sender.userId === serverMessage.sender.userId &&
+                !msg._id.match(/^[a-f\d]{24}$/i) && // 임시 ID를 가진 메시지 필터링 (정규식: 24자리 hex)
+                msg.message === serverMessage.message
+            );
+
+            if (optimisticMessageIndex !== -1) {
+              const newMessages = [...prevMessages];
+              const optimisticUnreadCount = newMessages[optimisticMessageIndex].unreadCount;
+              // 임시 메시지를 서버 응답으로 교체하되, unreadCount는 유지
+              newMessages[optimisticMessageIndex] = { ...serverMessage, unreadCount: optimisticUnreadCount };
+              return newMessages;
+            }
+          }
+          // 다른 사람 메시지거나, 내 메시지에 대한 응답을 못 찾은 경우
+          return [...prevMessages, serverMessage];
+        });
+      } else if (data.type === 'MESSAGE_READ_UPDATE') {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === data.messageId
+              ? { ...msg, unreadCount: data.unreadCount }
+              : msg
+          )
+        );
+      }
+    };
+
+    const chatSocket = new ChatSocket(inRoom.roomId, handleSocketMessage);
+    chatSocketRef.current = chatSocket;
+
+    return () => {
+      isMounted = false;
+      console.log(`[CLEANUP] Closing socket for room ${inRoom.roomId}`);
+      chatSocket.close();
+    };
+  }, [inRoom, mySender.userId]);
+
+  const loadMoreMessages = async () => {
+    if (!inRoom || !hasNextPage || isLoadingMore) return;
+
+    setIsLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const res = await fetchChatMessages(inRoom.roomId, nextPage);
+      if (res.messages.length > 0) {
+        const sortedNewMessages = res.messages.sort(
+          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+        setMessages((prev) => {
+          const existingIds = new Set(prev.map((m) => m._id));
+          const uniqueNewMessages = sortedNewMessages.filter(
+            (m) => !existingIds.has(m._id)
+          );
+
+          if (uniqueNewMessages.length === 0) {
+            setHasNextPage(false);
+            return prev;
+          }
+
+          return [...uniqueNewMessages, ...prev];
+        });
+        setPage(nextPage);
+      }
+      setHasNextPage(res.hasNext);
+    } catch (error) {
+      console.error("Failed to fetch more messages:", error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
+  const handleSend = (message: string) => {
+    if (inRoom && chatSocketRef.current && mySender.userId) {
+      const tempId = `${new Date().toISOString()}-${mySender.userId}-${Math.random()}`;
+      const initialUnreadCount = inRoom.participants ? inRoom.participants.length - 1 : 0;
+      
+      const optimisticMessage: ChatMessage = {
+        _id: tempId, // 임시 ID
+        type: "TALK",
+        roomId: inRoom.roomId,
+        sender: mySender,
+        message: message,
+        createdAt: new Date().toISOString(),
+        unreadCount: initialUnreadCount > 0 ? initialUnreadCount : 0,
+      };
+
+      // 낙관적 업데이트: UI에 바로 메시지 추가
+      setMessages(prev => [...prev, optimisticMessage]);
+
+      // 서버에 메시지 전송
+      chatSocketRef.current.send(optimisticMessage);
+    }
+  };
+  // --- End of WebSocket and message handling logic ---
+
+
   const chats = activeTab === 'group' ? chatRooms : [];
   const filteredChats = chats.filter((chat) =>
     chat.roomName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -140,17 +277,30 @@ export default function ChatClient() {
 
   const handleBackToList = () => {
     setInRoom(null);
+    setMessages([]);
+    setPage(0);
+    setHasNextPage(true);
+    setIsLoadingMore(false);
+    if (chatSocketRef.current) {
+      chatSocketRef.current.close();
+      chatSocketRef.current = null;
+    }
   };
 
   const chatInterface = (
     <div className="flex-1 flex flex-col bg-white dark:bg-black h-screen">
       {inRoom ? (
-        <ChatRoom 
-          onBack={handleBackToList} 
-          sender={mySender} 
+        <ChatRoom
+          onBack={handleBackToList}
+          sender={mySender}
           roomId={inRoom.roomId}
           roomName={inRoom.roomName}
           challengeImageUrl={inRoom.challengeImageUrl}
+          messages={messages}
+          onSend={handleSend}
+          loadMoreMessages={loadMoreMessages}
+          hasNextPage={hasNextPage}
+          isLoadingMore={isLoadingMore}
         />
       ) : (
         <>

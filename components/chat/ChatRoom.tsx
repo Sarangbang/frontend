@@ -9,10 +9,8 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { ChatSocket } from "@/util/chatSocket";
 import { ChatMessage, Sender } from "@/types/Chat";
 import Modal from "../common/Modal";
-import { fetchChatMessages } from "@/api/chat";
 
 interface ChatRoomProps {
   onBack: () => void;
@@ -20,6 +18,11 @@ interface ChatRoomProps {
   roomId: string;
   roomName: string;
   challengeImageUrl?: string;
+  messages: ChatMessage[];
+  onSend: (message: string) => void;
+  loadMoreMessages: () => void;
+  hasNextPage: boolean;
+  isLoadingMore: boolean;
 }
 
 function formatTime(date: Date) {
@@ -34,136 +37,71 @@ function formatDate(date: Date) {
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
 
-export default function ChatRoom({ onBack, sender, roomId, roomName, challengeImageUrl }: ChatRoomProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+export default function ChatRoom({
+  onBack,
+  sender,
+  roomId,
+  roomName,
+  challengeImageUrl,
+  messages,
+  onSend,
+  loadMoreMessages,
+  hasNextPage,
+  isLoadingMore,
+}: ChatRoomProps) {
   const [input, setInput] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [hasNextPage, setHasNextPage] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [page, setPage] = useState(0);
   const [prevScrollHeight, setPrevScrollHeight] = useState<number | null>(null);
-  const chatSocketRef = useRef<ChatSocket | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const shouldScrollDownRef = useRef(true);
-
-  const loadMoreMessages = async () => {
-    shouldScrollDownRef.current = false;
-    if (!hasNextPage || isLoadingMore) return;
-
-    setIsLoadingMore(true);
-    if (scrollRef.current) {
-      setPrevScrollHeight(scrollRef.current.scrollHeight);
-    }
-    try {
-      const nextPage = page + 1;
-      const res = await fetchChatMessages(roomId, nextPage);
-      if (res.messages.length > 0) {
-        const sortedNewMessages = res.messages.sort(
-          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        );
-        setMessages((prev) => {
-          const existingIds = new Set(prev.map((m) => m._id));
-          const uniqueNewMessages = sortedNewMessages.filter(
-            (m) => !existingIds.has(m._id)
-          );
-
-          if (uniqueNewMessages.length === 0) {
-            setHasNextPage(false);
-            return prev;
-          }
-
-          return [...uniqueNewMessages, ...prev];
-        });
-        setPage(nextPage);
-      }
-      setHasNextPage(res.hasNext);
-    } catch (error) {
-      console.error("Failed to fetch more messages:", error);
-    } finally {
-      setIsLoadingMore(false);
-    }
-  };
-
-  useEffect(() => {
-    let isMounted = true;
-    const initialLoad = async () => {
-      // 과거 메시지 먼저 불러오기
-      try {
-        const res = await fetchChatMessages(roomId, 0);
-        if (!isMounted) return;
-        setMessages(
-          res.messages
-            .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-        );
-        setHasNextPage(res.hasNext);
-      } catch (error) {
-        console.error("Failed to fetch initial messages:", error);
-      }
-    };
-    initialLoad();
-
-    const chatSocket = new ChatSocket(
-      roomId,
-      (msg) => {
-        setMessages((prevMessages) => {
-          if (prevMessages.some((m) => m._id === msg._id)) {
-            return prevMessages;
-          }
-          return [...prevMessages, msg];
-        });
-      },
-      // handleSocketOpen
-    );
-    chatSocketRef.current = chatSocket;
-
-    return () => {
-      isMounted = false;
-      console.log(`[CLEANUP] Closing socket for room ${roomId}`);
-      chatSocket.close();
-    };
-  }, [roomId]);
 
   useEffect(() => {
     const chatContainer = scrollRef.current;
     if (!chatContainer) return;
 
     const handleScroll = () => {
+      // 이전 메시지를 로드하기 위해 최상단으로 스크롤했을 때
       if (chatContainer.scrollTop === 0 && hasNextPage && !isLoadingMore) {
+        shouldScrollDownRef.current = false;
+        if (scrollRef.current) {
+          setPrevScrollHeight(scrollRef.current.scrollHeight);
+        }
         loadMoreMessages();
+        return; // 추가 로직 실행 방지
+      }
+
+      // 사용자가 스크롤을 맨 아래로 내렸는지 여부에 따라 자동 스크롤 플래그를 업데이트
+      const { scrollTop, scrollHeight, clientHeight } = chatContainer;
+      if (scrollHeight - scrollTop - clientHeight < 10) {
+        shouldScrollDownRef.current = true;
+      } else {
+        shouldScrollDownRef.current = false;
       }
     };
+
     chatContainer.addEventListener("scroll", handleScroll);
     return () => chatContainer.removeEventListener("scroll", handleScroll);
-  }, [hasNextPage, isLoadingMore, messages]);
+  }, [hasNextPage, isLoadingMore, loadMoreMessages]);
 
-
-  useEffect(() => {
-    if (scrollRef.current && shouldScrollDownRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-    shouldScrollDownRef.current = true;
-  }, [messages]);
 
   useLayoutEffect(() => {
-    if (prevScrollHeight !== null && scrollRef.current) {
-      scrollRef.current.scrollTop =
-        scrollRef.current.scrollHeight - prevScrollHeight;
-      setPrevScrollHeight(null);
+    if (scrollRef.current) {
+      if (prevScrollHeight !== null) {
+        // 이전 메시지 로드 후: 스크롤 위치 복원
+        scrollRef.current.scrollTop =
+          scrollRef.current.scrollHeight - prevScrollHeight;
+        setPrevScrollHeight(null);
+      } else if (shouldScrollDownRef.current) {
+        // 새 메시지 수신 또는 첫 로드 시: 맨 아래로 스크롤
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
     }
   }, [messages, prevScrollHeight]);
 
   const handleSend = () => {
-    if (input.trim() && chatSocketRef.current) {
-      chatSocketRef.current.send({
-        _id: new Date().toISOString(), // 임시 ID
-        type: "TALK",
-        roomId: roomId,
-        sender: sender,
-        message: input,
-        createdAt: new Date().toISOString(),
-        unreadCount: 999
-      });
+    if (input.trim()) {
+      onSend(input);
       setInput("");
     }
   };
@@ -285,10 +223,15 @@ export default function ChatRoom({ onBack, sender, roomId, roomName, challengeIm
         {/* 메시지 리스트 */}
         <div className="flex flex-col gap-3 relative z-10">
           {messages.map((msg, idx) => {
+
+            const currentMessageDate = msg.createdAt ? new Date(msg.createdAt) : new Date();
+            const previousMessageDate = (idx > 0 && messages[idx - 1]?.createdAt) 
+                ? new Date(messages[idx - 1].createdAt) 
+                : new Date();
+
             const showDateSeparator =
-              idx === 0 ||
-              formatDate(new Date(messages[idx - 1].createdAt)) !==
-                formatDate(new Date(msg.createdAt));
+              idx === 0 || formatDate(previousMessageDate) !== formatDate(currentMessageDate);
+
 
             const messageContent = () => {
               if (msg.type === "ENTER" || msg.type === "LEAVE") {
@@ -296,7 +239,7 @@ export default function ChatRoom({ onBack, sender, roomId, roomName, challengeIm
               }
 
               const isMine = msg.sender.userId === sender.userId;
-              const time = formatTime(new Date(msg.createdAt));
+              const time = formatTime(currentMessageDate); 
               return (
                 <div
                   className={`flex gap-2 ${
@@ -323,6 +266,11 @@ export default function ChatRoom({ onBack, sender, roomId, roomName, challengeIm
                       </span>
                     )}
                     <div className="flex items-end gap-2">
+                      {isMine && msg.unreadCount > 0 && (
+                        <span className="text-yellow-500 font-bold text-[11px] mb-1">
+                          {msg.unreadCount}
+                        </span>
+                      )}
                       {isMine && (
                         <span className="text-[11px] text-gray-400 mb-1">
                           {time}
@@ -349,16 +297,16 @@ export default function ChatRoom({ onBack, sender, roomId, roomName, challengeIm
             };
 
             return (
-              <React.Fragment key={msg._id}>
+              <div key={msg._id || `msg-${idx}`}>
                 {showDateSeparator && (
                   <div className="flex justify-center my-4">
                     <span className="bg-gray-100 dark:bg-gray-700 text-xs text-gray-500 dark:text-gray-300 px-4 py-1 rounded-full shadow-sm">
-                      {formatDate(new Date(msg.createdAt))}
+                    {formatDate(currentMessageDate)}
                     </span>
                   </div>
                 )}
                 {messageContent()}
-              </React.Fragment>
+              </div>
             );
           })}
         </div>
