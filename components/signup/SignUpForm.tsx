@@ -110,7 +110,7 @@ const SignUpForm = ({ onNext, initialData }: SignUpFormProps) => {
                 alt="프로필 이미지"
                 width={112}
                 height={112}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-center"
               />
             </div>
             {/* 카메라 아이콘 */}

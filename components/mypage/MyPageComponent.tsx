@@ -186,13 +186,15 @@ export default function MyPageComponent() {
     <>
       <main className="flex-grow flex flex-col items-center w-full p-6 space-y-6">
         <div className="relative">
-          <Image
-            src={userProfile?.profileImageUrl || '/images/charactors/gamza.png'}
-            alt="Profile"
-            width={100}
-            height={100}
-            className="rounded-full object-cover"
-          />
+          <div className="w-28 h-28 rounded-full overflow-hidden">
+            <Image
+              src={userProfile?.profileImageUrl || '/images/charactors/gamza.png'}
+              alt="Profile"
+              width={112}
+              height={112}
+              className="w-full h-full object-cover object-center"
+            />
+          </div>
           <input
             type="file"
             ref={fileInputRef}
