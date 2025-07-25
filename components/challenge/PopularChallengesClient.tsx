@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getPopularChallenges } from '@/api/challenge';
-import { PopularChallengeResponse } from '@/types/Challenge';
+import { createChallenge, getPopularChallenges } from '@/api/challenge';
+import { PopularChallengeResponse, ChallengeCreateRequest, ChallengeFormData } from '@/types/Challenge';
 import { ChevronLeftIcon, ClockIcon, UserGroupIcon, CalendarIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
-import { calculatePeriod, formatPeriod, getChallengeStatus } from '@/util/dateUtils';
+import { PlusIcon } from '@heroicons/react/24/solid';
+import { calculatePeriod, formatPeriod, getChallengeStatus, formatDateToYYYYMMDD, calculateEndDateObject } from '@/util/dateUtils';
 import Image from 'next/image';
 import ChallengeApplyModal from './ChallengeApplyModal';
+import CreateChallengeForm from './CreateChallengeForm';
+import { useMediaQuery } from "react-responsive";
+import Sidebar from '../common/Sidebar';
 
 const PopularChallengeItem = ({ challenge, onClick }: { challenge: PopularChallengeResponse; onClick: () => void; }) => {
     const periodDays = calculatePeriod(challenge.startDate, challenge.endDate);
@@ -78,9 +82,12 @@ const PopularChallengesClient = () => {
     const router = useRouter();
     const [challenges, setChallenges] = useState<PopularChallengeResponse[]>([]);
     const [error, setError] = useState<string | null>(null);
-    const [sortOrder, setSortOrder] = useState('popular'); // 정렬 순서 상태 추가
+    const [sortOrder, setSortOrder] = useState('popular');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedChallengeId, setSelectedChallengeId] = useState<number | null>(null);
+    const [isCreatingChallenge, setIsCreatingChallenge] = useState(false);
+    const [isClient, setIsClient] = useState(false);
+    const isDesktop = useMediaQuery({ query: "(min-width: 1024px)" });
 
     const fetchPopularChallenges = async () => {
         try {
@@ -92,6 +99,7 @@ const PopularChallengesClient = () => {
     };
 
     useEffect(() => {
+        setIsClient(true);
         fetchPopularChallenges();
     }, []);
 
@@ -108,11 +116,78 @@ const PopularChallengesClient = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedChallengeId(null);
-        fetchPopularChallenges(); // 모달 닫을 때 데이터 새로고침
+        fetchPopularChallenges();
     };
 
-    return (
-        <div className="bg-white dark:bg-gray-900 min-h-screen">
+    const handleCreateChallenge = async (formData: ChallengeFormData) => {
+        if (!formData.regionId) {
+          alert("지역 정보가 올바르지 않습니다.");
+          return;
+        }
+        
+        const calculatedEndDate =
+          formData.duration === "직접입력"
+            ? formData.endDate
+            : calculateEndDateObject(formData.startDate, formData.duration);
+    
+        const endDate = formatDateToYYYYMMDD(calculatedEndDate);
+    
+        const requestData: ChallengeCreateRequest = {
+          regionId: formData.regionId,
+          categoryId: formData.categoryId,
+          title: formData.title,
+          description: formData.description,
+          participants: Number(formData.participants),
+          method: formData.verificationMethod,
+          startDate: formatDateToYYYYMMDD(formData.startDate),
+          endDate: endDate,
+          image: formData.image,
+          imageFile: formData.imageFile,
+          status: true,
+        };
+    
+        try {
+          await createChallenge(requestData);
+          setIsCreatingChallenge(false);
+          router.push("/challenge");
+          window.location.reload();
+        } catch (error: any) {
+          const errorMessage = error.response?.data?.message || '챌린지 등록에 실패했습니다. 다시 시도해주세요.';
+          alert(errorMessage);
+        }
+      };
+
+    if (!isClient) {
+        return null;
+    }
+
+    if (isCreatingChallenge) {
+        return isDesktop ? (
+            <div className="flex">
+                <Sidebar />
+                <div className="flex-1 ml-64">
+                    <main className="w-2/4 mx-auto relative h-screen flex flex-col">
+                        <div className="pt-8 flex-1 overflow-y-auto no-scrollbar">
+                            <CreateChallengeForm
+                                onClose={() => setIsCreatingChallenge(false)}
+                                onSubmit={handleCreateChallenge}
+                                isDesktop={isDesktop}
+                            />
+                        </div>
+                    </main>
+                </div>
+            </div>
+        ) : (
+            <CreateChallengeForm
+                onClose={() => setIsCreatingChallenge(false)}
+                onSubmit={handleCreateChallenge}
+                isDesktop={isDesktop}
+            />
+        );
+    }
+
+    const popularChallengesContent = (
+        <>
             <header className="sticky top-0 bg-white dark:bg-gray-900 z-10 py-4 px-4 border-b border-gray-200 dark:border-gray-700">
                 <div className="max-w-4xl mx-auto flex items-center">
                     <button onClick={() => router.back()} className="mr-4">
@@ -122,7 +197,7 @@ const PopularChallengesClient = () => {
                 </div>
             </header>
             
-            <main className="max-w-4xl mx-auto p-4">
+            <main className="max-w-4xl mx-auto p-4 pb-20">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                         전체 ({challenges.length})
@@ -155,6 +230,38 @@ const PopularChallengesClient = () => {
                     ))}
                 </div>
             </main>
+        </>
+    );
+
+    return (
+        <div className="bg-white dark:bg-gray-900 min-h-screen">
+            {isDesktop ? (
+                <>
+                    <div className="flex">
+                        <Sidebar />
+                        <div className="flex-1 ml-64">
+                            {popularChallengesContent}
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => setIsCreatingChallenge(true)}
+                        className="fixed z-30 bottom-5 right-5 bg-[#F4724F] text-white font-semibold p-3 rounded-full shadow-lg flex items-center gap-2 transition-all duration-300 ease-in-out hover:bg-[#e56b49] hover:scale-105 hover:shadow-xl"
+                    >
+                      <PlusIcon className="w-6 h-6" />
+                    </button>
+                </>
+            ) : (
+                <>
+                    {popularChallengesContent}
+                    <button
+                        onClick={() => setIsCreatingChallenge(true)}
+                        className="fixed z-30 bottom-5 right-4 bg-[#F4724F] text-white p-2 rounded-full shadow-lg transition-all duration-300 ease-in-out hover:bg-[#e56b49] hover:scale-105 hover:shadow-xl"
+                    >
+                      <PlusIcon className="w-7 h-7" />
+                    </button>
+                </>
+            )}
+            
             {isModalOpen && selectedChallengeId && (
                 <ChallengeApplyModal
                     challengeId={selectedChallengeId}
