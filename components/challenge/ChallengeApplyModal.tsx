@@ -246,7 +246,7 @@ const ChallengeApplyModal = ({ challengeId, onClose }: ChallengeApplyModalProps)
                 
                 <div className="p-6 overflow-y-auto">
                     <span className="text-sm font-semibold" style={{ color: '#F47150' }}>{challenge.category.categoryName}</span>
-                    <h2 className="text-2xl font-bold mt-1 text-gray-900 dark:text-white">{challenge.title}</h2>
+                    <h2 className="text-2xl font-medium mt-1 text-gray-900 dark:text-white">{challenge.title}</h2>
                     
                     <div className="mt-3">
                         <ExpandableText text={challenge.description} maxLength={50} />

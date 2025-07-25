@@ -12,8 +12,9 @@ import Logout from '../common/Logout';
 import Sidebar from '../common/Sidebar';
 import BottomNav from '../common/BottomNav';
 import { useMediaQuery } from 'react-responsive';
-import { getUserProfile, updatePassword, updateProfileImage, deleteProfileImage } from '@/api/mypage';
+import { getUserProfile, updatePassword, updateProfileImage, deleteProfileImage, updateRegion } from '@/api/mypage';
 import { UserProfileResponse } from '@/types/User';
+import RegionSelectForm from '../signup/RegionSelectForm';
 
 export default function MyPageComponent() {
   const [activeTab, setActiveTab] = useState('info');
@@ -34,6 +35,10 @@ export default function MyPageComponent() {
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordCheck, setNewPasswordCheck] = useState('');
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
+
+  const [isEditingRegion, setIsEditingRegion] = useState(false);
+  const [selectedRegionId, setSelectedRegionId] = useState<number | null>(null);
+  const [selectedRegionAddress, setSelectedRegionAddress] = useState<string>('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -178,6 +183,46 @@ export default function MyPageComponent() {
     }
   };
 
+  const handleRegionEditClick = () => {
+    setIsEditingRegion(true);
+  };
+
+  const handleRegionUpdate = async () => {
+    if (selectedRegionId && selectedRegionAddress) {
+      try {
+        await updateRegion({ regionId: selectedRegionId });
+        
+        setUserProfile(prev => prev ? { ...prev, region: selectedRegionAddress } : null);
+        setIsEditingRegion(false);
+        
+        setToastMessage('지역이 성공적으로 변경되었습니다.');
+        setToastType('success');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+
+      } catch (error) {
+        setToastMessage('지역 변경에 실패했습니다.');
+        setToastType('error');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      }
+    } else {
+      setToastMessage('변경할 지역을 선택해주세요.');
+      setToastType('error');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    }
+  };
+
+  const handleRegionSelect = (regionId: number | null, fullAddress: string) => {
+    setSelectedRegionId(regionId);
+    setSelectedRegionAddress(fullAddress);
+  };
+
+  const handleRegionCancel = () => {
+    setIsEditingRegion(false);
+  };
+
   const hasCustomProfileImage =
     userProfile?.profileImageUrl &&
     !userProfile.profileImageUrl.includes('gamza.png');
@@ -272,50 +317,66 @@ export default function MyPageComponent() {
           style={{ borderColor: '#d9d9d9' }}
         >
           {activeTab === 'info' && (
-            <div className="space-y-6">
-              <div>
-                <label className="text-sm text-gray-500">이메일</label>
-                <p className="dark:text-white border-b pb-2 border-gray-200 dark:border-gray-700">
-                  {userProfile?.email || '로딩중...'}
-                </p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-500">닉네임</label>
-                <div className="flex justify-between items-center border-b pb-2 border-gray-200 dark:border-gray-700">
-                  <p className="dark:text-white">
-                    {userProfile?.nickname || '로딩중...'}
+            isEditingRegion ? (
+              <RegionSelectForm 
+                onRegionSelect={(regionId, fullAddress) => {
+                  setSelectedRegionId(regionId);
+                  setSelectedRegionAddress(fullAddress);
+                }}
+                onCancel={handleRegionCancel}
+                onSubmit={handleRegionUpdate}
+                initialFullAddress={userProfile?.region}
+                showButtons={true}
+              />
+            ) : (
+              <div className="space-y-6">
+                <div>
+                  <label className="text-sm text-gray-500">이메일</label>
+                  <p className="dark:text-white border-b pb-2 border-gray-200 dark:border-gray-700">
+                    {userProfile?.email || '로딩중...'}
                   </p>
-                  <ArrowTopRightOnSquareIcon
-                    className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300"
-                    onClick={() => {
-                      router.push('/mypage/nickname');
+                </div>
+                <div>
+                  <label className="text-sm text-gray-500">닉네임</label>
+                  <div className="flex justify-between items-center border-b pb-2 border-gray-200 dark:border-gray-700">
+                    <p className="dark:text-white">
+                      {userProfile?.nickname || '로딩중...'}
+                    </p>
+                    <ArrowTopRightOnSquareIcon
+                      className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300"
+                      onClick={() => {
+                        router.push('/mypage/nickname');
+                      }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-500">성별</label>
+                  <p className="dark:text-white border-b pb-2 border-gray-200 dark:border-gray-700">
+                    {userProfile?.gender || '로딩중...'}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-500">지역</label>
+                  <div className="flex justify-between items-center border-b pb-2 border-gray-200 dark:border-gray-700">
+                    <p className="dark:text-white">
+                      {userProfile?.region || '로딩중...'}
+                    </p>
+                    <ArrowTopRightOnSquareIcon
+                      className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300"
+                      onClick={handleRegionEditClick}
+                    />
+                  </div>
+                </div>
+                <div className="pt-4">
+                  <Logout
+                    onLogout={() => {
+                      router.push('/login');
                     }}
                   />
                 </div>
               </div>
-              <div>
-                <label className="text-sm text-gray-500">성별</label>
-                <p className="dark:text-white border-b pb-2 border-gray-200 dark:border-gray-700">
-                  {userProfile?.gender || '로딩중...'}
-                </p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-500">지역</label>
-                <div className="flex justify-between items-center border-b pb-2 border-gray-200 dark:border-gray-700">
-                  <p className="dark:text-white">
-                    {userProfile?.region || '로딩중...'}
-                  </p>
-                  <ArrowTopRightOnSquareIcon className="w-5 h-5 text-gray-400 cursor-pointer" />
-                </div>
-              </div>
-              <div className="pt-4">
-                <Logout
-                  onLogout={() => {
-                    router.push('/login');
-                  }}
-                />
-              </div>
-            </div>
+            )
           )}
 
           {activeTab === 'password' && (
