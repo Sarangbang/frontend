@@ -39,7 +39,7 @@ const PopularChallengeItem = ({ challenge, onClick }: { challenge: PopularChalle
                         alt={challenge.challengeTitle}
                         width={96}
                         height={96}
-                        className="rounded-lg object-cover aspect-square"
+                        className="rounded-full object-cover aspect-square"
                         onError={(e) => {
                             e.currentTarget.src = '/images/charactors/gamza.png';
                         }}
