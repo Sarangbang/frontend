@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { SignUpRequest } from '@/types/SignUp';
 
@@ -22,6 +22,19 @@ const SignUpForm = ({ onNext, initialData }: SignUpFormProps) => {
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [profileImagePreview, setProfileImagePreview] = useState<string>('/images/charactors/gamza.png');
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialData.profileImage) {
+      setProfileImage(initialData.profileImage);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (reader.result) {
+          setProfileImagePreview(reader.result as string);
+        }
+      };
+      reader.readAsDataURL(initialData.profileImage);
+    }
+  }, [initialData.profileImage]);
 
   const isNextEnabled =
     email && password && passwordConfirm && gender && nickname;
