@@ -82,8 +82,9 @@ const ChallengeClient = () => {
       setIsCreatingChallenge(false);
       router.push("/challenge");
       window.location.reload();
-    } catch (error) {
-      alert("챌린지 등록에 실패했습니다. 다시 시도해주세요.");
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || '챌린지 등록에 실패했습니다. 다시 시도해주세요.';
+      alert(errorMessage);
     }
   };
 
