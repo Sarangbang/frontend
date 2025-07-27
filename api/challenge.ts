@@ -1,5 +1,6 @@
 import apiClient from "./apiClient";
 import { ChallengeCreateRequest, Challenge, PageResponse, ChallengeSummaryResponse, ChallengeDetail, ChallengeJoinRequest, PopularChallengeResponse } from "@/types/Challenge";
+import { ChallengeApplication } from "@/types/Application";
 
 /**
  * 모든 챌린지를 조회합니다 (무한스크롤용)
@@ -69,6 +70,43 @@ export const fetchChallengeDetail = async (challengeId: number): Promise<Challen
 export const joinChallenge = async (challengeId: number, joinData: ChallengeJoinRequest): Promise<void> => {
   try {
     await apiClient.post(`/challenge/application`, joinData);
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * 챌린지 참여 신청서 목록을 조회합니다 (방장 전용)
+ * @param challengeId 챌린지 ID
+ * @returns 신청서 목록
+ */
+export const fetchChallengeApplications = async (challengeId: number): Promise<ChallengeApplication[]> => {
+  try {
+    const response = await apiClient.get(`/challenge/application/manage/${challengeId}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * 챌린지 신청서를 승인 또는 거절합니다 (방장 전용)
+ * @param applicationId 신청서 ID
+ * @param status 승인/거절 상태 ('APPROVED' | 'REJECTED')
+ * @param comment 방장 코멘트
+ * @returns 변경된 신청서 정보
+ */
+export const updateApplicationStatus = async (
+  applicationId: number, 
+  status: 'APPROVED' | 'REJECTED', 
+  comment: string
+): Promise<{ applyStatus: 'APPROVED' | 'REJECTED'; comment: string }> => {
+  try {
+    const response = await apiClient.post(`/challenge/application/${applicationId}`, {
+      applyStatus: status,
+      comment: comment
+    });
+    return response.data;
   } catch (error) {
     throw error;
   }
