@@ -2,16 +2,18 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeftIcon } from "@heroicons/react/24/solid";
+import { ArrowLeftIcon, PlusIcon } from "@heroicons/react/24/solid";
 import toast from 'react-hot-toast';
 import ChallengeCard from "./ChallengeCard";
-import { Challenge } from "@/types/Challenge";
+import { Challenge, ChallengeCreateRequest, ChallengeFormData } from "@/types/Challenge";
 import { CategoryDto } from "@/types/Category";
-import { fetchAllChallenges, fetchChallengesByCategory } from "@/api/challenge";
+import { fetchAllChallenges, fetchChallengesByCategory, createChallenge } from "@/api/challenge";
 import { fetchCategories } from "@/api/category";
 import Sidebar from "../common/Sidebar";
 import BottomNav from "../common/BottomNav";
 import ChallengeApplyModal from "./ChallengeApplyModal";
+import CreateChallengeForm from "./CreateChallengeForm";
+import { formatDateToYYYYMMDD, calculateEndDateObject } from "@/util/dateUtils";
 
 const ChallengeBrowseClient = () => {
   const router = useRouter();
@@ -30,6 +32,7 @@ const ChallengeBrowseClient = () => {
   const [isDesktop, setIsDesktop] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedChallengeId, setSelectedChallengeId] = useState<number | null>(null);
+  const [isCreatingChallenge, setIsCreatingChallenge] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -151,6 +154,44 @@ const ChallengeBrowseClient = () => {
     }
   };
 
+  const handleCreateChallenge = async (formData: ChallengeFormData) => {
+    if (!formData.regionId) {
+      toast.error("지역 정보가 올바르지 않습니다.");
+      return;
+    }
+    
+    const calculatedEndDate =
+      formData.duration === "직접입력"
+        ? formData.endDate
+        : calculateEndDateObject(formData.startDate, formData.duration);
+
+    const endDate = formatDateToYYYYMMDD(calculatedEndDate);
+
+    const requestData: ChallengeCreateRequest = {
+      regionId: formData.regionId,
+      categoryId: formData.categoryId,
+      title: formData.title,
+      description: formData.description,
+      participants: Number(formData.participants),
+      method: formData.verificationMethod,
+      startDate: formatDateToYYYYMMDD(formData.startDate),
+      endDate: endDate,
+      image: formData.image,
+      imageFile: formData.imageFile,
+      status: true,
+    };
+
+    try {
+      await createChallenge(requestData);
+      setIsCreatingChallenge(false);
+      router.push("/challenge");
+      window.location.reload();
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || '챌린지 등록에 실패했습니다. 다시 시도해주세요.';
+      toast.error(errorMessage);
+    }
+  };
+
   const getSelectedCategoryName = () => {
     if (selectedCategoryId === null || selectedCategoryId === 0) return "전체";
     const category = categories.find(cat => cat.categoryId === selectedCategoryId);
@@ -162,6 +203,31 @@ const ChallengeBrowseClient = () => {
       <div className="bg-white dark:bg-gray-900 min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
       </div>
+    );
+  }
+
+  if (isCreatingChallenge) {
+    return isDesktop ? (
+        <div className="flex">
+            <Sidebar />
+            <div className="flex-1 ml-64">
+                <main className="w-2/4 mx-auto relative h-screen flex flex-col">
+                    <div className="pt-8 flex-1 overflow-y-auto no-scrollbar">
+                        <CreateChallengeForm
+                            onClose={() => setIsCreatingChallenge(false)}
+                            onSubmit={handleCreateChallenge}
+                            isDesktop={isDesktop}
+                        />
+                    </div>
+                </main>
+            </div>
+        </div>
+    ) : (
+        <CreateChallengeForm
+            onClose={() => setIsCreatingChallenge(false)}
+            onSubmit={handleCreateChallenge}
+            isDesktop={isDesktop}
+        />
     );
   }
 
@@ -241,14 +307,22 @@ const ChallengeBrowseClient = () => {
   return (
     <div className="bg-white dark:bg-gray-900 min-h-screen">
       {isDesktop ? (
-        <div className="flex">
-          <Sidebar />
-          <div className="flex-1 ml-64">
-            <main className="max-w-4xl mx-auto px-4 py-8">
-              {challengeContent}
-            </main>
+        <>
+          <div className="flex">
+            <Sidebar />
+            <div className="flex-1 ml-64">
+              <main className="max-w-4xl mx-auto px-4 py-8">
+                {challengeContent}
+              </main>
+            </div>
           </div>
-        </div>
+          <button
+            onClick={() => setIsCreatingChallenge(true)}
+            className="fixed z-30 bottom-5 right-5 bg-[#F4724F] text-white font-semibold p-3 rounded-full shadow-lg flex items-center gap-2 transition-all duration-300 ease-in-out hover:bg-[#e56b49] hover:scale-105 hover:shadow-xl"
+          >
+            <PlusIcon className="w-6 h-6" />
+          </button>
+        </>
       ) : (
         <div className="pt-16 pb-16">
           {/* 모바일/태블릿 헤더 */}
@@ -262,6 +336,12 @@ const ChallengeBrowseClient = () => {
             {challengeContent}
           </main>
           <BottomNav />
+          <button
+              onClick={() => setIsCreatingChallenge(true)}
+              className="fixed z-30 bottom-20 right-4 bg-[#F4724F] text-white p-2 rounded-full shadow-lg transition-all duration-300 ease-in-out hover:bg-[#e56b49] hover:scale-105 hover:shadow-xl"
+            >
+              <PlusIcon className="w-7 h-7" />
+          </button>
         </div>
       )}
       {isModalOpen && selectedChallengeId && (
