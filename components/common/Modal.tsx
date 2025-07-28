@@ -32,14 +32,14 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
           {children}
         </div>
         {/* 푸터 */}
-        <div className="flex justify-end gap-2 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 rounded-b-2xl">
+        {/* <div className="flex justify-end gap-2 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 rounded-b-2xl">
           <button
             onClick={onClose}
             className="px-5 py-2 rounded-lg bg-pink-500 text-white font-semibold hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-400"
           >
             닫기
           </button>
-        </div>
+        </div> */}
       </div>
       <style jsx global>{`
         @keyframes fade-in {
