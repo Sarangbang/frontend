@@ -65,6 +65,22 @@ const ChallengeManageClient = ({ challengeId }: Props) => {
     loadData();
   }, [challengeId]);
 
+  // 데이터 새로고침 함수 (챌린지 정보 + 신청서 목록)
+  const refreshData = async () => {
+    try {
+      // 챌린지 정보와 신청서 목록을 동시에 새로고침
+      const [challengeData, applicationsData] = await Promise.all([
+        fetchChallengeDetail(challengeId),
+        fetchChallengeApplications(challengeId)
+      ]);
+      
+      setChallenge(challengeData);
+      setApplications(applicationsData);
+    } catch (error) {
+      // 새로고침 실패 시 사용자에게 알림은 주지 않음 (메인 액션이 성공했으므로)
+    }
+  };
+
   // 신청서 승인/거절 처리 함수
   const handleApplicationAction = async (action: 'APPROVED' | 'REJECTED') => {
     if (!selectedApp || !comment.trim()) {
@@ -76,14 +92,8 @@ const ChallengeManageClient = ({ challengeId }: Props) => {
     try {
       await updateApplicationStatus(selectedApp.id, action, comment.trim());
       
-      // 로컬 상태 업데이트
-      setApplications(prev => 
-        prev.map(app => 
-          app.id === selectedApp.id 
-            ? { ...app, challengeApplyStatus: action, comment: comment.trim() }
-            : app
-        )
-      );
+      // 서버에서 최신 데이터 조회하여 실시간 반영
+      await refreshData();
 
       toast.success(action === 'APPROVED' ? "신청이 승인되었습니다." : "신청이 거절되었습니다.");
       setIsModalOpen(false);
