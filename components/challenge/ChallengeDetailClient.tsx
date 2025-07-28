@@ -12,7 +12,10 @@ import { useMediaQuery } from 'react-responsive';
 import Sidebar from '../common/Sidebar';
 import { fetchChallengeDetail } from '@/api/challenge';
 import { getVerificationsByDate } from '@/api/challengeVerification';
-import type { ChallengeVerificationByDate } from '@/types/Challenge';
+import type {
+  ChallengeDetail,
+  ChallengeVerificationByDate,
+} from '@/types/Challenge';
 import { useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 
@@ -32,6 +35,7 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
     ChallengeVerificationByDate[]
   >([]);
   const [isMaster, setIsMaster] = useState(true); // 방장 여부 (임시)
+  const [challenge, setChallenge] = useState<ChallengeDetail | null>(null);
   const [challengeTitle, setChallengeTitle] = useState<string>('');
   const [challengeMethod, setChallengeMethod] = useState<string>('');
 
@@ -49,6 +53,7 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
       const loadChallengeDetails = async () => {
         try {
           const details = await fetchChallengeDetail(Number(challengeId));
+          setChallenge(details);
           setChallengeTitle(details.title);
           setChallengeMethod(details.method);
         } catch (error) {
@@ -120,6 +125,20 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
     setSelectedMember(null);
   };
 
+  let isUpcoming = false;
+  if (challenge) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startDate = new Date(challenge.startDate);
+    startDate.setHours(0, 0, 0, 0);
+    isUpcoming = startDate > today;
+  }
+
+  const isPrevButtonDisabled =
+    !challenge ||
+    new Date(currentDate).setHours(0, 0, 0, 0) <=
+      new Date(challenge.startDate).setHours(0, 0, 0, 0);
+
   const challengeContent = (
     <>
       <div className="flex border-b border-gray-200 dark:border-gray-700">
@@ -145,124 +164,149 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
         </button>
       </div>
 
-      <div className="flex justify-between items-center my-6 px-4">
-        <button
-          onClick={() => {
-            const newDate = new Date(currentDate);
-            newDate.setDate(newDate.getDate() - 1);
-            setCurrentDate(newDate);
-          }}
-        >
-          <ChevronLeftIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-        </button>
-        <p className="text-lg font-semibold dark:text-white">{formattedDate}</p>
-        <button
-          onClick={() => {
-            const newDate = new Date(currentDate);
-            newDate.setDate(newDate.getDate() + 1);
-            setCurrentDate(newDate);
-          }}
-          disabled={isToday()}
-        >
-          <ChevronRightIcon
-            className={`w-6 h-6 ${
-              isToday()
-                ? 'text-gray-300 dark:text-gray-600'
-                : 'text-gray-600 dark:text-gray-400'
-            }`}
-          />
-        </button>
-      </div>
-
-      <div className="p-4 flex-1">
-        {activeTab === '멤버' && (
-          <div>
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(6rem,1fr))] gap-6 text-center">
-              {verificationList.map(member => (
-                <div key={member.userId} className="flex flex-col items-center">
-                  <div
-                    onClick={() => openImageOverlay(member)}
-                    className={`relative w-24 h-24 rounded-full border-4 ${
-                      member.status === 'APPROVED' ? 'border-blue-500' : 'border-red-500'
-                    } ${member.imgUrl ? 'cursor-pointer' : ''}`}
-                  >
-                    <Image
-                      src={
-                        member.status === 'APPROVED'
-                          ? '/images/expressions/smile.png'
-                          : '/images/expressions/sad.png'
-                      }
-                      alt={member.nickname}
-                      layout="fill"
-                      className="rounded-full object-cover"
-                    />
-                  </div>
-                  <p className="mt-2 font-semibold dark:text-white text-sm">
-                    {member.nickname}
-                  </p>
-                </div>
-              ))}
-            </div>
-            {/* 인증 방법 영역 추가 */}
-            <div className="mt-15">
-              <div className="bg-gray-100 text-gray-800 rounded-md p-4 text-center">
-                <div className="font-bold text-lg mb-2">⭐ 인증 방법 ⭐</div>
-                <div className="text-sm">
-                  {(challengeMethod || '인증 방법 정보가 없습니다.')
-                    .split('\n')
-                    .map((line, idx) => (
-                      <span key={idx}>
-                        {line}
-                        <br />
-                      </span>
-                    ))}
-                </div>
-              </div>
-            </div>
+      {isUpcoming ? (
+        <div className="flex justify-center items-center py-10">
+          <p className="text-gray-500 dark:text-gray-400">
+            아직 시작되지 않은 챌린지입니다.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="flex justify-between items-center my-6 px-4">
+            <button
+              onClick={() => {
+                const newDate = new Date(currentDate);
+                newDate.setDate(newDate.getDate() - 1);
+                setCurrentDate(newDate);
+              }}
+              disabled={isPrevButtonDisabled}
+            >
+              <ChevronLeftIcon
+                className={`w-6 h-6 ${
+                  isPrevButtonDisabled
+                    ? 'text-gray-300 dark:text-gray-600'
+                    : 'text-gray-600 dark:text-gray-400'
+                }`}
+              />
+            </button>
+            <p className="text-lg font-semibold dark:text-white">
+              {formattedDate}
+            </p>
+            <button
+              onClick={() => {
+                const newDate = new Date(currentDate);
+                newDate.setDate(newDate.getDate() + 1);
+                setCurrentDate(newDate);
+              }}
+              disabled={isToday()}
+            >
+              <ChevronRightIcon
+                className={`w-6 h-6 ${
+                  isToday()
+                    ? 'text-gray-300 dark:text-gray-600'
+                    : 'text-gray-600 dark:text-gray-400'
+                }`}
+              />
+            </button>
           </div>
-        )}
-        {activeTab === '사진' && (
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-4 pt-4">
-            {verificationList.map(member => (
-              <div key={member.userId} className="text-center">
-                {member.imgUrl ? (
-                  <div
-                    className="relative w-full h-48 cursor-pointer"
-                    onClick={() => openImageOverlay(member)}
-                  >
-                    <Image
-                      src={member.imgUrl}
-                      alt={`${member.nickname}의 인증 사진`}
-                      layout="fill"
-                      className="object-cover rounded-lg"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-full h-48 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-lg">
-                    <p className="text-gray-500">인증 미완료</p>
-                  </div>
-                )}
-                {/* <div className="flex justify-center items-center gap-2 mt-2"> */}
-                <div className="flex justify-between gap-2 mt-2">
-                  <p className="font-semibold dark:text-white">
-                    {member.nickname}
-                  </p>
-                  {isMaster && member.status && member.imgUrl && (
-                    <button
-                      onClick={() => handleCancelVerification(member.userId)}
-                      className="px-3 py-1 bg-orange-500 text-white rounded-md text-sm font-semibold hover:bg-orange-600"
+          <div className="p-4 flex-1">
+            {activeTab === '멤버' && (
+              <div>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(6rem,1fr))] gap-6 text-center">
+                  {verificationList.map(member => (
+                    <div
+                      key={member.userId}
+                      className="flex flex-col items-center"
                     >
-                      인증취소
-                    </button>
-                  )}
+                      <div
+                        onClick={() => openImageOverlay(member)}
+                        className={`relative w-24 h-24 rounded-full border-4 ${
+                          member.status === 'APPROVED'
+                            ? 'border-blue-500'
+                            : 'border-red-500'
+                        } ${member.imgUrl ? 'cursor-pointer' : ''}`}
+                      >
+                        <Image
+                          src={
+                            member.status === 'APPROVED'
+                              ? '/images/expressions/smile.png'
+                              : '/images/expressions/sad.png'
+                          }
+                          alt={member.nickname}
+                          layout="fill"
+                          className="rounded-full object-cover"
+                        />
+                      </div>
+                      <p className="mt-2 font-semibold dark:text-white text-sm">
+                        {member.nickname}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                {/* 인증 방법 영역 추가 */}
+                <div className="mt-15">
+                  <div className="bg-gray-100 text-gray-800 rounded-md p-4 text-center">
+                    <div className="font-bold text-lg mb-2">⭐ 인증 방법 ⭐</div>
+                    <div className="text-sm">
+                      {(challengeMethod || '인증 방법 정보가 없습니다.')
+                        .split('\n')
+                        .map((line, idx) => (
+                          <span key={idx}>
+                            {line}
+                            <br />
+                          </span>
+                        ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-            ))}
+            )}
+            {activeTab === '사진' && (
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-4 pt-4">
+                {verificationList.map(member => (
+                  <div key={member.userId} className="text-center">
+                    {member.imgUrl ? (
+                      <div
+                        className="relative w-full h-48 cursor-pointer"
+                        onClick={() => openImageOverlay(member)}
+                      >
+                        <Image
+                          src={member.imgUrl}
+                          alt={`${member.nickname}의 인증 사진`}
+                          layout="fill"
+                          className="object-cover rounded-lg"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-48 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-lg">
+                        <p className="text-gray-500">인증 미완료</p>
+                      </div>
+                    )}
+                    {/* <div className="flex justify-center items-center gap-2 mt-2"> */}
+                    <div className="flex justify-between gap-2 mt-2">
+                      <p className="font-semibold dark:text-white">
+                        {member.nickname}
+                      </p>
+                      {isMaster && member.status && member.imgUrl && (
+                        <button
+                          onClick={() =>
+                            handleCancelVerification(member.userId)
+                          }
+                          className="px-3 py-1 bg-orange-500 text-white rounded-md text-sm font-semibold hover:bg-orange-600"
+                        >
+                          인증취소
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
 
-      {activeTab === '멤버' && (
+      {activeTab === '멤버' && !isUpcoming && (
         <div className="p-4 sticky bottom-0 bg-white dark:bg-gray-800">
           <button
             onClick={handleVerificationClick}
