@@ -1,9 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ChevronLeftIcon } from '@heroicons/react/24/solid';
+import { useUserStore } from '@/lib/store/userStore';
+import { getUserProfile } from '@/api/mypage';
 
 interface ContentHeaderProps {
   title: string;
@@ -19,6 +21,26 @@ const ContentHeader = ({
   children,
 }: ContentHeaderProps) => {
   const router = useRouter();
+  const { user, isLoggedIn } = useUserStore();
+  const [profileImageUrl, setProfileImageUrl] = useState(
+    '/images/charactors/gamza.png',
+  );
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      getUserProfile()
+        .then(data => {
+          if (data.profileImageUrl) {
+            setProfileImageUrl(data.profileImageUrl);
+          }
+        })
+        .catch(() => {
+          // 에러 발생 시 기본 이미지 유지
+        });
+    }
+  }, [isLoggedIn]);
+
+  const finalImageUrl = profileImageUrl;
 
   if (isClient && isDesktop) {
     return (
@@ -29,7 +51,7 @@ const ContentHeader = ({
             {children}
             <div className="w-10 h-10 relative">
               <Image
-                src="/images/charactors/gamza.png"
+                src={finalImageUrl}
                 alt="Profile"
                 fill
                 className="rounded-full"
@@ -54,7 +76,7 @@ const ContentHeader = ({
           {children}
           <div className="w-8 h-8 relative">
             <Image
-              src="/images/charactors/gamza.png"
+              src={finalImageUrl}
               alt="Profile"
               fill
               className="rounded-full"
