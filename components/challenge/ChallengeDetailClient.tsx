@@ -11,11 +11,15 @@ import {
 import { useMediaQuery } from 'react-responsive';
 import Sidebar from '../common/Sidebar';
 import { fetchChallengeDetail } from '@/api/challenge';
-import { getVerificationsByDate } from '@/api/challengeVerification';
+import {
+  getVerificationsByDate,
+  cancelVerification,
+} from '@/api/challengeVerification';
 import type {
   ChallengeDetail,
   ChallengeVerificationByDate,
 } from '@/types/Challenge';
+import { useUserStore } from '@/lib/store/userStore';
 import { useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 
@@ -34,10 +38,12 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
   const [verificationList, setVerificationList] = useState<
     ChallengeVerificationByDate[]
   >([]);
-  const [isMaster, setIsMaster] = useState(true); // 방장 여부 (임시)
+  const [isMaster, setIsMaster] = useState(false); // 방장 여부
   const [challenge, setChallenge] = useState<ChallengeDetail | null>(null);
   const [challengeTitle, setChallengeTitle] = useState<string>('');
   const [challengeMethod, setChallengeMethod] = useState<string>('');
+
+  const user = useUserStore(state => state.user);
 
   const isToday = () => {
     const today = new Date();
@@ -81,27 +87,62 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
     }
 
     if (challengeId && currentDate) {
-      const fetchVerifications = async () => {
-        try {
-          const year = currentDate.getFullYear();
-          const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-          const day = String(currentDate.getDate()).padStart(2, '0');
-          const dateStr = `${year}-${month}-${day}`;
-          const data = await getVerificationsByDate(challengeId, dateStr);
-          setVerificationList(data);
-        } catch (error) {
-          console.error('Failed to fetch verifications:', error);
-          toast.error('인증 정보를 불러오는데 실패했습니다.');
-          setVerificationList([]);
-        }
-      };
       fetchVerifications();
     }
-  }, [challengeId, currentDate, searchParams]);
+  }, [challengeId, currentDate, searchParams, user?.uuid]);
 
+  const fetchVerifications = async () => {
+    try {
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      const data = await getVerificationsByDate(challengeId, dateStr);
 
-  const handleCancelVerification = (userId: string) => {
-    //인증 취소 로직
+      if (user?.uuid) {
+        const currentUserVerification = data.find(v => v.userId === user.uuid);
+        setIsMaster(currentUserVerification?.role === 'owner');
+        setIsVerified(currentUserVerification?.status === 'APPROVED');
+      } else {
+        setIsMaster(false);
+        setIsVerified(false);
+      }
+
+      setVerificationList(data);
+    } catch (error) {
+      console.error('Failed to fetch verifications:', error);
+      toast.error('인증 정보를 불러오는데 실패했습니다.');
+      setVerificationList([]);
+    }
+  };
+
+  const handleCancelVerification = async (userId: string) => {
+    if (
+      window.confirm(
+        '삭제된 인증사진은 복구할 수 없습니다. 정말 삭제하시겠습니까?',
+      )
+    ) {
+      try {
+        const verification = verificationList.find(v => v.userId === userId);
+        if (!verification || !verification.verifiedAt) {
+          toast.error('인증 정보를 찾을 수 없습니다.');
+          return;
+        }
+
+        const response = await cancelVerification({
+          challengeId: Number(challengeId),
+          userId,
+          verifiedAt: verification.verifiedAt.split('T')[0],
+        });
+        toast.success(response.message || '인증이 취소되었습니다.');
+        fetchVerifications();
+      } catch (error: any) {
+        console.error('Failed to cancel verification:', error);
+        toast.error(
+          error.response?.data?.message || '인증 취소에 실패했습니다.',
+        );
+      }
+    }
   };
 
   const year = currentDate.getFullYear();
@@ -287,16 +328,19 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
                       <p className="font-semibold dark:text-white">
                         {member.nickname}
                       </p>
-                      {isMaster && member.status && member.imgUrl && (
-                        <button
-                          onClick={() =>
-                            handleCancelVerification(member.userId)
-                          }
-                          className="px-3 py-1 bg-orange-500 text-white rounded-md text-sm font-semibold hover:bg-orange-600"
-                        >
-                          인증취소
-                        </button>
-                      )}
+                      {isToday() &&
+                        member.status &&
+                        member.imgUrl &&
+                        (isMaster || user?.uuid === member.userId) && (
+                          <button
+                            onClick={() =>
+                              handleCancelVerification(member.userId)
+                            }
+                            className="px-3 py-1 bg-orange-500 text-white rounded-md text-sm font-semibold hover:bg-orange-600"
+                          >
+                            인증취소
+                          </button>
+                        )}
                     </div>
                   </div>
                 ))}
