@@ -77,7 +77,6 @@ const ChallengeManageClient = ({ challengeId }: Props) => {
       setChallenge(challengeData);
       setApplications(applicationsData);
     } catch (error) {
-      console.error("데이터 새로고침 실패:", error);
       // 새로고침 실패 시 사용자에게 알림은 주지 않음 (메인 액션이 성공했으므로)
     }
   };
