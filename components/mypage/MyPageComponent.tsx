@@ -461,7 +461,7 @@ export default function MyPageComponent() {
             <div className="flex-1 lg:ml-64">
               <div className="max-w-2xl mx-auto py-8">
                 <header className="px-4">
-                  <h1 className="text-2xl font-bold dark:text-white">MyPage</h1>
+                  <h1 className="text-2xl font-medium dark:text-white">MyPage</h1>
                 </header>
                 {myPageContent}
               </div>
@@ -474,7 +474,7 @@ export default function MyPageComponent() {
                 <button onClick={() => router.back()}>
                   <ChevronLeftIcon className="w-6 h-6 text-gray-800 dark:text-gray-200" />
                 </button>
-                <h1 className="text-xl font-bold dark:text-white">MyPage</h1>
+                <h1 className="text-xl font-medium dark:text-white">MyPage</h1>
               </div>
             </header>
             {myPageContent}

@@ -22,6 +22,7 @@ import {
   calculatePeriod2,
   getChallengeStatus,
 } from "@/util/dateUtils";
+import BottomNav from "../common/BottomNav";
 
 const CHALLENGE_TABS: Tab<"멤버" | "방장">[] = [
   { id: "멤버", label: "멤버" },
@@ -220,11 +221,12 @@ const ChallengeClient = () => {
           {activeTab === "방장" && (
             <button
               onClick={() => setIsCreatingChallenge(true)}
-              className="fixed z-30 bottom-5 right-4 bg-[#F4724F] text-white p-2 rounded-full shadow-lg transition-all duration-300 ease-in-out hover:bg-[#e56b49] hover:scale-105 hover:shadow-xl"
+              className="fixed z-30 bottom-20 right-4 bg-[#F4724F] text-white p-2 rounded-full shadow-lg transition-all duration-300 ease-in-out hover:bg-[#e56b49] hover:scale-105 hover:shadow-xl"
             >
               <PlusIcon className="w-7 h-7" />
             </button>
           )}
+          <BottomNav />
         </>
       )}
     </div>
