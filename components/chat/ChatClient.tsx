@@ -13,6 +13,7 @@ import ChatRoom from './ChatRoom';
 import { Sender, ChatRoomResponse } from '@/types/Chat';
 import { fetchChatRooms } from '@/api/chat';
 import { useUserStore } from '@/lib/store/userStore';
+import BottomNav from '../common/BottomNav';
 
 const groupChats = [
   {
@@ -147,7 +148,7 @@ export default function ChatClient() {
       ) : (
         <>
           <ContentHeader
-            title="Challenge"
+            title="Chat"
             isDesktop={isDesktop}
             isClient={isClient}
           >
@@ -185,7 +186,7 @@ export default function ChatClient() {
               </svg>
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto relative">
+          <div className="flex-1 overflow-y-auto relative pb-20">
             <div
               className="absolute inset-0 bg-contain bg-no-repeat bg-center opacity-30 dark:opacity-10"
               style={{
@@ -198,6 +199,7 @@ export default function ChatClient() {
               )}
             </div>
           </div>
+          {!isDesktop && <BottomNav />}
         </>
       )}
     </div>

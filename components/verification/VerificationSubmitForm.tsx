@@ -110,6 +110,9 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
               </label>
             )}
           </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+            * 잘못된 사진을 인증할 경우, 방장에 의해 인증이 취소될 수 있습니다.
+          </p>
         </section>
 
         <section className="flex-grow flex flex-col">

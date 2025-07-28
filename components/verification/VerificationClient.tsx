@@ -115,7 +115,7 @@ const VerificationClient = () => {
           <div className="flex-1 ml-64">
             <main className="w-full max-w-2xl mx-auto">
               <ContentHeader
-                title="Challenge"
+                title="Verification"
                 isDesktop={isDesktop}
                 isClient={isClient}
               />
@@ -126,7 +126,7 @@ const VerificationClient = () => {
       ) : (
         <div className="max-w-md mx-auto bg-white dark:bg-gray-900 pb-24">
           <ContentHeader
-            title="Challenge"
+            title="Verification"
             isDesktop={isDesktop}
             isClient={isClient}
           />
