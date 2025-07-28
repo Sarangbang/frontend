@@ -13,19 +13,26 @@ export const handleImageChange = async (
     const file = event.target.files?.[0];
     if (!file) return null;
     
-    // (1) 용량 검사
+    // (1) 타입 검사 추가
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+        toast.error('JPG 또는 PNG 이미지 파일만 업로드할 수 있습니다.');
+        return null;
+    }
+
+    // (2) 용량 검사
     if (file.size > maxSizeMB * 1024 * 1024) {
         toast.error(`${maxSizeMB}MB 이하 이미지만 업로드할 수 있습니다.`);
         return null;
     }
 
-    // (2) 압축 실행
+    // (3) 압축 실행
     try {
         const compressed = await compressImage(file, quality);
         console.log('압축 전 파일 크기:', (file.size / 1024 / 1024).toFixed(2), 'MB');
         console.log('압축 후 파일 크기:', (compressed.size / 1024 / 1024).toFixed(2), 'MB');
         
-        // (3) 미리보기용 Blob URL 생성
+        // (4) 미리보기용 Blob URL 생성
         const preview = URL.createObjectURL(compressed);
 
         return { preview, file: compressed };
