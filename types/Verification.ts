@@ -32,3 +32,9 @@ export interface Verification {
   title: string;
   verifiedAt: string;
 } 
+
+export interface CancelVerificationRequest {
+  userId: string;
+  challengeId: number;
+  verifiedAt: string; // LocalDate -> string
+}
