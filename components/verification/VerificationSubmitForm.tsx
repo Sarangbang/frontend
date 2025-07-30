@@ -92,7 +92,7 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                   <CloudArrowUpIcon className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" />
                   <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">사진을 업로드하세요.</span></p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">JPG, PNG 파일 (최대 5MB)</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">JPG, PNG 파일 (최대 10MB)</p>
                 </div>
                 <input id="dropzone-file" type="file" className="hidden" accept="image/png, image/jpeg" onChange={handleFileChange} />
               </label>
