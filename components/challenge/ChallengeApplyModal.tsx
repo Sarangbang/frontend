@@ -3,7 +3,7 @@
 import { useEffect, useState, ReactNode } from 'react';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
-import { fetchChallengeDetail, joinChallenge } from '@/api/challenge';
+import { fetchChallengeDetail, joinChallenge, getUserApplicationStatus } from '@/api/challenge';
 import { ChallengeDetail, ChallengeJoinRequest } from '@/types/Challenge';
 import ExpandableText from '../common/ExpandableText';
 
@@ -36,17 +36,32 @@ const ChallengeApplyModal = ({ challengeId, onClose }: ChallengeApplyModalProps)
     challengeId: challengeId
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // 사용자의 챌린지 신청 상태 (PENDING, APPROVED, REJECTED, null)
+  const [applicationStatus, setApplicationStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const getChallengeDetail = async () => {
       setIsLoading(true);
       try {
-        const data = await fetchChallengeDetail(challengeId);
-        setChallenge(data);
-        setApplicationData(prev => ({ ...prev, challengeId: data.challengeId }));
+        // 챌린지 정보와 사용자 신청 상태를 동시에 조회
+        const [challengeData, statusData] = await Promise.all([
+          fetchChallengeDetail(challengeId),
+          getUserApplicationStatus(challengeId)
+        ]);
+        
+        setChallenge(challengeData);
+        setApplicationStatus(statusData);
+        setApplicationData(prev => ({ ...prev, challengeId: challengeData.challengeId }));
       } catch (error) {
-        toast.error('챌린지 정보를 불러오는데 실패했습니다.');
-        onClose();
+        // 신청 상태 조회 실패는 무시하고 챌린지 정보만 조회
+        try {
+          const challengeData = await fetchChallengeDetail(challengeId);
+          setChallenge(challengeData);
+          setApplicationData(prev => ({ ...prev, challengeId: challengeData.challengeId }));
+        } catch (challengeError) {
+          toast.error('챌린지 정보를 불러오는데 실패했습니다.');
+          onClose();
+        }
       } finally {
         setIsLoading(false);
       }
@@ -91,6 +106,7 @@ const ChallengeApplyModal = ({ challengeId, onClose }: ChallengeApplyModalProps)
     setIsSubmitting(true);
     try {
       await joinChallenge(challenge.challengeId, applicationData);
+      setApplicationStatus('PENDING'); // 신청 완료 후 상태를 PENDING으로 설정
       toast.success('챌린지 신청이 완료되었습니다!');
       onClose();
     } catch (error: any) {
@@ -107,6 +123,50 @@ const ChallengeApplyModal = ({ challengeId, onClose }: ChallengeApplyModalProps)
   const isApplicable = challenge && challenge.challengeStatus === 'ACTIVE' && challenge.currentParticipants < challenge.maxParticipants;
   const isFull = challenge && challenge.currentParticipants >= challenge.maxParticipants;
   const isEnded = challenge && challenge.challengeStatus !== 'ACTIVE';
+  
+  // 신청 상태에 따른 버튼 활성화 여부와 텍스트 결정
+  const getButtonState = () => {
+    // 챌린지 자체가 신청 불가능한 상태인 경우
+    if (!isApplicable) {
+      return {
+        canApply: false,
+        buttonText: '신청서 작성하기',
+        statusMessage: null
+      };
+    }
+    
+    // 신청 상태에 따른 처리
+    switch (applicationStatus) {
+      case 'PENDING':
+        return {
+          canApply: false,
+          buttonText: '승인 대기 중',
+          statusMessage: null
+        };
+      case 'APPROVED':
+        return {
+          canApply: false,
+          buttonText: '참여 중인 챌린지',
+          statusMessage: null
+        };
+      case 'OWNER':
+        return {
+          canApply: false,
+          buttonText: '참여 중인 챌린지',
+          statusMessage: null
+        };
+      case 'REJECTED':
+      case null:
+      default:
+        return {
+          canApply: true,
+          buttonText: '신청서 작성하기',
+          statusMessage: null
+        };
+    }
+  };
+  
+  const buttonState = getButtonState();
 
   const renderStatus = () => {
     if (isFull) {
@@ -246,7 +306,7 @@ const ChallengeApplyModal = ({ challengeId, onClose }: ChallengeApplyModalProps)
                 
                 <div className="p-6 overflow-y-auto">
                     <span className="text-sm font-semibold" style={{ color: '#F47150' }}>{challenge.category.categoryName}</span>
-                    <h2 className="text-2xl font-bold mt-1 text-gray-900 dark:text-white">{challenge.title}</h2>
+                    <h2 className="text-2xl font-medium mt-1 text-gray-900 dark:text-white">{challenge.title}</h2>
                     
                     <div className="mt-3">
                         <ExpandableText text={challenge.description} maxLength={50} />
@@ -294,10 +354,10 @@ const ChallengeApplyModal = ({ challengeId, onClose }: ChallengeApplyModalProps)
                     </div>
                     <button
                         onClick={() => setShowApplicationForm(true)}
-                        disabled={!isApplicable}
+                        disabled={!buttonState.canApply}
                         className="w-full px-4 py-3 rounded-md bg-[#F47150] text-white font-bold hover:bg-[#e56b49] disabled:bg-gray-500 disabled:cursor-not-allowed transition-colors"
                     >
-                        신청서 작성하기
+                        {buttonState.buttonText}
                     </button>
                 </div>
             </div>

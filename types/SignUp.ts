@@ -6,6 +6,7 @@ export interface SignUpRequest {
   gender: string;
   regionId: number;
   nickname: string;
+  profileImage?: File; // 프로필 이미지 파일 추가
 }
 
 export interface SignUpResponse {

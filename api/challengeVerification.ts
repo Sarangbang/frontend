@@ -1,5 +1,6 @@
 import apiClient from "./apiClient";
 import { ChallengeVerificationByDate } from "@/types/Challenge";
+import { CancelVerificationRequest } from "@/types/Verification";
 
 /**
  * 특정 챌린지의 날짜별 인증 정보를 조회합니다.
@@ -19,4 +20,15 @@ export const getVerificationsByDate = async (challengeId: BigInt, selectedDate: 
         console.error("Error fetching verifications by date:", error);
         throw error;
     }
-} 
+}
+
+// 챌린지 인증 취소
+export const cancelVerification = async (data: CancelVerificationRequest) => {
+    const response = await apiClient.delete("/challenge-verifications", {
+        data,
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+    return response.data;
+}

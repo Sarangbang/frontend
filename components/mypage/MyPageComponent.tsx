@@ -12,13 +12,15 @@ import Logout from '../common/Logout';
 import Sidebar from '../common/Sidebar';
 import BottomNav from '../common/BottomNav';
 import { useMediaQuery } from 'react-responsive';
-import { getUserProfile, updatePassword, updateProfileImage, deleteProfileImage } from '@/api/mypage';
+import { getUserProfile, updatePassword, updateProfileImage, deleteProfileImage, updateRegion } from '@/api/mypage';
 import { UserProfileResponse } from '@/types/User';
+import RegionSelectForm from '../signup/RegionSelectForm';
 
 export default function MyPageComponent() {
   const [activeTab, setActiveTab] = useState('info');
   const router = useRouter();
   const pathname = usePathname();
+  const [isClient, setIsClient] = useState(false);
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
   const [userProfile, setUserProfile] = useState<UserProfileResponse | null>(
     null,
@@ -35,7 +37,15 @@ export default function MyPageComponent() {
   const [newPasswordCheck, setNewPasswordCheck] = useState('');
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
 
+  const [isEditingRegion, setIsEditingRegion] = useState(false);
+  const [selectedRegionId, setSelectedRegionId] = useState<number | null>(null);
+  const [selectedRegionAddress, setSelectedRegionAddress] = useState<string>('');
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -178,6 +188,46 @@ export default function MyPageComponent() {
     }
   };
 
+  const handleRegionEditClick = () => {
+    setIsEditingRegion(true);
+  };
+
+  const handleRegionUpdate = async () => {
+    if (selectedRegionId && selectedRegionAddress) {
+      try {
+        await updateRegion({ regionId: selectedRegionId });
+        
+        setUserProfile(prev => prev ? { ...prev, region: selectedRegionAddress } : null);
+        setIsEditingRegion(false);
+        
+        setToastMessage('지역이 성공적으로 변경되었습니다.');
+        setToastType('success');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+
+      } catch (error) {
+        setToastMessage('지역 변경에 실패했습니다.');
+        setToastType('error');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      }
+    } else {
+      setToastMessage('변경할 지역을 선택해주세요.');
+      setToastType('error');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    }
+  };
+
+  const handleRegionSelect = (regionId: number | null, fullAddress: string) => {
+    setSelectedRegionId(regionId);
+    setSelectedRegionAddress(fullAddress);
+  };
+
+  const handleRegionCancel = () => {
+    setIsEditingRegion(false);
+  };
+
   const hasCustomProfileImage =
     userProfile?.profileImageUrl &&
     !userProfile.profileImageUrl.includes('gamza.png');
@@ -186,13 +236,15 @@ export default function MyPageComponent() {
     <>
       <main className="flex-grow flex flex-col items-center w-full p-6 space-y-6">
         <div className="relative">
-          <Image
-            src={userProfile?.profileImageUrl || '/images/charactors/gamza.png'}
-            alt="Profile"
-            width={100}
-            height={100}
-            className="rounded-full object-cover"
-          />
+          <div className="w-28 h-28 rounded-full overflow-hidden">
+            <Image
+              src={userProfile?.profileImageUrl || '/images/charactors/gamza.png'}
+              alt="Profile"
+              width={112}
+              height={112}
+              className="w-full h-full object-cover object-center"
+            />
+          </div>
           <input
             type="file"
             ref={fileInputRef}
@@ -208,7 +260,7 @@ export default function MyPageComponent() {
           </div>
 
           {/* 데스크톱용 액션 시트 */}
-          {isDesktop && isActionSheetOpen && (
+          {isClient && isDesktop && isActionSheetOpen && (
             <div
               className="absolute top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg z-20"
               onClick={(e) => e.stopPropagation()}
@@ -270,50 +322,66 @@ export default function MyPageComponent() {
           style={{ borderColor: '#d9d9d9' }}
         >
           {activeTab === 'info' && (
-            <div className="space-y-6">
-              <div>
-                <label className="text-sm text-gray-500">이메일</label>
-                <p className="dark:text-white border-b pb-2 border-gray-200 dark:border-gray-700">
-                  {userProfile?.email || '로딩중...'}
-                </p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-500">닉네임</label>
-                <div className="flex justify-between items-center border-b pb-2 border-gray-200 dark:border-gray-700">
-                  <p className="dark:text-white">
-                    {userProfile?.nickname || '로딩중...'}
+            isEditingRegion ? (
+              <RegionSelectForm 
+                onRegionSelect={(regionId, fullAddress) => {
+                  setSelectedRegionId(regionId);
+                  setSelectedRegionAddress(fullAddress);
+                }}
+                onCancel={handleRegionCancel}
+                onSubmit={handleRegionUpdate}
+                initialFullAddress={userProfile?.region}
+                showButtons={true}
+              />
+            ) : (
+              <div className="space-y-6">
+                <div>
+                  <label className="text-sm text-gray-500">이메일</label>
+                  <p className="dark:text-white border-b pb-2 border-gray-200 dark:border-gray-700">
+                    {userProfile?.email || '로딩중...'}
                   </p>
-                  <ArrowTopRightOnSquareIcon
-                    className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300"
-                    onClick={() => {
-                      router.push('/mypage/nickname');
+                </div>
+                <div>
+                  <label className="text-sm text-gray-500">닉네임</label>
+                  <div className="flex justify-between items-center border-b pb-2 border-gray-200 dark:border-gray-700">
+                    <p className="dark:text-white">
+                      {userProfile?.nickname || '로딩중...'}
+                    </p>
+                    <ArrowTopRightOnSquareIcon
+                      className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300"
+                      onClick={() => {
+                        router.push('/mypage/nickname');
+                      }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-500">성별</label>
+                  <p className="dark:text-white border-b pb-2 border-gray-200 dark:border-gray-700">
+                    {userProfile?.gender || '로딩중...'}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-500">지역</label>
+                  <div className="flex justify-between items-center border-b pb-2 border-gray-200 dark:border-gray-700">
+                    <p className="dark:text-white">
+                      {userProfile?.region || '로딩중...'}
+                    </p>
+                    <ArrowTopRightOnSquareIcon
+                      className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300"
+                      onClick={handleRegionEditClick}
+                    />
+                  </div>
+                </div>
+                <div className="pt-4">
+                  <Logout
+                    onLogout={() => {
+                      router.push('/login');
                     }}
                   />
                 </div>
               </div>
-              <div>
-                <label className="text-sm text-gray-500">성별</label>
-                <p className="dark:text-white border-b pb-2 border-gray-200 dark:border-gray-700">
-                  {userProfile?.gender || '로딩중...'}
-                </p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-500">지역</label>
-                <div className="flex justify-between items-center border-b pb-2 border-gray-200 dark:border-gray-700">
-                  <p className="dark:text-white">
-                    {userProfile?.region || '로딩중...'}
-                  </p>
-                  <ArrowTopRightOnSquareIcon className="w-5 h-5 text-gray-400 cursor-pointer" />
-                </div>
-              </div>
-              <div className="pt-4">
-                <Logout
-                  onLogout={() => {
-                    router.push('/login');
-                  }}
-                />
-              </div>
-            </div>
+            )
           )}
 
           {activeTab === 'password' && (
@@ -372,7 +440,7 @@ export default function MyPageComponent() {
           )}
         </div>
       </main>
-      {!isDesktop && <BottomNav />}
+      {isClient && !isDesktop && <BottomNav />}
     </>
   );
 
@@ -392,13 +460,13 @@ export default function MyPageComponent() {
             </div>
           </div>
         )}
-        {isDesktop ? (
+        {isClient && isDesktop ? (
           <div className="flex">
             <Sidebar />
             <div className="flex-1 lg:ml-64">
               <div className="max-w-2xl mx-auto py-8">
                 <header className="px-4">
-                  <h1 className="text-2xl font-bold dark:text-white">MyPage</h1>
+                  <h1 className="text-2xl font-medium dark:text-white">MyPage</h1>
                 </header>
                 {myPageContent}
               </div>
@@ -411,7 +479,7 @@ export default function MyPageComponent() {
                 <button onClick={() => router.back()}>
                   <ChevronLeftIcon className="w-6 h-6 text-gray-800 dark:text-gray-200" />
                 </button>
-                <h1 className="text-xl font-bold dark:text-white">MyPage</h1>
+                <h1 className="text-xl font-medium dark:text-white">MyPage</h1>
               </div>
             </header>
             {myPageContent}
@@ -419,7 +487,7 @@ export default function MyPageComponent() {
         )}
       </div>
       {/* 모바일용 액션 시트 */}
-      {!isDesktop && isActionSheetOpen && (
+      {isClient && !isDesktop && isActionSheetOpen && (
         <div
           className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-50 flex items-end"
           onClick={closeActionSheet}

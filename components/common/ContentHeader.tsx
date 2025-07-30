@@ -1,9 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ChevronLeftIcon } from '@heroicons/react/24/solid';
+import { useUserStore } from '@/lib/store/userStore';
+import { getUserProfile } from '@/api/mypage';
 
 interface ContentHeaderProps {
   title: string;
@@ -19,17 +21,37 @@ const ContentHeader = ({
   children,
 }: ContentHeaderProps) => {
   const router = useRouter();
+  const { user, isLoggedIn } = useUserStore();
+  const [profileImageUrl, setProfileImageUrl] = useState(
+    '/images/charactors/gamza.png',
+  );
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      getUserProfile()
+        .then(data => {
+          if (data.profileImageUrl) {
+            setProfileImageUrl(data.profileImageUrl);
+          }
+        })
+        .catch(() => {
+          // 에러 발생 시 기본 이미지 유지
+        });
+    }
+  }, [isLoggedIn]);
+
+  const finalImageUrl = profileImageUrl;
 
   if (isClient && isDesktop) {
     return (
       <div className="pt-8 mb-8 flex-shrink-0">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold dark:text-white">{title}</h1>
+          <h1 className="text-3xl font-medium dark:text-white">{title}</h1>
           <div className="flex items-center space-x-4">
             {children}
             <div className="w-10 h-10 relative">
               <Image
-                src="/images/charactors/gamza.png"
+                src={finalImageUrl}
                 alt="Profile"
                 fill
                 className="rounded-full"
@@ -48,13 +70,13 @@ const ContentHeader = ({
           <button onClick={() => router.back()} className="mr-2">
             <ChevronLeftIcon className="w-6 h-6 text-gray-800 dark:text-gray-200" />
           </button>
-          <h1 className="text-xl font-bold dark:text-white">{title}</h1>
+          <h1 className="text-xl font-medium dark:text-white">{title}</h1>
         </div>
         <div className="flex items-center space-x-2">
           {children}
           <div className="w-8 h-8 relative">
             <Image
-              src="/images/charactors/gamza.png"
+              src={finalImageUrl}
               alt="Profile"
               fill
               className="rounded-full"

@@ -126,3 +126,17 @@ export interface ChallengeVerificationByDate {
   content: string | null;
   verifiedAt: string | null;
 }
+
+// 인기 챌린지 조회
+export interface PopularChallengeResponse {
+  challengeId: number;
+  challengeTitle: string;
+  image: string;
+  region: string;
+  currentParticipants: number;
+  maxParticipants: number;
+  startDate: string;
+  endDate: string;
+  categoryId: number;
+  categoryName: string;
+}

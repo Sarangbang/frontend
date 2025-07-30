@@ -15,72 +15,6 @@ import { fetchChatRooms, markAsRead, fetchChatMessages } from '@/api/chat';
 import { useUserStore } from '@/lib/store/userStore';
 import { ChatSocket } from '@/util/chatSocket';
 
-const groupChats = [
-  {
-    id: 1,
-    type: 'group' as const,
-    tags: ['챌린지'],
-    name: '책...읽읍시다',
-    participantCount: 8,
-    lastMessage: '책은 어떻게 읽나요?',
-    timestamp: '오후 9:00',
-    unreadCount: 20,
-    avatar: '/images/charactors/default_study.png',
-  },
-  {
-    id: 2,
-    type: 'group' as const,
-    tags: ['동네모임'],
-    name: '6시기상챌린지',
-    participantCount: 20,
-    lastMessage: '아 지금 일어났다',
-    timestamp: '오후 3:00',
-    unreadCount: 100,
-    avatar: '/images/charactors/default_wakeup.png',
-  },
-  {
-    id: 3,
-    type: 'group' as const,
-    tags: ['챌린지'],
-    name: '모각코',
-    participantCount: 5,
-    lastMessage: 'int가 뭐죠',
-    timestamp: '6월 21일',
-    unreadCount: 101,
-    avatar: '/images/charactors/default_wakeup.png',
-  },
-];
-
-const oneOnOneChats = [
-  {
-    id: 1,
-    type: 'dm' as const,
-    name: '감자민영',
-    lastMessage: '집에 가고 싶다',
-    timestamp: '오후 6:09',
-    unreadCount: 1,
-    avatar: '/images/charactors/default_wakeup.png',
-  },
-  {
-    id: 2,
-    type: 'dm' as const,
-    name: '신현성',
-    lastMessage: '잠온다',
-    timestamp: '오후 6:06',
-    unreadCount: 2,
-    avatar: '/images/charactors/default_wakeup.png',
-  },
-  {
-    id: 3,
-    type: 'dm' as const,
-    name: '김영준',
-    lastMessage: '운동 가야징',
-    timestamp: '오후 3:21',
-    unreadCount: 4,
-    avatar: '/images/charactors/default_wakeup.png',
-  },
-];
-
 const CHAT_TABS: Tab<'group' | 'dm'>[] = [
   { id: 'group', label: '그룹 채팅' },
   { id: 'dm', label: '1:1 채팅' },
@@ -319,7 +253,7 @@ export default function ChatClient() {
       ) : (
         <>
           <ContentHeader
-            title="Challenge"
+            title="Chat"
             isDesktop={isDesktop}
             isClient={isClient}
           >

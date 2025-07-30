@@ -446,37 +446,37 @@ const CreateChallengeForm = ({
           <div>
             <div className="space-y-7 text-lg dark:text-white">
               <div>
-                <p className="font-bold">챌린지 주제</p>
+                <p className="font-medium">챌린지 주제</p>
                 <p className="text-gray-600 dark:text-gray-300 mt-1.5">
                   {categoryName}
                 </p>
               </div>
               <div>
-                <p className="font-bold">챌린지 제목</p>
+                <p className="font-medium">챌린지 제목</p>
                 <p className="text-gray-600 dark:text-gray-300 mt-1.5">
                   {formData.title}
                 </p>
               </div>
               <div>
-                <p className="font-bold">참여인원</p>
+                <p className="font-medium">참여인원</p>
                 <p className="text-gray-600 dark:text-gray-300 mt-1.5">
                   {formData.participants}명
                 </p>
               </div>
               <div>
-                <p className="font-bold">인증방법</p>
+                <p className="font-medium">인증방법</p>
                 <p className="text-gray-600 dark:text-gray-300 mt-1.5 whitespace-pre-wrap">
                   {formData.verificationMethod}
                 </p>
               </div>
               <div>
-                <p className="font-bold">챌린지 참여 지역</p>
+                <p className="font-medium">챌린지 참여 지역</p>
                 <p className="text-gray-600 dark:text-gray-300 mt-1.5">
                   {formData.regionAddress}
                 </p>
               </div>
               <div>
-                <p className="font-bold">챌린지 시작일</p>
+                <p className="font-medium">챌린지 시작일</p>
                 <p className="text-gray-600 dark:text-gray-300 mt-1.5">
                   {formData.startDate.toLocaleDateString()}
                 </p>

@@ -7,6 +7,8 @@ import Image from 'next/image';
 import Sidebar from '@/components/common/Sidebar';
 import { createChallengeVerification } from '@/api/verification';
 import toast from 'react-hot-toast';
+import { compressImage } from '@/util/imageCompressor';
+
 const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
@@ -27,14 +29,29 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
     };
   }, [imagePreview]);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
+    if (!file) return;
+
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+
+    try {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('5MB 이하 이미지만 업로드할 수 있습니다.');
+        return;
       }
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
+      
+      const compressed = await compressImage(file, 1); // 압축 실행
+      console.log('압축 전 파일 크기:', (file.size / 1024 / 1024).toFixed(2), 'MB');
+      console.log('압축 후 파일 크기:', (compressed.size / 1024 / 1024).toFixed(2), 'MB');
+      
+      setImageFile(compressed);
+      setImagePreview(URL.createObjectURL(compressed));
+    } catch (err) {
+      console.error('이미지 압축 실패: ', err);
+      toast.error('이미지 압축에 실패했습니다. 5MB 이하의 JPG/PNG 파일을 다시 선택해주세요.');
     }
   };
 
@@ -87,12 +104,15 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                   <CloudArrowUpIcon className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" />
                   <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">사진을 업로드하세요.</span></p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">JPG, PNG 파일 (최대 10MB)</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">JPG, PNG 파일 (최대 5MB)</p>
                 </div>
                 <input id="dropzone-file" type="file" className="hidden" accept="image/png, image/jpeg" onChange={handleFileChange} />
               </label>
             )}
           </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+            * 잘못된 사진을 인증할 경우, 방장에 의해 인증이 취소될 수 있습니다.
+          </p>
         </section>
 
         <section className="flex-grow flex flex-col">
@@ -130,7 +150,7 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
             <main className="w-2/4 mx-auto pt-8">
                <div className="flex items-center mb-8">
                 <Image src="/images/charactors/gamza.png" alt={challengeTitle} width={32} height={32} className="mr-3" />
-                <h1 className="text-3xl font-bold dark:text-white">{challengeTitle}</h1>
+                <h1 className="text-3xl font-medium dark:text-white">{challengeTitle}</h1>
               </div>
               {mainContent}
             </main>
@@ -144,7 +164,7 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
                 <ChevronLeftIcon className="w-6 h-6 text-gray-800 dark:text-gray-200" />
               </button>
               <Image src="/images/charactors/gamza.png" alt={challengeTitle} width={24} height={24} className="mr-2" />
-              <h1 className="text-xl font-bold dark:text-white">{challengeTitle}</h1>
+              <h1 className="text-xl font-medium dark:text-white">{challengeTitle}</h1>
             </div>
           </header>
           {mainContent}

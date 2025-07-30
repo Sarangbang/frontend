@@ -20,6 +20,7 @@ const SignupClient = () => {
     gender: '',
     nickname: '',
     regionId: undefined,
+    profileImage: undefined, // 프로필 이미지 필드 추가
   });
 
   const handleNext = (data: Partial<SignUpRequest>) => {
@@ -42,7 +43,9 @@ const SignupClient = () => {
       setError('지역을 선택해주세요.');
       return;
     }
+    
     try {
+      // SignUpRequest 타입의 formData를 그대로 전달합니다.
       await signUp(formData as SignUpRequest);
       localStorage.setItem('signupSuccess', '1');
       router.push('/login');
@@ -80,17 +83,11 @@ const SignupClient = () => {
         <div className="flex flex-col justify-center min-h-screen bg-white sm:px-6 lg:px-8 dark:bg-gray-900 py-12">
           <div className="sm:mx-auto sm:w-full sm:max-w-md">
             <div className="flex flex-col items-center">
-              <Image
-                src="/images/charactors/gamza.png"
-                alt="일심동네 로고"
-                width={80}
-                height={80}
-              />
-              <h2 className="mt-6 text-3xl font-extrabold text-center text-gray-900 dark:text-white">
+              <h2 className="text-3xl font-extrabold text-center text-gray-900 dark:text-white">
                 일심동네
               </h2>
               <p className="mt-2 text-sm font-semibold text-orange-600">
-                같은 동네, 같은 마음 함께 만드는 습관
+                같은 <span className="text-black">동네</span>, 같은 <span className="text-black">마음</span> 함께 만드는 습관
               </p>
             </div>
           </div>

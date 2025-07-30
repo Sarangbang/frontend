@@ -4,6 +4,7 @@ import { Challenge } from '@/types/Challenge';
 import { ClockIcon, UserGroupIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import { calculatePeriod, formatPeriod } from '@/util/dateUtils';
 import { getPresignedUrl } from '@/api/files';
+import { useRouter } from 'next/navigation';
 
 interface ChallengeCardProps {
   challenge: Challenge;
@@ -14,6 +15,7 @@ const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
   const { status, location, title, currentParticipants, participants, category, description, startDate, endDate, image } = challenge;
   const [imageError, setImageError] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>(''); // Presigned URL용 상태 추가
+  const router = useRouter();
 
   useEffect(() => {
     const fetchImageUrl = async () => {
@@ -120,7 +122,7 @@ const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
             </span>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{location} · {challenge.categoryName || category}</p>
-          <h3 className="text-lg font-bold text-gray-800 dark:text-white my-1">{title} [{currentParticipants}/{participants}]</h3>
+          <h3 className="text-lg font-medium text-gray-800 dark:text-white my-1">{title} [{currentParticipants}/{participants}]</h3>
           <p className="text-sm text-gray-600 dark:text-gray-300">{description}</p>
           <div className="mt-2 space-y-1 text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center">
@@ -140,8 +142,16 @@ const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
       </div>
       {isLeaderView && (dynamicStatus === '예정' || dynamicStatus === '진행중') && (
         <div className="flex justify-end mt-3">
-          <button className="bg-white text-gray-700 text-sm font-semibold px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
-            챌린지 종료
+          <button 
+            onClick={(e) =>
+              {
+                e.stopPropagation(); // 이벤트 전파 차단
+                router.push(`/challenge-manage/${String(challenge.id)}`)
+              }
+            }
+            className="bg-white text-gray-700 text-sm font-semibold px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+          >
+            챌린지 관리
           </button>
         </div>
       )}

@@ -12,7 +12,7 @@ const Banner = () => (
         />
         <div className="relative">
             <p className="text-base md:text-xl lg:text-2xl dark:text-white">같은 동네, 같은 마음</p>
-            <p className="text-xl md:text-3xl lg:text-4xl font-bold dark:text-white">함께 만드는 습관</p>
+            <p className="text-xl md:text-3xl lg:text-4xl font-medium dark:text-white">함께 만드는 습관</p>
             <p className="mt-2 text-sm md:text-base lg:text-lg text-gray-600 dark:text-gray-300">동네 친구들과 함께 챌린지하고, 함께 모여요!</p>
         </div>
     </div>
