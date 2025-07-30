@@ -202,15 +202,7 @@ export default function ChatRoom({
         </>
       )}
       {/* 메시지 영역 */}
-      <div
-        className="flex-1 overflow-y-auto px-4 py-2 relative"
-        ref={scrollRef}
-      >
-        {isLoadingMore && (
-          <div className="flex justify-center my-2">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
-          </div>
-        )}
+      <div className="relative flex-1">
         {/* 배경 감자 박스 */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
           <Image
@@ -220,95 +212,110 @@ export default function ChatRoom({
             height={200}
           />
         </div>
-        {/* 메시지 리스트 */}
-        <div className="flex flex-col gap-3 relative z-10">
-          {messages.map((msg, idx) => {
-
-            const currentMessageDate = msg.createdAt ? new Date(msg.createdAt) : new Date();
-            const previousMessageDate = (idx > 0 && messages[idx - 1]?.createdAt) 
-                ? new Date(messages[idx - 1].createdAt) 
+        <div
+          className="absolute inset-0 overflow-y-auto px-4 py-2"
+          ref={scrollRef}
+        >
+          {isLoadingMore && (
+            <div className="flex justify-center my-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+            </div>
+          )}
+          {/* 메시지 리스트 */}
+          <div className="flex flex-col gap-3 relative z-10">
+            {messages.map((msg, idx) => {
+              const currentMessageDate = msg.createdAt
+                ? new Date(msg.createdAt)
                 : new Date();
+              const previousMessageDate =
+                idx > 0 && messages[idx - 1]?.createdAt
+                  ? new Date(messages[idx - 1].createdAt)
+                  : new Date();
 
-            const showDateSeparator =
-              idx === 0 || formatDate(previousMessageDate) !== formatDate(currentMessageDate);
+              const showDateSeparator =
+                idx === 0 ||
+                formatDate(previousMessageDate) !== formatDate(currentMessageDate);
 
+              const messageContent = () => {
+                if (msg.type === "ENTER" || msg.type === "LEAVE") {
+                  return renderSystemMessage(msg.message);
+                }
 
-            const messageContent = () => {
-              if (msg.type === "ENTER" || msg.type === "LEAVE") {
-                return renderSystemMessage(msg.message);
-              }
-
-              const isMine = msg.sender.userId === sender.userId;
-              const time = formatTime(currentMessageDate); 
-              return (
-                <div
-                  className={`flex gap-2 ${
-                    isMine ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  {!isMine && (
-                    <Image
-                      src={msg.sender.profileImageUrl || "/images/charactors/gamza.png"}
-                      alt="상대방 프로필 이미지"
-                      width={32}
-                      height={32}
-                      className="rounded-full border self-start"
-                    />
-                  )}
+                const isMine = msg.sender.userId === sender.userId;
+                const time = formatTime(currentMessageDate);
+                return (
                   <div
-                    className={`flex flex-col max-w-[70%] ${
-                      isMine ? "items-end" : "items-start"
+                    className={`flex gap-2 ${
+                      isMine ? "justify-end" : "justify-start"
                     }`}
                   >
                     {!isMine && (
-                      <span className="text-xs text-gray-600 dark:text-gray-400 font-semibold mb-1 ml-1">
-                        {msg.sender.nickname}
-                      </span>
+                      <Image
+                        src={
+                          msg.sender.profileImageUrl ||
+                          "/images/charactors/gamza.png"
+                        }
+                        alt="상대방 프로필 이미지"
+                        width={32}
+                        height={32}
+                        className="rounded-full border self-start"
+                      />
                     )}
-                    <div className="flex items-end gap-2">
-                      {isMine && msg.unreadCount > 0 && (
-                        <span className="text-yellow-500 font-bold text-[11px] mb-1">
-                          {msg.unreadCount}
-                        </span>
-                      )}
-                      {isMine && (
-                        <span className="text-[11px] text-gray-400 mb-1">
-                          {time}
-                        </span>
-                      )}
-                      <div
-                        className={`rounded-xl px-4 py-2 text-sm shadow-sm break-all ${
-                          isMine
-                            ? "bg-[#FDEBE6] text-red-900"
-                            : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-white"
-                        }`}
-                      >
-                        {msg.message}
-                      </div>
+                    <div
+                      className={`flex flex-col max-w-[70%] ${
+                        isMine ? "items-end" : "items-start"
+                      }`}
+                    >
                       {!isMine && (
-                        <span className="text-[11px] text-gray-400 mb-1">
-                          {time}
+                        <span className="text-xs text-gray-600 dark:text-gray-400 font-semibold mb-1 ml-1">
+                          {msg.sender.nickname}
                         </span>
                       )}
+                      <div className="flex items-end gap-2">
+                        {isMine && msg.unreadCount > 0 && (
+                          <span className="text-yellow-500 font-bold text-[11px] mb-1">
+                            {msg.unreadCount}
+                          </span>
+                        )}
+                        {isMine && (
+                          <span className="text-[11px] text-gray-400 mb-1">
+                            {time}
+                          </span>
+                        )}
+                        <div
+                          className={`rounded-xl px-4 py-2 text-sm shadow-sm break-all ${
+                            isMine
+                              ? "bg-[#FDEBE6] text-red-900"
+                              : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-white"
+                          }`}
+                        >
+                          {msg.message}
+                        </div>
+                        {!isMine && (
+                          <span className="text-[11px] text-gray-400 mb-1">
+                            {time}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
+                );
+              };
+
+              return (
+                <div key={msg._id || `msg-${idx}`}>
+                  {showDateSeparator && (
+                    <div className="flex justify-center my-4">
+                      <span className="bg-gray-100 dark:bg-gray-700 text-xs text-gray-500 dark:text-gray-300 px-4 py-1 rounded-full shadow-sm">
+                        {formatDate(currentMessageDate)}
+                      </span>
+                    </div>
+                  )}
+                  {messageContent()}
                 </div>
               );
-            };
-
-            return (
-              <div key={msg._id || `msg-${idx}`}>
-                {showDateSeparator && (
-                  <div className="flex justify-center my-4">
-                    <span className="bg-gray-100 dark:bg-gray-700 text-xs text-gray-500 dark:text-gray-300 px-4 py-1 rounded-full shadow-sm">
-                    {formatDate(currentMessageDate)}
-                    </span>
-                  </div>
-                )}
-                {messageContent()}
-              </div>
-            );
-          })}
+            })}
+          </div>
         </div>
       </div>
       {/* 입력창 */}

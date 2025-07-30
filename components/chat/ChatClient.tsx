@@ -186,6 +186,20 @@ export default function ChatClient() {
               : msg
           )
         );
+      } else if (serverMessage.type === 'RE_ENTER') {
+        // RE_ENTER 타입: RE_ENTER 메시지 createdAt 이후의 메시지들의 unreadCount를 -1
+        const reEnterTime = new Date(serverMessage.createdAt);
+        setMessages((prev) =>
+          prev.map((msg) => {
+            const msgCreatedAt = new Date(msg.createdAt);
+            
+            // RE_ENTER 시점 이후의 메시지이고 unreadCount가 0보다 큰 경우에만 -1
+            if (msgCreatedAt > reEnterTime && msg.unreadCount > 0) {
+              return { ...msg, unreadCount: msg.unreadCount - 1 };
+            }
+            return msg;
+          })
+        );
       }
     };
 
@@ -265,7 +279,7 @@ export default function ChatClient() {
 
   const handleEnterRoom = (chat: ChatRoomResponse) => {
     if (chat.unreadCount > 0) {
-      markAsRead(chat.roomId);
+      // markAsRead(chat.roomId);
       setChatRooms(prevRooms =>
         prevRooms.map(r =>
           r.roomId === chat.roomId ? { ...r, unreadCount: 0 } : r

@@ -1,4 +1,4 @@
-export type MessageType = "ENTER" | "LEAVE" | "TALK";
+export type MessageType = "ENTER" | "LEAVE" | "TALK" | "RE_ENTER";
 
 export interface Sender {
   userId: string;
