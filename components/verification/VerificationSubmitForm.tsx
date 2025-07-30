@@ -35,7 +35,7 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
       URL.revokeObjectURL(imagePreview);
     }
 
-    const result = await handleImageChange(event); // util 함수 적용
+    const result = await handleImageChange(event, 10); // util 함수 적용
 
     if (!result) return; // 유효하지 않은 파일이거나 압축 실패
 
