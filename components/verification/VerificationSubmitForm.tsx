@@ -7,7 +7,7 @@ import Image from 'next/image';
 import Sidebar from '@/components/common/Sidebar';
 import { createChallengeVerification } from '@/api/verification';
 import toast from 'react-hot-toast';
-import { compressImage } from '@/util/imageCompressor';
+import { handleImageChange } from '@/util/handleImageChange';
 
 const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
   const router = useRouter();
@@ -30,29 +30,17 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
   }, [imagePreview]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+    // 기존 미리보기 URL 정리
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview);
     }
 
-    try {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('5MB 이하 이미지만 업로드할 수 있습니다.');
-        return;
-      }
-      
-      const compressed = await compressImage(file, 1); // 압축 실행
-      console.log('압축 전 파일 크기:', (file.size / 1024 / 1024).toFixed(2), 'MB');
-      console.log('압축 후 파일 크기:', (compressed.size / 1024 / 1024).toFixed(2), 'MB');
-      
-      setImageFile(compressed);
-      setImagePreview(URL.createObjectURL(compressed));
-    } catch (err) {
-      console.error('이미지 압축 실패: ', err);
-      toast.error('이미지 압축에 실패했습니다. 5MB 이하의 JPG/PNG 파일을 다시 선택해주세요.');
-    }
+    const result = await handleImageChange(event, 10); // util 함수 적용
+
+    if (!result) return; // 유효하지 않은 파일이거나 압축 실패
+
+    setImageFile(result.file);
+    setImagePreview(result.preview);
   };
 
   const removeImage = () => {
@@ -104,7 +92,7 @@ const VerificationSubmitForm = ({ challengeId }: { challengeId: string }) => {
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                   <CloudArrowUpIcon className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" />
                   <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">사진을 업로드하세요.</span></p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">JPG, PNG 파일 (최대 5MB)</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">JPG, PNG 파일 (최대 10MB)</p>
                 </div>
                 <input id="dropzone-file" type="file" className="hidden" accept="image/png, image/jpeg" onChange={handleFileChange} />
               </label>

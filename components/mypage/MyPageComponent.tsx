@@ -15,6 +15,8 @@ import { useMediaQuery } from 'react-responsive';
 import { getUserProfile, updatePassword, updateProfileImage, deleteProfileImage, updateRegion } from '@/api/mypage';
 import { UserProfileResponse } from '@/types/User';
 import RegionSelectForm from '../signup/RegionSelectForm';
+import { handleImageChange as compressAndPreviewImage } from '@/util/handleImageChange';
+
 
 export default function MyPageComponent() {
   const [activeTab, setActiveTab] = useState('info');
@@ -84,6 +86,15 @@ export default function MyPageComponent() {
       localStorage.removeItem('nickname_updated');
     }
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (userProfile?.profileImageUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(userProfile.profileImageUrl);
+      }
+    };
+  }, [userProfile?.profileImageUrl]);
+  
 
   const changePassword = async() => {
     setIsLoading(true);
@@ -159,32 +170,31 @@ export default function MyPageComponent() {
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      try {
-        const response = await updateProfileImage({ avatar: file });
-        
-        // UI 즉시 업데이트
-        const previewUrl = URL.createObjectURL(file);
-        setUserProfile((prev) =>
-          prev ? { ...prev, profileImageUrl: previewUrl } : null,
-        );
-        
-        setToastMessage('프로필 사진이 변경되었습니다.');
-        setToastType('success');
-        setShowToast(true);
-        setTimeout(() => {
-          setShowToast(false);
-        }, 3000);
-        
-      } catch (error) {
-        setToastMessage('프로필 사진 변경에 실패했습니다.');
-        setToastType('error');
-        setShowToast(true);
-        setTimeout(() => {
-          setShowToast(false);
-        }, 3000);
-      }
+    const result = await compressAndPreviewImage(event, 10);
+    if (!result) return;
+
+    try {
+      const response = await updateProfileImage({ avatar:result.file });
+
+      // blob url -> UI 반영
+      setUserProfile((prev) =>
+      prev ? { ...prev, profileImageUrl: result.preview } : null,
+      );
+
+      setToastMessage('프로필 사진이 변경되었습니다.');
+      setToastType('success');
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+
+    } catch (error) {
+      setToastMessage('프로필 사진 변경에 실패했습니다.');
+      setToastType('error');
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
     }
   };
 
