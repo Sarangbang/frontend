@@ -176,7 +176,7 @@ const CreateChallengeForm = ({
       URL.revokeObjectURL(imagePreview);
     }
 
-    const result = await compressAndPreviewImage(e, 5);
+    const result = await compressAndPreviewImage(e, 10);
     if (!result) return;
     
     // 새로운 blob URL 생성 (기존 URL 대신)
