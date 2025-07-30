@@ -61,7 +61,9 @@ export default function ChatClient() {
         
         const updatedRoom = {
           ...targetRoom,
-          unreadCount: targetRoom.unreadCount + 1
+          unreadCount: targetRoom.unreadCount + 1,
+          lastChatMessage: data.message,
+          lastMessageCreatedAt: data.createdAt,
         };
         
         const otherRooms = prevRooms.filter(room => room.roomId !== data.roomId);
@@ -344,4 +346,4 @@ export default function ChatClient() {
       )}
     </div>
   );
-} 
+}

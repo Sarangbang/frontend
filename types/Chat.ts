@@ -24,6 +24,8 @@ export interface ChatRoomResponse {
   createdAt: string;
   challengeImageUrl?: string;
   unreadCount: number;
+  lastChatMessage: string;
+  lastMessageCreatedAt: string;
 }
 
 // 채팅방 메시지 조회
