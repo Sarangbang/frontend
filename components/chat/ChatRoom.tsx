@@ -250,52 +250,68 @@ export default function ChatRoom({
                     }`}
                   >
                     {!isMine && (
-                      <Image
-                        src={
-                          msg.sender.profileImageUrl ||
-                          "/images/charactors/gamza.png"
-                        }
-                        alt="상대방 프로필 이미지"
-                        width={32}
-                        height={32}
-                        className="rounded-full border self-start"
-                      />
-                    )}
-                    <div className="flex items-end gap-2">
-                      {isMine && (
-                        <>
-                          {msg.unreadCount > 0 && (
-                            <span className="text-yellow-500 font-bold text-[11px] mb-1">
-                              {msg.unreadCount}
-                            </span>
-                          )}
-                          <span className="text-[11px] text-gray-400 mb-1">
-                            {time}
-                          </span>
-                        </>
-                      )}
-                      <div
-                        className={`rounded-xl px-4 py-2 text-sm shadow-sm break-all ${
-                          isMine
-                            ? "bg-[#FDEBE6] text-red-900"
-                            : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-white"
-                        }`}
-                      >
-                        {msg.message}
+                      <div className="flex items-start gap-2">
+                        <Image
+                          src={
+                            msg.sender.profileImageUrl ||
+                            "/images/charactors/gamza.png"
+                          }
+                          alt="상대방 프로필 이미지"
+                          width={32}
+                          height={32}
+                          className="rounded-full border self-start"
+                        />
+                        <div className="flex flex-col items-start">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 ml-1 mb-1">
+                            {msg.sender.nickname}
+                          </div>
+                          <div className="flex items-end gap-2">
+                            <div
+                              className={`rounded-xl px-4 py-2 text-sm shadow-sm break-all ${
+                                isMine
+                                  ? "bg-[#FDEBE6] text-red-900"
+                                  : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-white"
+                              }`}
+                            >
+                              {msg.message}
+                            </div>
+                            {!isMine && (
+                              <>
+                                {msg.unreadCount > 0 && (
+                                  <span className="text-yellow-500 font-bold text-[11px] mb-1">
+                                    {msg.unreadCount}
+                                  </span>
+                                )}
+                                <span className="text-[11px] text-gray-400 mb-1">
+                                  {time}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      {!isMine && (
-                        <>
-                          {msg.unreadCount > 0 && (
-                            <span className="text-yellow-500 font-bold text-[11px] mb-1">
-                              {msg.unreadCount}
-                            </span>
-                          )}
-                          <span className="text-[11px] text-gray-400 mb-1">
-                            {time}
+                    )}
+                    {isMine && (
+                      <div className="flex items-end gap-2">
+                        {msg.unreadCount > 0 && (
+                          <span className="text-yellow-500 font-bold text-[11px] mb-1">
+                            {msg.unreadCount}
                           </span>
-                        </>
-                      )}
-                    </div>
+                        )}
+                        <span className="text-[11px] text-gray-400 mb-1">
+                          {time}
+                        </span>
+                        <div
+                          className={`rounded-xl px-4 py-2 text-sm shadow-sm break-all ${
+                            isMine
+                              ? "bg-[#FDEBE6] text-red-900"
+                              : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-white"
+                          }`}
+                        >
+                          {msg.message}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               };
