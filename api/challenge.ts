@@ -77,6 +77,16 @@ export const joinChallenge = async (challengeId: number, joinData: ChallengeJoin
   }
 };
 
+// 사용자의 챌린지 신청 상태 조회
+export const getUserApplicationStatus = async (challengeId: number): Promise<string | null> => {
+  try {
+    const response = await apiClient.get(`/challenge/application/status/${challengeId}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 /**
  * 챌린지 참여 신청서 목록을 조회합니다 (방장 전용)
  * @param challengeId 챌린지 ID

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, MessageSquarePlus } from 'lucide-react';
@@ -10,75 +10,10 @@ import ChatList from './ChatList';
 import Tabs, { type Tab } from '../common/Tabs';
 import ContentHeader from '../common/ContentHeader';
 import ChatRoom from './ChatRoom';
-import { Sender, ChatRoomResponse } from '@/types/Chat';
-import { fetchChatRooms } from '@/api/chat';
+import { Sender, ChatRoomResponse, ChatMessage } from '@/types/Chat';
+import { fetchChatRooms, markAsRead, fetchChatMessages } from '@/api/chat';
 import { useUserStore } from '@/lib/store/userStore';
-
-const groupChats = [
-  {
-    id: 1,
-    type: 'group' as const,
-    tags: ['챌린지'],
-    name: '책...읽읍시다',
-    participantCount: 8,
-    lastMessage: '책은 어떻게 읽나요?',
-    timestamp: '오후 9:00',
-    unreadCount: 20,
-    avatar: '/images/charactors/default_study.png',
-  },
-  {
-    id: 2,
-    type: 'group' as const,
-    tags: ['동네모임'],
-    name: '6시기상챌린지',
-    participantCount: 20,
-    lastMessage: '아 지금 일어났다',
-    timestamp: '오후 3:00',
-    unreadCount: 100,
-    avatar: '/images/charactors/default_wakeup.png',
-  },
-  {
-    id: 3,
-    type: 'group' as const,
-    tags: ['챌린지'],
-    name: '모각코',
-    participantCount: 5,
-    lastMessage: 'int가 뭐죠',
-    timestamp: '6월 21일',
-    unreadCount: 101,
-    avatar: '/images/charactors/default_wakeup.png',
-  },
-];
-
-const oneOnOneChats = [
-  {
-    id: 1,
-    type: 'dm' as const,
-    name: '감자민영',
-    lastMessage: '집에 가고 싶다',
-    timestamp: '오후 6:09',
-    unreadCount: 1,
-    avatar: '/images/charactors/default_wakeup.png',
-  },
-  {
-    id: 2,
-    type: 'dm' as const,
-    name: '신현성',
-    lastMessage: '잠온다',
-    timestamp: '오후 6:06',
-    unreadCount: 2,
-    avatar: '/images/charactors/default_wakeup.png',
-  },
-  {
-    id: 3,
-    type: 'dm' as const,
-    name: '김영준',
-    lastMessage: '운동 가야징',
-    timestamp: '오후 3:21',
-    unreadCount: 4,
-    avatar: '/images/charactors/default_wakeup.png',
-  },
-];
+import { ChatSocket } from '@/util/chatSocket';
 
 const CHAT_TABS: Tab<'group' | 'dm'>[] = [
   { id: 'group', label: '그룹 채팅' },
@@ -93,6 +28,14 @@ export default function ChatClient() {
   const [inRoom, setInRoom] = useState<ChatRoomResponse | null>(null);
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
   const user = useUserStore((state) => state.user);
+
+  // --- ChatRoom state management ---
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [hasNextPage, setHasNextPage] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(0);
+  const chatSocketRef = useRef<ChatSocket | null>(null);
+  // --- End of ChatRoom state management ---
 
   // userStore에서 Sender 변환
   const mySender: Sender = user
@@ -121,33 +64,174 @@ export default function ChatClient() {
     setIsClient(true);
   }, []);
 
+  // --- WebSocket and message handling logic ---
+  useEffect(() => {
+    if (!inRoom) return;
+
+    let isMounted = true;
+    const initialLoad = async () => {
+      try {
+        setPage(0);
+        setHasNextPage(true);
+        const res = await fetchChatMessages(inRoom.roomId, 0);
+        if (!isMounted) return;
+        setMessages(
+          res.messages
+            .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        );
+        setHasNextPage(res.hasNext);
+        setPage(0);
+      } catch (error) {
+        console.error("Failed to fetch initial messages:", error);
+      }
+    };
+    initialLoad();
+
+    const handleSocketMessage = (data: any) => {
+      const serverMessage = data as ChatMessage;
+      if (serverMessage.type === 'TALK') {
+        setMessages((prevMessages) => [...prevMessages, serverMessage]);
+      } else if (data.type === 'MESSAGE_READ_UPDATE') {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === data.messageId
+              ? { ...msg, unreadCount: data.unreadCount }
+              : msg,
+          ),
+        );
+      } else if (serverMessage.type === 'RE_ENTER') {
+        // RE_ENTER 타입: RE_ENTER 메시지 createdAt 이후의 메시지들의 unreadCount를 -1
+        const reEnterTime = new Date(serverMessage.createdAt);
+        setMessages((prev) =>
+          prev.map((msg) => {
+            const msgCreatedAt = new Date(msg.createdAt);
+
+            // RE_ENTER 시점 이후의 메시지이고 unreadCount가 0보다 큰 경우에만 -1
+            if (msgCreatedAt > reEnterTime && msg.unreadCount > 0) {
+              return { ...msg, unreadCount: msg.unreadCount - 1 };
+            }
+            return msg;
+          }),
+        );
+      }
+    };
+
+    const chatSocket = new ChatSocket(inRoom.roomId, handleSocketMessage);
+    chatSocketRef.current = chatSocket;
+
+    return () => {
+      isMounted = false;
+      console.log(`[CLEANUP] Closing socket for room ${inRoom.roomId}`);
+      chatSocket.close();
+    };
+  }, [inRoom, mySender.userId]);
+
+  const loadMoreMessages = async () => {
+    if (!inRoom || !hasNextPage || isLoadingMore) return;
+
+    setIsLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const res = await fetchChatMessages(inRoom.roomId, nextPage);
+      if (res.messages.length > 0) {
+        const sortedNewMessages = res.messages.sort(
+          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+        setMessages((prev) => {
+          const existingIds = new Set(prev.map((m) => m._id));
+          const uniqueNewMessages = sortedNewMessages.filter(
+            (m) => !existingIds.has(m._id)
+          );
+
+          if (uniqueNewMessages.length === 0) {
+            setHasNextPage(false);
+            return prev;
+          }
+
+          return [...uniqueNewMessages, ...prev];
+        });
+        setPage(nextPage);
+      }
+      setHasNextPage(res.hasNext);
+    } catch (error) {
+      console.error("Failed to fetch more messages:", error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
+  const handleSend = (message: string) => {
+    if (inRoom && chatSocketRef.current && mySender.userId) {
+      const tempId = `${new Date().toISOString()}-${mySender.userId}-${Math.random()}`;
+      const initialUnreadCount = inRoom.participants
+        ? inRoom.participants.length - 1
+        : 0;
+
+      const messageToSend: ChatMessage = {
+        _id: tempId, // 임시 ID
+        type: 'TALK',
+        roomId: inRoom.roomId,
+        sender: mySender,
+        message: message,
+        createdAt: new Date().toISOString(),
+        unreadCount: initialUnreadCount > 0 ? initialUnreadCount : 0,
+      };
+
+      // 서버에 메시지 전송
+      chatSocketRef.current.send(messageToSend);
+    }
+  };
+  // --- End of WebSocket and message handling logic ---
+
+
   const chats = activeTab === 'group' ? chatRooms : [];
   const filteredChats = chats.filter((chat) =>
     chat.roomName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleEnterRoom = (chat: ChatRoomResponse) => {
+    if (chat.unreadCount > 0) {
+      // markAsRead(chat.roomId);
+      setChatRooms(prevRooms =>
+        prevRooms.map(r =>
+          r.roomId === chat.roomId ? { ...r, unreadCount: 0 } : r
+        )
+      );
+    }
     setInRoom(chat);
   };
 
   const handleBackToList = () => {
     setInRoom(null);
+    setMessages([]);
+    setPage(0);
+    setHasNextPage(true);
+    setIsLoadingMore(false);
+    if (chatSocketRef.current) {
+      chatSocketRef.current.close();
+      chatSocketRef.current = null;
+    }
   };
 
   const chatInterface = (
     <div className="flex-1 flex flex-col bg-white dark:bg-black h-screen">
       {inRoom ? (
-        <ChatRoom 
-          onBack={handleBackToList} 
-          sender={mySender} 
+        <ChatRoom
+          onBack={handleBackToList}
+          sender={mySender}
           roomId={inRoom.roomId}
           roomName={inRoom.roomName}
           challengeImageUrl={inRoom.challengeImageUrl}
+          messages={messages}
+          onSend={handleSend}
+          loadMoreMessages={loadMoreMessages}
+          hasNextPage={hasNextPage}
+          isLoadingMore={isLoadingMore}
         />
       ) : (
         <>
           <ContentHeader
-            title="Challenge"
+            title="Chat"
             isDesktop={isDesktop}
             isClient={isClient}
           >

@@ -22,6 +22,7 @@ export default function MyPageComponent() {
   const [activeTab, setActiveTab] = useState('info');
   const router = useRouter();
   const pathname = usePathname();
+  const [isClient, setIsClient] = useState(false);
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
   const [userProfile, setUserProfile] = useState<UserProfileResponse | null>(
     null,
@@ -43,6 +44,10 @@ export default function MyPageComponent() {
   const [selectedRegionAddress, setSelectedRegionAddress] = useState<string>('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -265,7 +270,7 @@ export default function MyPageComponent() {
           </div>
 
           {/* 데스크톱용 액션 시트 */}
-          {isDesktop && isActionSheetOpen && (
+          {isClient && isDesktop && isActionSheetOpen && (
             <div
               className="absolute top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg z-20"
               onClick={(e) => e.stopPropagation()}
@@ -445,7 +450,7 @@ export default function MyPageComponent() {
           )}
         </div>
       </main>
-      {!isDesktop && <BottomNav />}
+      {isClient && !isDesktop && <BottomNav />}
     </>
   );
 
@@ -465,13 +470,13 @@ export default function MyPageComponent() {
             </div>
           </div>
         )}
-        {isDesktop ? (
+        {isClient && isDesktop ? (
           <div className="flex">
             <Sidebar />
             <div className="flex-1 lg:ml-64">
               <div className="max-w-2xl mx-auto py-8">
                 <header className="px-4">
-                  <h1 className="text-2xl font-bold dark:text-white">MyPage</h1>
+                  <h1 className="text-2xl font-medium dark:text-white">MyPage</h1>
                 </header>
                 {myPageContent}
               </div>
@@ -484,7 +489,7 @@ export default function MyPageComponent() {
                 <button onClick={() => router.back()}>
                   <ChevronLeftIcon className="w-6 h-6 text-gray-800 dark:text-gray-200" />
                 </button>
-                <h1 className="text-xl font-bold dark:text-white">MyPage</h1>
+                <h1 className="text-xl font-medium dark:text-white">MyPage</h1>
               </div>
             </header>
             {myPageContent}
@@ -492,7 +497,7 @@ export default function MyPageComponent() {
         )}
       </div>
       {/* 모바일용 액션 시트 */}
-      {!isDesktop && isActionSheetOpen && (
+      {isClient && !isDesktop && isActionSheetOpen && (
         <div
           className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-50 flex items-end"
           onClick={closeActionSheet}

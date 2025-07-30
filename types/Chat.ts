@@ -1,4 +1,4 @@
-export type MessageType = "ENTER" | "LEAVE" | "TALK";
+export type MessageType = "ENTER" | "LEAVE" | "TALK" | "RE_ENTER";
 
 export interface Sender {
   userId: string;
@@ -13,6 +13,7 @@ export interface ChatMessage {
   sender: Sender;
   message: string;
   createdAt: string;
+  unreadCount: number;
 }
 
 export interface ChatRoomResponse {
@@ -22,6 +23,7 @@ export interface ChatRoomResponse {
   participants: string[];
   createdAt: string;
   challengeImageUrl?: string;
+  unreadCount: number;
 }
 
 // 채팅방 메시지 조회
