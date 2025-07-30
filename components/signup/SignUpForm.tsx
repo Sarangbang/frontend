@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { SignUpRequest } from '@/types/SignUp';
+import{ handleImageChange as compressAndPreviewImage } from '@/util/handleImageChange';
 
 interface SignUpFormProps {
   onNext: (data: Partial<SignUpRequest>) => void;
@@ -36,6 +37,14 @@ const SignUpForm = ({ onNext, initialData }: SignUpFormProps) => {
     }
   }, [initialData.profileImage]);
 
+  useEffect(() => {
+    return () => {
+      if (profileImagePreview?.startsWith('blob:')) {
+        URL.revokeObjectURL(profileImagePreview);
+      }
+    };
+  }, [profileImagePreview]);
+
   const isNextEnabled =
     email && password && passwordConfirm && gender && nickname;
 
@@ -48,32 +57,12 @@ const SignUpForm = ({ onNext, initialData }: SignUpFormProps) => {
   };
 
   // 이미지 파일 선택 처리
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // 파일 크기 체크 (5MB 제한)
-      if (file.size > 5 * 1024 * 1024) {
-        setError('이미지 파일 크기는 5MB 이하여야 합니다.');
-        return;
-      }
-      
-      // 파일 타입 체크
-      if (!file.type.startsWith('image/')) {
-        setError('이미지 파일만 업로드 가능합니다.');
-        return;
-      }
-      
-      setProfileImage(file);
-      
-      // 미리보기 이미지 생성
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setProfileImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-      
-      setError(null);
-    }
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const result = await compressAndPreviewImage(e, 3);
+    if (!result) return;
+
+    setProfileImage(result.file);
+    setProfileImagePreview(result.preview);
   };
 
   // 카메라 아이콘 클릭 핸들러
