@@ -261,42 +261,40 @@ export default function ChatRoom({
                         className="rounded-full border self-start"
                       />
                     )}
-                    <div
-                      className={`flex flex-col max-w-[70%] ${
-                        isMine ? "items-end" : "items-start"
-                      }`}
-                    >
-                      {!isMine && (
-                        <span className="text-xs text-gray-600 dark:text-gray-400 font-semibold mb-1 ml-1">
-                          {msg.sender.nickname}
-                        </span>
+                    <div className="flex items-end gap-2">
+                      {isMine && (
+                        <>
+                          {msg.unreadCount > 0 && (
+                            <span className="text-yellow-500 font-bold text-[11px] mb-1">
+                              {msg.unreadCount}
+                            </span>
+                          )}
+                          <span className="text-[11px] text-gray-400 mb-1">
+                            {time}
+                          </span>
+                        </>
                       )}
-                      <div className="flex items-end gap-2">
-                        {isMine && msg.unreadCount > 0 && (
-                          <span className="text-yellow-500 font-bold text-[11px] mb-1">
-                            {msg.unreadCount}
-                          </span>
-                        )}
-                        {isMine && (
-                          <span className="text-[11px] text-gray-400 mb-1">
-                            {time}
-                          </span>
-                        )}
-                        <div
-                          className={`rounded-xl px-4 py-2 text-sm shadow-sm break-all ${
-                            isMine
-                              ? "bg-[#FDEBE6] text-red-900"
-                              : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-white"
-                          }`}
-                        >
-                          {msg.message}
-                        </div>
-                        {!isMine && (
-                          <span className="text-[11px] text-gray-400 mb-1">
-                            {time}
-                          </span>
-                        )}
+                      <div
+                        className={`rounded-xl px-4 py-2 text-sm shadow-sm break-all ${
+                          isMine
+                            ? "bg-[#FDEBE6] text-red-900"
+                            : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-white"
+                        }`}
+                      >
+                        {msg.message}
                       </div>
+                      {!isMine && (
+                        <>
+                          {msg.unreadCount > 0 && (
+                            <span className="text-yellow-500 font-bold text-[11px] mb-1">
+                              {msg.unreadCount}
+                            </span>
+                          )}
+                          <span className="text-[11px] text-gray-400 mb-1">
+                            {time}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                 );
