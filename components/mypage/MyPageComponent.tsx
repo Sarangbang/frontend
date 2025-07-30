@@ -165,7 +165,7 @@ export default function MyPageComponent() {
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const result = await compressAndPreviewImage(event, 3);
+    const result = await compressAndPreviewImage(event, 5);
     if (!result) return;
 
     try {

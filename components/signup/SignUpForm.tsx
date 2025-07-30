@@ -58,7 +58,7 @@ const SignUpForm = ({ onNext, initialData }: SignUpFormProps) => {
 
   // 이미지 파일 선택 처리
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const result = await compressAndPreviewImage(e, 3);
+    const result = await compressAndPreviewImage(e, 5);
     if (!result) return;
 
     setProfileImage(result.file);
