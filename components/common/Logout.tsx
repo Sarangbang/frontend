@@ -4,12 +4,14 @@ import { logout as logoutAPI } from '@/api/auth';
 import { useUserStore } from '@/lib/store/userStore';
 import { toast } from 'react-hot-toast';
 import { ACCESS_TOKEN } from '@/constants/global';
+import { useNotificationStore } from '@/lib/store/notificationStore';
 
 
 const Logout = ({ onLogout }: { onLogout: () => void }) => {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false); // 로딩 상태 관리
     const { clearUser } = useUserStore(); // Zustand 스토어에서 clearUser 함수 가져오기
+    const { closeEventSource } = useNotificationStore();
 
     const handleLogout = async () => {
         setIsLoading(true);
@@ -24,6 +26,9 @@ const Logout = ({ onLogout }: { onLogout: () => void }) => {
             toast.success('로그아웃되었습니다.');
             
         } finally {
+            // SSE 연결 종료
+            closeEventSource();
+
             // 로컬 스토리지에서 access token 삭제
             localStorage.removeItem(ACCESS_TOKEN);
                         
