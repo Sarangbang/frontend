@@ -32,8 +32,14 @@ export const handleImageChange = async (
         console.log('압축 전 파일 크기:', (file.size / 1024 / 1024).toFixed(2), 'MB');
         console.log('압축 후 파일 크기:', (compressed.size / 1024 / 1024).toFixed(2), 'MB');
         
-        // (4) 미리보기용 Blob URL 생성
+        // (4) 압축된 파일 유효성 검사
+        if (!compressed || !(compressed instanceof File)) {
+            throw new Error('압축된 파일이 유효하지 않습니다.');
+        }
+        
+        // (5) 미리보기용 Blob URL 생성
         const preview = URL.createObjectURL(compressed);
+        console.log('handleImageChange에서 생성된 미리보기 URL:', preview);
 
         return { preview, file: compressed };
     } catch (error) {

@@ -34,6 +34,7 @@ export const createChallenge = async (data: ChallengeCreateRequest) => {
   const formData = new FormData();
   const { imageFile, ...challengeData } = data;
 
+  // challengeDTO를 JSON 문자열로 변환하여 추가
   formData.append(
     "challengeDTO",
     new Blob([JSON.stringify(challengeData)], {
@@ -41,13 +42,14 @@ export const createChallenge = async (data: ChallengeCreateRequest) => {
     })
   );
 
-  if (imageFile instanceof File) {
-    formData.append("imageFile", imageFile);
+  // 이미지 파일이 존재하고 유효한 File 객체인 경우에만 추가
+  if (imageFile && imageFile instanceof File) {
+    formData.append("imageFile", imageFile, imageFile.name);
   }
 
   const response = await apiClient.post("/challenges", formData, {
     headers: {
-      "Content-Type": "multipart/form-data",
+      'Content-Type': 'multipart/form-data',
     },
   });
   return response.data;

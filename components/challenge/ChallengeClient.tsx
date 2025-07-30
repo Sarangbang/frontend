@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useMediaQuery } from "react-responsive";
 import { useRouter } from "next/navigation";
-import { MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { PlusIcon } from "@heroicons/react/24/solid";
 import ChallengeCard from "./ChallengeCard";
 import {
   Challenge,
@@ -62,6 +62,12 @@ const ChallengeClient = () => {
         : calculateEndDateObject(formData.startDate, formData.duration);
 
     const endDate = formatDateToYYYYMMDD(calculatedEndDate);
+
+    // 이미지 파일 검증
+    if (formData.imageFile && !(formData.imageFile instanceof File)) {
+      alert('이미지 파일이 유효하지 않습니다. 다시 선택해주세요.');
+      return;
+    }
 
     const requestData: ChallengeCreateRequest = {
       regionId: formData.regionId,
