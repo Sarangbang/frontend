@@ -15,6 +15,7 @@ import {
   formatRange,
 } from "@/util/dateUtils";
 import RegionSelectForm from '@/components/signup/RegionSelectForm';
+import { handleImageChange as compressAndPreviewImage } from '@/util/handleImageChange';
 
 interface CreateChallengeFormProps {
   onClose: () => void;
@@ -169,15 +170,24 @@ const CreateChallengeForm = ({
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setFormData((prev) => ({ ...prev, image: null, imageFile: file }));
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
-      }
-      setImagePreview(URL.createObjectURL(file));
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 기존 미리보기 URL 정리
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
     }
+
+    const result = await compressAndPreviewImage(e, 5);
+    if (!result) return;
+    
+    // 새로운 blob URL 생성 (기존 URL 대신)
+    const newPreviewUrl = URL.createObjectURL(result.file);
+    
+    setFormData((prev) => ({ 
+      ...prev,
+      image: null,
+      imageFile: result.file 
+    }));
+    setImagePreview(newPreviewUrl);
   };
 
 
@@ -198,6 +208,15 @@ const CreateChallengeForm = ({
 
     loadCategories();
   }, []);
+
+  // 컴포넌트 언마운트 시 blob URL 정리
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   const durations = ["1주", "2주", "3주", "한 달"];
 
@@ -425,8 +444,9 @@ const CreateChallengeForm = ({
                 <Image
                   src={imagePreview}
                   alt="챌린지 이미지 미리보기"
-                  layout="fill"
-                  objectFit="cover"
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  unoptimized
                 />
               ) : (
                 <>
@@ -496,8 +516,9 @@ const CreateChallengeForm = ({
                     <Image
                       src={imagePreview}
                       alt="챌린지 이미지 미리보기"
-                      layout="fill"
-                      objectFit="cover"
+                      fill
+                      style={{ objectFit: 'cover' }}
+                      unoptimized
                       className="rounded-md"
                     />
                   </div>
