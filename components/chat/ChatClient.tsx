@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, MessageSquarePlus } from 'lucide-react';
@@ -10,10 +10,11 @@ import ChatList from './ChatList';
 import Tabs, { type Tab } from '../common/Tabs';
 import ContentHeader from '../common/ContentHeader';
 import ChatRoom from './ChatRoom';
-import { Sender, ChatRoomResponse, ChatMessage } from '@/types/Chat';
+import { Sender, ChatRoomResponse, ChatMessage, ChatNotification } from '@/types/Chat';
 import { fetchChatRooms, markAsRead, fetchChatMessages } from '@/api/chat';
 import { useUserStore } from '@/lib/store/userStore';
 import { ChatSocket } from '@/util/chatSocket';
+import { UserSocket } from '@/util/userSocket';
 
 const CHAT_TABS: Tab<'group' | 'dm'>[] = [
   { id: 'group', label: '그룹 채팅' },
@@ -35,6 +36,7 @@ export default function ChatClient() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
   const chatSocketRef = useRef<ChatSocket | null>(null);
+  const userSocketRef = useRef<UserSocket | null>(null);
   // --- End of ChatRoom state management ---
 
   // userStore에서 Sender 변환
@@ -50,6 +52,47 @@ export default function ChatClient() {
         profileImageUrl: '',
       };
   const [chatRooms, setChatRooms] = useState<ChatRoomResponse[]>([]);
+
+  const handleNotification = useCallback((data: ChatNotification) => {
+    if (data.type === 'UNREAD_MESSAGE') {
+      setChatRooms(prevRooms => {
+        const targetRoom = prevRooms.find(room => room.roomId === data.roomId);
+        if (!targetRoom) return prevRooms;
+        
+        const updatedRoom = {
+          ...targetRoom,
+          unreadCount: targetRoom.unreadCount + 1
+        };
+        
+        const otherRooms = prevRooms.filter(room => room.roomId !== data.roomId);
+        return [updatedRoom, ...otherRooms];
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    if (inRoom === null) {
+      // In chat list view, connect UserSocket
+      if (!userSocketRef.current) {
+        userSocketRef.current = new UserSocket(handleNotification);
+      }
+    } else {
+      // In a chat room, disconnect UserSocket
+      if (userSocketRef.current) {
+        userSocketRef.current.close();
+        userSocketRef.current = null;
+      }
+    }
+
+    return () => {
+      if (userSocketRef.current) {
+        userSocketRef.current.close();
+        userSocketRef.current = null;
+      }
+    };
+  }, [inRoom, user, handleNotification]);
 
   useEffect(() => {
     async function loadRooms() {
