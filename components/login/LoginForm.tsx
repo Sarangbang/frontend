@@ -10,6 +10,8 @@ import toast from 'react-hot-toast';
 import { getServerURL } from '@/lib/config';
 import { useUserStore } from '@/lib/store/userStore';
 import { ACCESS_TOKEN } from '@/constants/global';
+import { subscribeToNotifications } from '@/api/notification';
+import { useNotificationStore } from '@/lib/store/notificationStore';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -18,6 +20,7 @@ const LoginForm = () => {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const { setUser } = useUserStore(); // Zustand 스토어에서 setUser 함수 가져오기
+  const { setEventSource, addNotification } = useNotificationStore();
 
   useEffect(() => {
     if (typeof window !== 'undefined' && localStorage.getItem('signupSuccess')) {
@@ -40,6 +43,12 @@ const LoginForm = () => {
       if(response && response.accessToken) {
         // access token을 localStorage에 저장 (키: ACCESS_TOKEN)
         localStorage.setItem(ACCESS_TOKEN, response.accessToken);
+
+        // 알림 구독 시작
+        const es = subscribeToNotifications(addNotification);
+        if (es) {
+          setEventSource(es);
+        }
         
         // 사용자 정보를 Zustand 스토어에 저장
         setUser({

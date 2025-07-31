@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { Moon, Sun } from 'lucide-react';
 import { useUserStore } from '@/lib/store/userStore';
+import NotificationBell from './NotificationBell';
 
 const NavItem = ({ children, text, href }: { children: React.ReactNode, text: string, href: string }) => (
     <Link href={href} className="w-full">
@@ -26,24 +27,26 @@ const Sidebar = () => {
   }, []);
 
   return(
-    <aside className="w-64 bg-white dark:bg-gray-800 h-screen fixed top-0 left-0 shadow-[1px_0_3px_rgba(0,0,0,0.1)] p-4 flex flex-col z-20">
+    <aside className="w-64 bg-white dark:bg-gray-800 h-screen fixed top-0 left-0 shadow-[1px_0_3px_rgba(0,0,0,0.1)] p-4 flex-col z-20 hidden md:flex">
       <div className="flex items-center justify-between p-4 mb-4">
         <div className="flex items-center">
           <Image src="/images/charactors/gamza.png" alt="logo" width={40} height={40} />
           <h1 className="text-2xl font-bold ml-2 dark:text-white">일심동네</h1>
         </div>
-        {mounted && (
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
-          >
-            {theme === 'dark' ? (
-              <Sun className="h-6 w-6 text-yellow-500" />
-            ) : (
-              <Moon className="h-6 w-6 text-gray-900" />
-            )}
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {mounted && (
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-6 w-6 text-yellow-500" />
+              ) : (
+                <Moon className="h-6 w-6 text-gray-900" />
+              )}
+            </button>
+          )}
+        </div>
       </div>
       <nav className="flex flex-col items-start w-full">
         <NavItem href="/" text="홈">
@@ -76,6 +79,11 @@ const Sidebar = () => {
           </svg>
         </NavItem>
       </nav>
+      {isLoggedIn && (
+        <div className="absolute bottom-4 right-4">
+          <NotificationBell />
+        </div>
+      )}
     </aside>
   )
 };
