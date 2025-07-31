@@ -38,7 +38,7 @@ const NotificationClient = () => {
           const fetchedNotifications = await getNotifications();
           setNotifications(fetchedNotifications);
         } catch (error) {
-          console.error('알림을 가져오는 데 실패했습니다.', error);
+            throw error;
         }
       };
       fetchNotifications();
@@ -51,7 +51,7 @@ const NotificationClient = () => {
       readNotification(notificationId);
       router.push(url);
     } catch (error) {
-      console.error('알림을 읽음 처리하는 데 실패했습니다.', error);
+      throw error;
     }
   };
 
@@ -60,7 +60,7 @@ const NotificationClient = () => {
       await deleteAllNotifications();
       clearAllNotifications();
     } catch (error) {
-      console.error('모든 알림을 삭제하는 데 실패했습니다.', error);
+        throw error;
     }
   };
 
