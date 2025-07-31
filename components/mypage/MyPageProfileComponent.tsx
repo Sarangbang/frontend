@@ -244,8 +244,8 @@ export default function MyPageComponent() {
 
   const myPageContent = (
     <>
-      <main className="flex-grow flex flex-col items-center w-full p-6 space-y-6">
-        <div className="relative">
+      <main className="flex-grow flex flex-col items-center w-full px-0 pt-6 space-y-6">
+        <div className="bg-orange-50 rounded-xl px-4 py-3 flex items-center space-x-4 w-full max-w-[420px]">
           <div className="w-28 h-28 rounded-full overflow-hidden">
             <Image
               src={userProfile?.profileImageUrl || '/images/charactors/gamza.png'}
@@ -483,7 +483,7 @@ export default function MyPageComponent() {
             </div>
           </div>
         ) : (
-          <div className="max-w-md mx-auto bg-white dark:bg-gray-800 flex flex-col">
+          <div className="w-full bg-white dark:bg-gray-800 flex flex-col px-0">
             <header className="sticky top-0 bg-white dark:bg-gray-800 z-10 p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center space-x-2">
                 <button onClick={() => router.back()}>
