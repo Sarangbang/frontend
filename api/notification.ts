@@ -79,7 +79,6 @@ export const deleteAllNotifications = async (): Promise<void> => {
   try {
     await apiClient.delete('/notifications');
   } catch (error) {
-    console.error('알림 전체 삭제 오류:', error);
     throw error;
   }
 };

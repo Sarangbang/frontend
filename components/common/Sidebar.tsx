@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { Moon, Sun } from 'lucide-react';
 import { useUserStore } from '@/lib/store/userStore';
-import NotificationBell from './NotificationBell';
 
 const NavItem = ({ children, text, href }: { children: React.ReactNode, text: string, href: string }) => (
     <Link href={href} className="w-full">
@@ -71,6 +70,11 @@ const Sidebar = () => {
                 <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clipRule="evenodd" />
               </svg>
             </NavItem>
+            <NavItem href="/notification" text="알림">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+            </svg>
+          </NavItem>
           </>
         )}
         <NavItem href={isLoggedIn ? "/mypage" : "/login"} text={isLoggedIn ? "마이페이지" : "로그인"}>
@@ -79,11 +83,6 @@ const Sidebar = () => {
           </svg>
         </NavItem>
       </nav>
-      {isLoggedIn && (
-        <div className="absolute bottom-4 right-4">
-          <NotificationBell />
-        </div>
-      )}
     </aside>
   )
 };
