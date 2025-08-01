@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { getServerURL } from '@/lib/config';
 import { ACCESS_TOKEN } from '@/constants/global';
+import { getCurrentTokenStatus } from '@/util/tokenUtils';
 
 // 토큰 갱신 상태 관리
 let isRefreshing = false; // 현재 토큰 갱신 중인지 확인
@@ -32,14 +33,60 @@ const apiClient = axios.create({
     withCredentials: true, // refresh token 쿠키 전송을 위해 필요
 });
 
-// 요청 인터셉터: access token을 헤더에 추가
-apiClient.interceptors.request.use((config) => {
+// 요청 인터셉터: access token을 헤더에 추가하고 만료 확인
+apiClient.interceptors.request.use(async (config) => {
     if (typeof window !== 'undefined') {
-        const token = localStorage.getItem(ACCESS_TOKEN);
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+        const tokenStatus = getCurrentTokenStatus();
+        let currentToken = tokenStatus.token;
+        
+        // 토큰이 있고 만료되었거나 곧 만료될 예정인 경우 미리 갱신
+        if (currentToken && (tokenStatus.isExpired || tokenStatus.isExpiringSoon)) {
+            // refresh 요청이 아닌 경우에만 토큰 갱신 시도
+            if (!config.url?.includes('/users/refresh')) {
+                try {
+                    // 이미 토큰 갱신 중인 경우 대기
+                    if (isRefreshing) {
+                        return new Promise((resolve, reject) => {
+                            failedQueue.push({ resolve, reject, config });
+                        });
+                    }
+                    
+                    isRefreshing = true;
+                    
+                    // 토큰 갱신 시도
+                    const refreshResponse = await axios.post<{ accessToken: string }>(
+                        `${getServerURL()}/users/refresh`,
+                        {},
+                        { withCredentials: true }
+                    );
+
+                    const newAccessToken = refreshResponse.data.accessToken;
+                    localStorage.setItem(ACCESS_TOKEN, newAccessToken);
+                    currentToken = newAccessToken;
+                    
+                    // 큐에 저장된 다른 요청들도 처리
+                    processQueue(null, newAccessToken);
+                    isRefreshing = false;
+                    
+                } catch (refreshError) {
+                    // 토큰 갱신 실패 시 처리
+                    processQueue(refreshError, null);
+                    isRefreshing = false;
+                    
+                    localStorage.removeItem(ACCESS_TOKEN);
+                    
+                    // 로그인 페이지로 리다이렉트하지 않고 현재 요청을 그대로 진행
+                    // (백엔드에서 401 처리)
+                }
+            }
+        }
+        
+        // 현재 토큰으로 헤더 설정
+        if (currentToken) {
+            config.headers.Authorization = `Bearer ${currentToken}`;
         }
     }
+    
     const deviceId = localStorage.getItem('deviceId');
     if (deviceId) {
         config.headers['Device-Id'] = deviceId;
