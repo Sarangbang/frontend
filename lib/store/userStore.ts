@@ -38,12 +38,10 @@ export const useUserStore = create<UserState>()(
         const token = localStorage.getItem(ACCESS_TOKEN);
         const currentState = get();
         
-        // 토큰이 없거나 만료된 경우 사용자 상태 초기화
-        if (!token || isTokenExpired(token)) {
-          if (currentState.isLoggedIn) {
-            localStorage.removeItem(ACCESS_TOKEN);
-            set({ user: null, isLoggedIn: false });
-          }
+        // 토큰이 없는 경우에만 사용자 상태 초기화
+        // 토큰이 만료되었어도 refresh token으로 갱신 가능하므로 바로 로그아웃하지 않음
+        if (!token && currentState.isLoggedIn) {
+          set({ user: null, isLoggedIn: false });
         }
       },
     }),

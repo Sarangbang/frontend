@@ -51,6 +51,9 @@ export const subscribeToNotifications = (
 export const getNotifications = async (): Promise<Notification[]> => {
   try {
     const token = localStorage.getItem(ACCESS_TOKEN);
+    if (!token) {
+      throw new Error('토큰이 없습니다.');
+    }
     const response = await apiClient.get<Notification[]>(`/notifications?token=${token}`);
     return response.data;
   } catch (error) {
@@ -79,7 +82,6 @@ export const deleteAllNotifications = async (): Promise<void> => {
   try {
     await apiClient.delete('/notifications');
   } catch (error) {
-    console.error('알림 전체 삭제 오류:', error);
     throw error;
   }
 };
