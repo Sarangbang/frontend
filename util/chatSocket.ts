@@ -5,13 +5,13 @@ import { refreshAccessToken } from "@/api/apiClient";
 
 export class ChatSocket {
   private socket: WebSocket | undefined = undefined;
-  private onMessage: ((msg: ChatMessage) => void) | undefined = undefined;
+  private onMessage: ((msg: any) => void) | undefined = undefined;
   private sendQueue: ChatMessage[] = [];
   private isOpen = false;
 
   constructor(
     roomId: string,
-    onMessage: (msg: ChatMessage) => void,
+    onMessage: (msg: any) => void,
     onOpen?: () => void
   ) {
     this.connect(roomId, onMessage, onOpen);
@@ -19,7 +19,7 @@ export class ChatSocket {
 
   private connect(
     roomId: string,
-    onMessage: (msg: ChatMessage) => void,
+    onMessage: (msg: any) => void,
     onOpen?: () => void
   ) {
     const token =
@@ -58,7 +58,7 @@ export class ChatSocket {
         return;
       }
       if (this.onMessage) {
-        this.onMessage(data as ChatMessage);
+        this.onMessage(data);
       }
     };
 

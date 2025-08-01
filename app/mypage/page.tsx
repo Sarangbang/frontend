@@ -1,5 +1,5 @@
-import MyPageComponent from "@/components/mypage/MyPageComponent";
+import MyPageMainComponent from "@/components/mypage/MyPageMainComponent";
 
 export default function MyPage() {
-    return <MyPageComponent />;
+    return <MyPageMainComponent />;
 }
