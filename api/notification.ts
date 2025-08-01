@@ -21,7 +21,7 @@ export const subscribeToNotifications = (
     return null;
   }
 
-  // 백엔드 SSE 구독 엔드포인트 URL을 구성합니다.
+  // 백엔드 SSE 구독 엔드포인트 URL을 구성합니다..
   const url = `${getServerURL()}/notifications/subscribe?token=${token}`;
 
   const eventSource = new EventSource(url);
