@@ -21,7 +21,7 @@ export const subscribeToNotifications = (
     return null;
   }
 
-  // 백엔드 SSE 구독 엔드포인트 URL을 구성합니다.
+  // 백엔드 SSE 구독 엔드포인트 URL을 구성합니다..
   const url = `${getServerURL()}/notifications/subscribe?token=${token}`;
 
   const eventSource = new EventSource(url);
@@ -78,6 +78,33 @@ export const markNotificationAsRead = async (notificationId: string): Promise<No
 export const deleteAllNotifications = async (): Promise<void> => {
   try {
     await apiClient.delete('/notifications');
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * FCM 토큰을 백엔드에 등록합니다.
+ * @param {string} fcmToken 등록할 FCM 토큰
+ * @returns {Promise<void>}
+ */
+export const saveFCMToken = async (fcmToken: string): Promise<void> => {
+  try {
+    await apiClient.post('/notifications/token', {
+      token: fcmToken
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * 사용자의 FCM 토큰을 삭제합니다.
+ * @returns {Promise<void>}
+ */
+export const deleteFCMToken = async (): Promise<void> => {
+  try {
+    await apiClient.delete('/notifications/token');
   } catch (error) {
     throw error;
   }
