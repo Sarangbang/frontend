@@ -63,7 +63,6 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
           setChallengeTitle(details.title);
           setChallengeMethod(details.method);
         } catch (error) {
-          console.error('Failed to fetch challenge details:', error);
           toast.error('챌린지 정보를 불러오는데 실패했습니다.');
         }
       };
@@ -110,7 +109,6 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
 
       setVerificationList(data);
     } catch (error) {
-      console.error('Failed to fetch verifications:', error);
       toast.error('인증 정보를 불러오는데 실패했습니다.');
       setVerificationList([]);
     }
@@ -137,7 +135,6 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
         toast.success(response.message || '인증이 취소되었습니다.');
         fetchVerifications();
       } catch (error: any) {
-        console.error('Failed to cancel verification:', error);
         toast.error(
           error.response?.data?.message || '인증 취소에 실패했습니다.',
         );

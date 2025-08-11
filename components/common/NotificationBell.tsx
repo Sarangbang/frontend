@@ -38,7 +38,7 @@ const NotificationBell = ({ position = 'sidebar' }: NotificationBellProps) => {
           const fetchedNotifications = await getNotifications();
           setNotifications(fetchedNotifications);
         } catch (error) {
-          console.error('알림을 가져오는 데 실패했습니다.', error);
+          throw error;
         }
       };
       fetchNotifications();
@@ -67,7 +67,7 @@ const NotificationBell = ({ position = 'sidebar' }: NotificationBellProps) => {
       router.push(url);
       setIsDropdownOpen(false);
     } catch (error) {
-      console.error('알림을 읽음 처리하는 데 실패했습니다.', error);
+      throw error;
     }
   };
 
