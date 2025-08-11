@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUserStore } from '@/lib/store/userStore';
 import { ACCESS_TOKEN } from '@/constants/global';
+import { requestForToken } from '@/lib/firebase';
+import toast from 'react-hot-toast';
 
 
 const AuthSuccessClient = () => {
@@ -30,6 +32,11 @@ const AuthSuccessClient = () => {
                 profileImageUrl: profileImageUrl || null
             });
 
+            // FCM 토큰 등록 (OAuth 로그인 성공 후)
+            requestForToken(true).catch(() => {
+                // FCM 토큰 등록 실패는 조용히 처리
+            });
+
             // 프로필 완성 상태에 따라 리디렉션
             if (profileComplete === 'true') {
                 router.push('/');
@@ -37,12 +44,12 @@ const AuthSuccessClient = () => {
                 router.push('/signup/details');
             } else {
                 // profileComplete 파라미터가 없는 예외적인 경우
-                console.error("프로필 완성 상태 정보가 없습니다.");
+                toast.error('로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
                 router.push('/login');
             }
         } else {
             // 필수 파라미터가 누락된 경우
-            console.error("인증 처리 중 필수 정보가 누락되었습니다.");
+            toast.error('로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
             router.push('/login');
         }
     }, [router, searchParams, setUser]);

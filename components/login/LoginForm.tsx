@@ -12,6 +12,7 @@ import { useUserStore } from '@/lib/store/userStore';
 import { ACCESS_TOKEN } from '@/constants/global';
 import { subscribeToNotifications } from '@/api/notification';
 import { useNotificationStore } from '@/lib/store/notificationStore';
+import { requestForToken } from '@/lib/firebase';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -56,6 +57,13 @@ const LoginForm = () => {
           nickname: response.nickname,
           profileImageUrl: response.profileImageUrl
         });
+
+        // FCM 토큰 등록 (로그인 성공 후)
+        try {
+          await requestForToken(true);
+        } catch (error) {
+          // FCM 토큰 등록 실패는 조용히 처리
+        }
       }
       setIsLoading(false);
       router.push('/');
