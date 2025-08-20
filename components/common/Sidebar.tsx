@@ -26,24 +26,26 @@ const Sidebar = () => {
   }, []);
 
   return(
-    <aside className="w-64 bg-white dark:bg-gray-800 h-screen fixed top-0 left-0 shadow-[1px_0_3px_rgba(0,0,0,0.1)] p-4 flex flex-col z-20">
+    <aside className="w-64 bg-white dark:bg-gray-800 h-screen fixed top-0 left-0 shadow-[1px_0_3px_rgba(0,0,0,0.1)] p-4 flex-col z-20 hidden md:flex">
       <div className="flex items-center justify-between p-4 mb-4">
         <div className="flex items-center">
           <Image src="/images/charactors/gamza.png" alt="logo" width={40} height={40} />
           <h1 className="text-2xl font-bold ml-2 dark:text-white">일심동네</h1>
         </div>
-        {mounted && (
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
-          >
-            {theme === 'dark' ? (
-              <Sun className="h-6 w-6 text-yellow-500" />
-            ) : (
-              <Moon className="h-6 w-6 text-gray-900" />
-            )}
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {mounted && (
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-6 w-6 text-yellow-500" />
+              ) : (
+                <Moon className="h-6 w-6 text-gray-900" />
+              )}
+            </button>
+          )}
+        </div>
       </div>
       <nav className="flex flex-col items-start w-full">
         <NavItem href="/" text="홈">
@@ -68,6 +70,11 @@ const Sidebar = () => {
                 <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clipRule="evenodd" />
               </svg>
             </NavItem>
+            <NavItem href="/notification" text="알림">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+            </svg>
+          </NavItem>
           </>
         )}
         <NavItem href={isLoggedIn ? "/mypage" : "/login"} text={isLoggedIn ? "마이페이지" : "로그인"}>

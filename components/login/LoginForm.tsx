@@ -10,6 +10,9 @@ import toast from 'react-hot-toast';
 import { getServerURL } from '@/lib/config';
 import { useUserStore } from '@/lib/store/userStore';
 import { ACCESS_TOKEN } from '@/constants/global';
+import { subscribeToNotifications } from '@/api/notification';
+import { useNotificationStore } from '@/lib/store/notificationStore';
+import { requestForToken } from '@/lib/firebase';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -18,6 +21,7 @@ const LoginForm = () => {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const { setUser } = useUserStore(); // Zustand 스토어에서 setUser 함수 가져오기
+  const { setEventSource, addNotification } = useNotificationStore();
 
   useEffect(() => {
     if (typeof window !== 'undefined' && localStorage.getItem('signupSuccess')) {
@@ -39,12 +43,25 @@ const LoginForm = () => {
         // access token 저장
         localStorage.setItem(ACCESS_TOKEN, response.accessToken);
 
-        // 사용자 정보 Zustand 스토어에 저장
+        // 알림 구독 시작
+        const es = subscribeToNotifications(addNotification);
+        if (es) {
+          setEventSource(es);
+        }
+        
+        // 사용자 정보를 Zustand 스토어에 저장
         setUser({
           uuid: response.uuid,
           nickname: response.nickname,
           profileImageUrl: response.profileImageUrl
         });
+
+        // FCM 토큰 등록 (로그인 성공 후)
+        try {
+          await requestForToken(true);
+        } catch (error) {
+          // FCM 토큰 등록 실패는 조용히 처리
+        }
       }
 
       setIsLoading(false);

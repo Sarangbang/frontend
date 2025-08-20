@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/common/ThemeProvider";
 import "./globals.css";
 
 import { Toaster } from 'react-hot-toast';
+import FCMInitializer from "@/components/common/FCMInitializer";
 
 const gmarket = localFont({
   src: [
@@ -70,6 +71,7 @@ export default function RootLayout({
           defaultTheme="light"
           enableSystem={false}
         >
+          <FCMInitializer />
           <Toaster position="top-center" />
           {children}
           <Toaster />
