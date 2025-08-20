@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/solid';
 import { useMediaQuery } from 'react-responsive';
 import Sidebar from '../common/Sidebar';
-import { fetchChallengeDetail } from '@/api/challenge';
+import { fetchChallengeDetail, getDailyMessage } from '@/api/challenge';
 import {
   getVerificationsByDate,
   cancelVerification,
@@ -42,6 +42,7 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
   const [challenge, setChallenge] = useState<ChallengeDetail | null>(null);
   const [challengeTitle, setChallengeTitle] = useState<string>('');
   const [challengeMethod, setChallengeMethod] = useState<string>('');
+  const [dailyMessage, setDailyMessage] = useState<string>('오늘은 한 문제, 테스트 그린불 찍고 하루 마무리! 💻✅');
 
   const user = useUserStore(state => state.user);
 
@@ -87,8 +88,19 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
 
     if (challengeId && currentDate) {
       fetchVerifications();
+      fetchDailyMessage();
     }
   }, [challengeId, currentDate, searchParams, user?.uuid]);
+
+  const fetchDailyMessage = async () => {
+    try {
+      const response = await getDailyMessage(Number(challengeId));
+      setDailyMessage(response.message);
+    } catch (error) {
+      console.error('오늘의 한 마디를 불러오는데 실패했습니다:', error);
+      // 에러가 발생해도 기본 메시지는 유지
+    }
+  };
 
   const fetchVerifications = async () => {
     try {
@@ -265,11 +277,11 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
                            className="w-24 h-24 object-contain"
                          />
                        </div>
-                       <div className="flex-1 min-h-[96px] bg-[#FEEDC9] rounded-2xl p-5 flex items-center justify-center shadow-sm border border-yellow-200/30">
-                         <p className="text-gray-700 text-center text-base font-medium">
-                           오늘도 화이팅! 함께 도전해봐요 💪
-                         </p>
-                       </div>
+                                               <div className="flex-1 min-h-[96px] bg-[#FEEDC9] rounded-2xl p-5 flex items-center justify-center shadow-sm border border-yellow-200/30">
+                          <p className="text-gray-700 text-center text-base font-medium">
+                            {dailyMessage}
+                          </p>
+                        </div>
                      </div>
                  </div>
                  

@@ -130,3 +130,12 @@ export const getPopularChallenges = async (): Promise<PopularChallengeResponse[]
   return response.data;
 };
 
+export const getDailyMessage = async (challengeId: number): Promise<{ message: string }> => {
+  try {
+    const response = await apiClient.get(`/challenges/${challengeId}/daily-message`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
