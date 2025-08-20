@@ -250,53 +250,89 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
           <div className="p-4 flex-1">
             {activeTab === '멤버' && (
               <div>
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(6rem,1fr))] gap-6 text-center">
-                  {verificationList.map(member => (
-                    <div
-                      key={member.userId}
-                      className="flex flex-col items-center"
-                    >
-                      <div
-                        onClick={() => openImageOverlay(member)}
-                        className={`relative w-24 h-24 rounded-full border-4 ${
-                          member.status === 'APPROVED'
-                            ? 'border-blue-500'
-                            : 'border-red-500'
-                        } ${member.imgUrl ? 'cursor-pointer' : ''}`}
-                      >
-                        <Image
-                          src={
-                            member.status === 'APPROVED'
-                              ? '/images/expressions/smile.png'
-                              : '/images/expressions/sad.png'
-                          }
-                          alt={member.nickname}
-                          layout="fill"
-                          className="rounded-full object-cover"
-                        />
-                      </div>
-                      <p className="mt-2 font-semibold dark:text-white text-sm">
-                        {member.nickname}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                {/* 인증 방법 영역 추가 */}
-                <div className="mt-15">
-                  <div className="bg-gray-100 text-gray-800 rounded-md p-4 text-center">
-                    <div className="font-bold text-lg mb-2">⭐ 인증 방법 ⭐</div>
-                    <div className="text-sm">
-                      {(challengeMethod || '인증 방법 정보가 없습니다.')
-                        .split('\n')
-                        .map((line, idx) => (
-                          <span key={idx}>
-                            {line}
-                            <br />
-                          </span>
-                        ))}
-                    </div>
-                  </div>
-                </div>
+                                                  {/* 오늘의 한 마디 섹션 */}
+                 <div className="mb-12">
+                   <h3 className="text-lg font-semibold text-center mb-6 dark:text-white">
+                     오늘의 한 마디
+                   </h3>
+                                        <div className="flex items-center gap-6">
+                       <div className="flex-shrink-0">
+                         <Image
+                           src="/images/cheerup-potato.png"
+                           alt="응원하는 감자"
+                           width={96}
+                           height={96}
+                           className="w-24 h-24 object-contain"
+                         />
+                       </div>
+                       <div className="flex-1 min-h-[96px] bg-[#FEEDC9] rounded-2xl p-5 flex items-center justify-center shadow-sm border border-yellow-200/30">
+                         <p className="text-gray-700 text-center text-base font-medium">
+                           오늘도 화이팅! 함께 도전해봐요 💪
+                         </p>
+                       </div>
+                     </div>
+                 </div>
+                 
+                 {/* 구분선 */}
+                 <div className="border-t border-gray-200 dark:border-gray-600 mb-8"></div>
+                 
+                 {/* 멤버 섹션 제목 */}
+                 <div className="mb-6">
+                   <h3 className="text-lg font-semibold text-center dark:text-white">
+                     일심 감자들
+                   </h3>
+                 </div>
+                 
+                 {/* 멤버 그리드 */}
+                 <div className="grid grid-cols-[repeat(auto-fit,minmax(6rem,1fr))] gap-8 text-center mb-12">
+                   {verificationList.map(member => (
+                     <div
+                       key={member.userId}
+                       className="flex flex-col items-center"
+                     >
+                       <div
+                         onClick={() => openImageOverlay(member)}
+                         className={`relative w-24 h-24 rounded-full border-4 ${
+                           member.status === 'APPROVED'
+                             ? 'border-blue-500'
+                             : 'border-red-500'
+                         } ${member.imgUrl ? 'cursor-pointer' : ''}`}
+                       >
+                         <Image
+                           src={
+                             member.status === 'APPROVED'
+                               ? '/images/expressions/smile.png'
+                               : '/images/expressions/sad.png'
+                           }
+                           alt={member.nickname}
+                           layout="fill"
+                           className="rounded-full object-cover"
+                         />
+                       </div>
+                       <p className="mt-3 font-semibold dark:text-white text-sm">
+                         {member.nickname}
+                       </p>
+                     </div>
+                   ))}
+                 </div>
+                 
+                 {/* 구분선 */}
+                 <div className="border-t border-gray-200 dark:border-gray-600 mb-8"></div>
+                 
+                 {/* 인증 방법 영역 */}
+                 <div className="bg-gray-100 dark:bg-gray-700 rounded-md p-4 text-center">
+                   <div className="font-bold text-lg mb-2">! 인증 방법 !</div>
+                   <div className="text-sm text-gray-700 dark:text-gray-300">
+                     {(challengeMethod || '인증 방법 정보가 없습니다.')
+                       .split('\n')
+                       .map((line, idx) => (
+                         <span key={idx}>
+                           {line}
+                           <br />
+                         </span>
+                       ))}
+                   </div>
+                 </div>
               </div>
             )}
             {activeTab === '사진' && (
