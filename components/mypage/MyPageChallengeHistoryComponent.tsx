@@ -266,19 +266,19 @@ export default function MyPageChallengeHistoryComponent() {
         >
           <div className="space-y-4">
             <div>
-              <h3 className="font-medium text-gray-900 mb-2">참여 동기</h3>
+              <h3 className="font-medium text-gray-900 mb-2">자기소개</h3>
               <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
                 {selectedApplication.applicationForm.motivation}
               </p>
             </div>
             <div>
-              <h3 className="font-medium text-gray-900 mb-2">관련 경험</h3>
+              <h3 className="font-medium text-gray-900 mb-2">신청사유</h3>
               <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
                 {selectedApplication.applicationForm.experience}
               </p>
             </div>
             <div>
-              <h3 className="font-medium text-gray-900 mb-2">참여 의지</h3>
+              <h3 className="font-medium text-gray-900 mb-2">다짐</h3>
               <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
                 {selectedApplication.applicationForm.commitment}
               </p>
@@ -299,12 +299,6 @@ export default function MyPageChallengeHistoryComponent() {
               <h3 className="font-medium text-gray-900 mb-2">코멘트</h3>
               <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
                 {selectedApplication.hostComment.comment}
-              </p>
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900 mb-2">승인일시</h3>
-              <p className="text-sm text-gray-600">
-                {selectedApplication.hostComment.approvedAt}
               </p>
             </div>
             <button
