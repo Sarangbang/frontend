@@ -130,9 +130,13 @@ export const getPopularChallenges = async (): Promise<PopularChallengeResponse[]
   return response.data;
 };
 
-export const getDailyMessage = async (challengeId: number): Promise<{ message: string }> => {
+// 챌린지방 오늘의 한 마디 AI 요청
+export const getDailyMessage = async (challengeId: number): Promise<string> => {
   try {
-    const response = await apiClient.get(`/challenges/${challengeId}/daily-message`);
+    const response = await apiClient.get(
+      `/v1/ai/motivational-message/${challengeId}`,
+      { responseType: 'text' }
+    );
     return response.data;
   } catch (error) {
     throw error;

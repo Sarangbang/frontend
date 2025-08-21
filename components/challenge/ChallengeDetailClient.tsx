@@ -94,8 +94,9 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
 
   const fetchDailyMessage = async () => {
     try {
-      const response = await getDailyMessage(Number(challengeId));
-      setDailyMessage(response.message);
+      const message = await getDailyMessage(Number(challengeId));
+      setDailyMessage(message);
+      console.log('나왔어요?', message);
     } catch (error) {
       console.error('오늘의 한 마디를 불러오는데 실패했습니다:', error);
       // 에러가 발생해도 기본 메시지는 유지
