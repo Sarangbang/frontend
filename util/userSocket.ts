@@ -1,6 +1,6 @@
 import { getWebSocketURL } from "../lib/config";
 import { ACCESS_TOKEN } from "@/constants/global";
-import { refreshAccessToken } from "@/api/apiClient";
+import { refreshAccessToken } from "@/lib/api/apiClient";
 
 export class UserSocket {
   private socket: WebSocket | undefined = undefined;

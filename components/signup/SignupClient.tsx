@@ -4,7 +4,7 @@ import { useState } from 'react';
 import SignUpForm from './SignUpForm';
 import RegionSelectForm from './RegionSelectForm';
 import { SignUpRequest } from '@/types/SignUp';
-import { signUp } from '@/api/signup';
+import { signUp } from '@/lib/api/signup';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Image from 'next/image';

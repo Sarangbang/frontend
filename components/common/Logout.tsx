@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { logout as logoutAPI } from '@/api/auth';
+import { logout as logoutAPI } from '@/lib/api/auth';
 import { useUserStore } from '@/lib/store/userStore';
 import { toast } from 'react-hot-toast';
 import { ACCESS_TOKEN } from '@/constants/global';
 import { useNotificationStore } from '@/lib/store/notificationStore';
-import { deleteFCMToken } from '@/api/notification';
+import { deleteFCMToken } from '@/lib/api/notification';
 
 
 const Logout = ({ onLogout }: { onLogout: () => void }) => {

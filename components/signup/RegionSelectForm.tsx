@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getSidoRegions, getSubRegions } from '@/api/region';
+import { getSidoRegions, getSubRegions } from '@/lib/api/region';
 import { Region } from '@/types/Region';
 
 interface RegionSelectFormProps {

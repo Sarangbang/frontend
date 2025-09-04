@@ -12,7 +12,7 @@ import Logout from '../common/Logout';
 import Sidebar from '../common/Sidebar';
 import BottomNav from '../common/BottomNav';
 import { useMediaQuery } from 'react-responsive';
-import { getUserProfile, updatePassword, updateProfileImage, deleteProfileImage, updateRegion } from '@/api/mypage';
+import { getUserProfile, updatePassword, updateProfileImage, deleteProfileImage, updateRegion } from '@/lib/api/mypage';
 import { UserProfileResponse } from '@/types/User';
 import RegionSelectForm from '../signup/RegionSelectForm';
 import { handleImageChange as compressAndPreviewImage } from '@/util/handleImageChange';

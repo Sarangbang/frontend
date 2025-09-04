@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ChevronLeftIcon } from '@heroicons/react/24/solid';
 import { useUserStore } from '@/lib/store/userStore';
-import { getUserProfile } from '@/api/mypage';
+import { getUserProfile } from '@/lib/api/mypage';
 
 interface ContentHeaderProps {
   title: string;

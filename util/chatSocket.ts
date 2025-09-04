@@ -1,7 +1,7 @@
 import { ChatMessage } from "../types/Chat";
 import { getWebSocketURL } from "../lib/config";
 import { ACCESS_TOKEN } from "@/constants/global";
-import { refreshAccessToken } from "@/api/apiClient";
+import { refreshAccessToken } from "@/lib/api/apiClient";
 
 export class ChatSocket {
   private socket: WebSocket | undefined = undefined;

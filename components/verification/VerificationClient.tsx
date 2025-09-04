@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getTodayVerifications } from '@/api/verification';
+import { getTodayVerifications } from '@/lib/api/verification';
 import type { TodayVerificationStatusResponse } from '@/types/Verification';
 import { useMediaQuery } from 'react-responsive';
 import Sidebar from '@/components/common/Sidebar';

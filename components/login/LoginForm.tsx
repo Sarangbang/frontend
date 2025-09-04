@@ -3,14 +3,14 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { login } from '@/api/auth';
+import { login } from '@/lib/api/auth';
 import { useRouter } from 'next/navigation';
 import { LoginRequest } from '@/types/Login';
 import toast from 'react-hot-toast';
 import { getServerURL } from '@/lib/config';
 import { useUserStore } from '@/lib/store/userStore';
 import { ACCESS_TOKEN } from '@/constants/global';
-import { subscribeToNotifications } from '@/api/notification';
+import { subscribeToNotifications } from '@/lib/api/notification';
 import { useNotificationStore } from '@/lib/store/notificationStore';
 import { requestForToken } from '@/lib/firebase';
 

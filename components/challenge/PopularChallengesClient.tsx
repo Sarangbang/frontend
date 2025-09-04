@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createChallenge, getPopularChallenges } from '@/api/challenge';
+import { createChallenge, getPopularChallenges } from '@/lib/api/challenge';
 import { PopularChallengeResponse, ChallengeCreateRequest, ChallengeFormData } from '@/types/Challenge';
 import { ChevronLeftIcon, ClockIcon, UserGroupIcon, CalendarIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';

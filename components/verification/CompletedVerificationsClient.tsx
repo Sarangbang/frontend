@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { getCompletedVerifications } from '@/api/verification';
+import { getCompletedVerifications } from '@/lib/api/verification';
 import { Verification } from '@/types/Verification';
 import CompletedVerificationCard from './CompletedVerificationCard';
 

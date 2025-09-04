@@ -3,7 +3,7 @@
 import { useEffect, useState, ReactNode } from 'react';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
-import { fetchChallengeDetail, joinChallenge, getUserApplicationStatus } from '@/api/challenge';
+import { fetchChallengeDetail, joinChallenge, getUserApplicationStatus } from '@/lib/api/challenge';
 import { ChallengeDetail, ChallengeJoinRequest } from '@/types/Challenge';
 import ExpandableText from '../common/ExpandableText';
 

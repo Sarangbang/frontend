@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeftIcon, CloudArrowUpIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import Sidebar from '@/components/common/Sidebar';
-import { createChallengeVerification } from '@/api/verification';
+import { createChallengeVerification } from '@/lib/api/verification';
 import toast from 'react-hot-toast';
 import { handleImageChange } from '@/util/handleImageChange';
 

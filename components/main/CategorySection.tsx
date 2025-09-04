@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 
-import { fetchCategories } from '@/api/category';
+import { fetchCategories } from '@/lib/api/category';
 import type { CategoryDto } from '@/types/Category';
 
 const CategoryCircle = ({

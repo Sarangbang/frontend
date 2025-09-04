@@ -11,7 +11,7 @@ import Tabs, { type Tab } from '../common/Tabs';
 import ContentHeader from '../common/ContentHeader';
 import ChatRoom from './ChatRoom';
 import { Sender, ChatRoomResponse, ChatMessage, ChatNotification } from '@/types/Chat';
-import { fetchChatRooms, markAsRead, fetchChatMessages } from '@/api/chat';
+import { fetchChatRooms, markAsRead, fetchChatMessages } from '@/lib/api/chat';
 import { useUserStore } from '@/lib/store/userStore';
 import { ChatSocket } from '@/util/chatSocket';
 import { UserSocket } from '@/util/userSocket';
