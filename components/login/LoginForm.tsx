@@ -32,17 +32,15 @@ const LoginForm = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
     if (isLoading) return;
-    
     setIsLoading(true);
-    
+
     try {
       const loginData: LoginRequest = { email, password };
       const response = await login(loginData);
 
-      if(response && response.accessToken) {
-        // access token을 localStorage에 저장 (키: ACCESS_TOKEN)
+      if (response && response.accessToken) {
+        // access token 저장
         localStorage.setItem(ACCESS_TOKEN, response.accessToken);
 
         // 알림 구독 시작
@@ -65,10 +63,11 @@ const LoginForm = () => {
           // FCM 토큰 등록 실패는 조용히 처리
         }
       }
+
       setIsLoading(false);
       router.push('/');
     } catch (error) {
-      setError('이메일 또는 비밀번호가 올바르지 않습니다.')
+      setError('이메일 또는 비밀번호가 올바르지 않습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +75,8 @@ const LoginForm = () => {
 
   const inputStyle =
     'appearance-none block w-full px-3 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white';
-  const labelStyle = 'block text-sm font-medium text-gray-700 dark:text-gray-200 sr-only';
+  const labelStyle =
+    'block text-sm font-medium text-gray-700 dark:text-gray-200 sr-only';
 
   return (
     <div className="flex flex-col justify-center min-h-screen py-12 bg-white sm:px-6 lg:px-8 dark:bg-gray-900">
@@ -120,10 +120,7 @@ const LoginForm = () => {
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className={labelStyle}
-              >
+              <label htmlFor="password" className={labelStyle}>
                 비밀번호
               </label>
               <div className="mt-1">
@@ -151,12 +148,15 @@ const LoginForm = () => {
               </button>
             </div>
           </form>
+
           {error && (
             <div className="p-3 text-sm text-red-700 bg-red-100 border border-red-400 rounded-md mt-4">
               {error}
             </div>
           )}
 
+          {/*
+          ====== 간편 계정으로 로그인하기 파트 ======
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -170,7 +170,7 @@ const LoginForm = () => {
             </div>
 
             <div className="flex justify-center mt-6 space-x-4">
-              {/* Kakao Login */}
+              {/ * Kakao Login * /}
               <button
                 type="button"
                 title="카카오 로그인"
@@ -191,7 +191,8 @@ const LoginForm = () => {
                   />
                 </svg>
               </button>
-              {/* Naver Login */}
+
+              {/ * Naver Login * /}
               <button
                 type="button"
                 title="네이버 로그인"
@@ -203,7 +204,8 @@ const LoginForm = () => {
               >
                 <span className="text-2xl font-bold text-white">N</span>
               </button>
-              {/* Google Login */}
+
+              {/ * Google Login * /}
               <button
                 type="button"
                 title="구글 로그인"
@@ -238,6 +240,8 @@ const LoginForm = () => {
               </button>
             </div>
           </div>
+          */}
+
         </div>
         <div className="flex justify-center mt-6 space-x-4 text-sm text-gray-500 dark:text-gray-400">
           <Link href="/signup" className="hover:text-orange-500">회원가입</Link>
@@ -251,4 +255,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm; 
+export default LoginForm;
