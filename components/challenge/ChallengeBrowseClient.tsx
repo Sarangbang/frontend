@@ -2,18 +2,20 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeftIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { PlusIcon } from "@heroicons/react/24/solid";
+import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 import toast from 'react-hot-toast';
 import ChallengeCard from "./ChallengeCard";
 import { Challenge, ChallengeCreateRequest, ChallengeFormData } from "@/types/Challenge";
 import { CategoryDto } from "@/types/Category";
-import { fetchAllChallenges, fetchChallengesByCategory, createChallenge } from "@/lib/api/challenge";
+import { fetchAllChallenges, fetchChallengesByCategory, createChallenge, getPopularChallenges } from "@/lib/api/challenge";
 import { fetchCategories } from "@/lib/api/category";
 import Sidebar from "../common/Sidebar";
 import BottomNav from "../common/BottomNav";
 import ChallengeApplyModal from "./ChallengeApplyModal";
 import CreateChallengeForm from "./CreateChallengeForm";
 import { formatDateToYYYYMMDD, calculateEndDateObject } from "@/util/dateUtils";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 
 const ChallengeBrowseClient = () => {
   const router = useRouter();
@@ -33,6 +35,7 @@ const ChallengeBrowseClient = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedChallengeId, setSelectedChallengeId] = useState<number | null>(null);
   const [isCreatingChallenge, setIsCreatingChallenge] = useState(false);
+  const [filter, setFilter] = useState('latest');
 
   useEffect(() => {
     setIsClient(true);
@@ -70,25 +73,59 @@ const ChallengeBrowseClient = () => {
   }, [searchParams]);
 
   const loadInitialChallenges = useCallback(async (categoryId: number) => {
+    if (categoryId === -1) {
+      setIsLoading(true);
+      setChallenges([]);
+      setCurrentPage(0);
+      try {
+        const popularData = await getPopularChallenges();
+        const mappedChallenges: Challenge[] = popularData.map((p) => ({
+          id: p.challengeId,
+          title: p.challengeTitle,
+          description: "",
+          participants: p.maxParticipants,
+          currentParticipants: p.currentParticipants,
+          status: true,
+          startDate: p.startDate,
+          endDate: p.endDate,
+          image: p.image,
+          category: p.categoryName,
+          categoryName: p.categoryName,
+          location: p.region,
+        }));
+        setChallenges(mappedChallenges);
+        setTotalCount(mappedChallenges.length);
+        setHasMore(false);
+      } catch (error) {
+        toast.error("인기 챌린지를 불러오는데 실패했습니다.");
+        setHasMore(false);
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
     setIsLoading(true);
     setChallenges([]);
     setCurrentPage(0);
     setHasMore(true);
+
+    const apiStatus = filter === 'upcoming' ? 'SCHEDULED' : filter === 'in_progress' ? 'IN_PROGRESS' : undefined;
     
     try {
       const response = await (categoryId === 0
-        ? fetchAllChallenges(0, 10)
-        : fetchChallengesByCategory(categoryId, 0, 10));
+        ? fetchAllChallenges(0, 10, apiStatus)
+        : fetchChallengesByCategory(categoryId, 0, 10, apiStatus));
       
       setChallenges(response.content);
       setTotalCount(response.totalElements);
-      setHasMore(!response.last);
+      setHasMore(!hasMore);
     } catch (error) {
       toast.error("챌린지 데이터를 불러오는데 실패했습니다.");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [filter]);
 
   // 카테고리 변경 시 초기 챌린지 데이터 로드
   useEffect(() => {
@@ -97,15 +134,17 @@ const ChallengeBrowseClient = () => {
   }, [selectedCategoryId, loadInitialChallenges]);
 
   const loadMoreChallenges = useCallback(async () => {
-    if (isLoadingMore || !hasMore || selectedCategoryId === null) return;
+    if (isLoadingMore || !hasMore || selectedCategoryId === null || selectedCategoryId === -1) return;
     
     setIsLoadingMore(true);
     const nextPage = currentPage + 1;
     
+    const apiStatus = filter === 'upcoming' ? 'SCHEDULED' : filter === 'in_progress' ? 'IN_PROGRESS' : undefined;
+
     try {
       const response = await (selectedCategoryId === 0
-        ? fetchAllChallenges(nextPage, 10)
-        : fetchChallengesByCategory(selectedCategoryId, nextPage, 10));
+        ? fetchAllChallenges(nextPage, 10, apiStatus)
+        : fetchChallengesByCategory(selectedCategoryId, nextPage, 10, apiStatus));
         
       setChallenges(prev => [...prev, ...response.content]);
       
@@ -116,7 +155,7 @@ const ChallengeBrowseClient = () => {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [currentPage, hasMore, isLoadingMore, selectedCategoryId]);
+  }, [currentPage, hasMore, isLoadingMore, selectedCategoryId, filter]);
 
   const lastChallengeElementRef = useCallback((node: HTMLDivElement) => {
     if (isLoadingMore) return;
@@ -152,6 +191,10 @@ const ChallengeBrowseClient = () => {
     if(selectedCategoryId !== null) {
       loadInitialChallenges(selectedCategoryId);
     }
+  };
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilter(e.target.value);
   };
 
   const handleCreateChallenge = async (formData: ChallengeFormData) => {
@@ -193,6 +236,7 @@ const ChallengeBrowseClient = () => {
   };
 
   const getSelectedCategoryName = () => {
+    if (selectedCategoryId === -1) return "인기순";
     if (selectedCategoryId === null || selectedCategoryId === 0) return "전체";
     const category = categories.find(cat => cat.categoryId === selectedCategoryId);
     return category ? category.categoryName : "전체";
@@ -233,23 +277,24 @@ const ChallengeBrowseClient = () => {
 
   const challengeContent = (
     <>
-      {/* 데스크톱 헤더 */}
-      <header className="hidden lg:flex items-center p-4 border-b-2 mb-4">
-        <h1 className="text-2xl font-medium text-gray-900 dark:text-white">챌린지 둘러보기</h1>
-      </header>
-
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex overflow-x-auto space-x-4 pb-2">
+      {/* 카테고리 선택 */}
+      <div className="border-b border-gray-200 dark:border-gray-700">
+        <div className="pb-4 flex overflow-x-auto space-x-4 pb-2">
+          <button
+            onClick={() => handleCategorySelect(-1)}
+            className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition-colors cursor-pointer ${selectedCategoryId === -1 ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
+            인기순
+          </button>
           <button
             onClick={() => handleCategorySelect(0)}
-            className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition-colors ${selectedCategoryId === 0 ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
+            className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition-colors cursor-pointer ${selectedCategoryId === 0 ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
             전체
           </button>
           {categories.map((category) => (
             <button
               key={category.categoryId}
               onClick={() => handleCategorySelect(category.categoryId)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition-colors ${selectedCategoryId === category.categoryId ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
+              className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition-colors cursor-pointer ${selectedCategoryId === category.categoryId ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
               {category.categoryName}
             </button>
           ))}
@@ -257,11 +302,25 @@ const ChallengeBrowseClient = () => {
       </div>
 
       {/* 챌린지 목록 */}
-      <div className="p-4">
-        <div className="mb-4">
+      <div>
+        <div className="flex justify-between items-center mb-4 mt-4">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">
             {getSelectedCategoryName()} ({totalCount})
           </h2>
+          <div className="relative">
+            <select
+              value={filter}
+              onChange={handleFilterChange}
+              className="appearance-none bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md py-2 pl-3 pr-8 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-gray-200"
+            >
+              <option value="latest">최신순</option>
+              <option value="upcoming">예정</option>
+              <option value="in_progress">진행중</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+                <ChevronDownIcon className="h-4 w-4" />
+            </div>
+          </div>
         </div>
 
         {isLoading ? (
@@ -311,6 +370,14 @@ const ChallengeBrowseClient = () => {
           <div className="flex">
             <Sidebar />
             <div className="flex-1 ml-64">
+              <header className="sticky top-0 bg-white dark:bg-gray-900 z-10 py-4 px-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="max-w-4xl mx-auto flex items-center">
+                    <button onClick={handleGoBack} className="mr-4">
+                        <ChevronLeftIcon className="w-6 h-6 text-gray-800 dark:text-gray-200" />
+                    </button>
+                    <h1 className="text-xl font-bold dark:text-white">챌린지 둘러보기</h1>
+                </div>
+              </header>
               <main className="max-w-4xl mx-auto px-4 py-8">
                 {challengeContent}
               </main>
@@ -324,14 +391,16 @@ const ChallengeBrowseClient = () => {
           </button>
         </>
       ) : (
-        <div className="pt-16 pb-16">
+        <>
           {/* 모바일/태블릿 헤더 */}
-          <div className="fixed top-0 left-0 right-0 z-10 flex items-center p-4 border-b border-gray-200 bg-white dark:bg-gray-900 lg:hidden">
-            <button onClick={handleGoBack} className="mr-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
-              <ArrowLeftIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-            </button>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">챌린지 둘러보기</h1>
-          </div>
+          <header className="sticky top-0 bg-white dark:bg-gray-900 z-10 py-4 px-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="max-w-4xl mx-auto flex items-center">
+                <button onClick={handleGoBack} className="mr-4">
+                    <ChevronLeftIcon className="w-6 h-6 text-gray-800 dark:text-gray-200" />
+                </button>
+                <h1 className="text-xl font-bold dark:text-white">챌린지 둘러보기</h1>
+            </div>
+          </header>
           <main>
             {challengeContent}
           </main>
@@ -342,7 +411,7 @@ const ChallengeBrowseClient = () => {
             >
               <PlusIcon className="w-7 h-7" />
           </button>
-        </div>
+        </>
       )}
       {isModalOpen && selectedChallengeId && (
         <ChallengeApplyModal

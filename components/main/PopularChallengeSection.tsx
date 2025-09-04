@@ -28,7 +28,7 @@ const PopularChallengeSection = () => {
     }, []);
 
     const handleViewAll = () => {
-        router.push('/challenges/popular');
+        router.push('/challenges?categoryId=-1');
     };
 
     const handleChallengeClick = (challengeId: number) => {
