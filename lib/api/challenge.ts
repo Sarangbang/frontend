@@ -8,8 +8,12 @@ import { ChallengeApplication } from "@/types/Application";
  * @param size 페이지 크기 (기본값: 10)
  * @returns 페이지 정보를 포함한 챌린지 목록
  */
-export const fetchAllChallenges = async (page: number = 0, size: number = 10): Promise<PageResponse<Challenge>> => {
-    const response = await apiClient.get(`/challenges/all?page=${page}&size=${size}&sort=id,desc`);
+export const fetchAllChallenges = async (page: number = 0, size: number = 10, status?: 'SCHEDULED' | 'IN_PROGRESS'): Promise<PageResponse<Challenge>> => {
+    let url = `/challenges/all?page=${page}&size=${size}&sort=id,desc`;
+    if (status) {
+        url += `&status=${status}`;
+    }
+    const response = await apiClient.get(url);
     return response.data; // 전체 페이지 응답 반환
 };
 
@@ -20,8 +24,12 @@ export const fetchAllChallenges = async (page: number = 0, size: number = 10): P
  * @param size 페이지 크기 (기본값: 10)
  * @returns 페이지 정보를 포함한 해당 카테고리의 챌린지 목록
  */
-export const fetchChallengesByCategory = async (categoryId: number, page: number = 0, size: number = 10): Promise<PageResponse<Challenge>> => {
-    const response = await apiClient.get(`/challenges/categories/${categoryId}?page=${page}&size=${size}&sort=id,desc`);
+export const fetchChallengesByCategory = async (categoryId: number, page: number = 0, size: number = 10, status?: 'SCHEDULED' | 'IN_PROGRESS'): Promise<PageResponse<Challenge>> => {
+    let url = `/challenges/categories/${categoryId}?page=${page}&size=${size}&sort=id,desc`;
+    if (status) {
+        url += `&status=${status}`;
+    }
+    const response = await apiClient.get(url);
     return response.data; // 전체 페이지 응답 반환
 };
 

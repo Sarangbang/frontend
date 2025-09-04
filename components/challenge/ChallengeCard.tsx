@@ -13,7 +13,6 @@ interface ChallengeCardProps {
 
 const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
   const { status, location, title, currentParticipants, participants, category, description, startDate, endDate, image } = challenge;
-  const [imageError, setImageError] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>(''); // Presigned URL용 상태 추가
   const router = useRouter();
 
@@ -62,32 +61,6 @@ const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
 
   const dynamicStatus = getDynamicStatus(startDate, endDate);
 
-  // 이미지 경로 처리 함수
-  // const getImageSrc = (imagePath: string): string => {
-  //   // 이미지 에러가 발생했거나 이미지가 없으면 기본 이미지 사용
-  //   if (imageError || !imagePath || imagePath.trim() === '') {
-  //     return '/images/charactors/gamza.png';
-  //   }
-    
-  //   // 이미지가 절대 URL인지 확인 (http:// 또는 https://로 시작)
-  //   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-  //     return imagePath;
-  //   }
-    
-  //   // 이미지가 이미 /로 시작하는지 확인
-  //   if (imagePath.startsWith('/')) {
-  //     return imagePath;
-  //   }
-    
-  //   // 파일명만 있는 경우 /images/ 접두사 추가
-  //   return `/images/challenges/${imagePath}`;
-  // };
-
-  // 이미지 에러 핸들러
-  const handleImageError = () => {
-    setImageError(true);
-  };
-
   const getStatusChipStyle = (status: '예정' | '진행중' | '종료') => {
     switch (status) {
       case '예정':
@@ -106,13 +79,15 @@ const ChallengeCard = ({ challenge, isLeaderView }: ChallengeCardProps) => {
       <div className="flex">
         <div className="relative w-24 h-24 mr-4 flex-shrink-0">
           <Image 
-            src={imageUrl} 
+            src={imageUrl || '/images/charactors/gamza.png'} 
             alt={title} 
             width={96} 
             height={96} 
             className="rounded-full object-cover aspect-square"
-            onError={handleImageError}
             unoptimized
+            onError={(e) => {
+              e.currentTarget.src = '/images/charactors/gamza.png';
+            }}
           />
         </div>
         <div className="flex-1">
