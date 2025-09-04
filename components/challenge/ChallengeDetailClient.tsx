@@ -10,11 +10,11 @@ import {
 } from '@heroicons/react/24/solid';
 import { useMediaQuery } from 'react-responsive';
 import Sidebar from '../common/Sidebar';
-import { fetchChallengeDetail, getDailyMessage } from '@/api/challenge';
+import { fetchChallengeDetail, getDailyMessage } from '@/lib/api/challenge';
 import {
   getVerificationsByDate,
   cancelVerification,
-} from '@/api/challengeVerification';
+} from '@/lib/api/challengeVerification';
 import type {
   ChallengeDetail,
   ChallengeVerificationByDate,

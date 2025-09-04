@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { updateNickname, getUserProfile } from '@/api/mypage';
+import { updateNickname, getUserProfile } from '@/lib/api/mypage';
 import Image from 'next/image';
 import { useMediaQuery } from 'react-responsive';
 import Sidebar from '../common/Sidebar';

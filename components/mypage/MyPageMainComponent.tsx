@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { useMediaQuery } from 'react-responsive';
-import { getUserProfile } from '@/api/mypage';
+import { getUserProfile } from '@/lib/api/mypage';
 import { UserProfileResponse } from '@/types/User';
 import Sidebar from '../common/Sidebar';
 import BottomNav from '../common/BottomNav';

@@ -6,7 +6,7 @@ import {
   getNotifications,
   markNotificationAsRead,
   deleteAllNotifications,
-} from '@/api/notification';
+} from '@/lib/api/notification';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';

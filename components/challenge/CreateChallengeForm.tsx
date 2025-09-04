@@ -6,7 +6,7 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { ko } from "date-fns/locale";
 import Image from "next/image";
-import { getCategoryNames } from "@/api/category";
+import { getCategoryNames } from "@/lib/api/category";
 import { CategoryName } from "@/types/Category";
 import { ChallengeFormData } from "@/types/Challenge";
 import {

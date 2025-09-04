@@ -15,7 +15,7 @@ import Sidebar from "../common/Sidebar";
 import CreateChallengeForm from "./CreateChallengeForm";
 import ContentHeader from "../common/ContentHeader";
 import Tabs, { type Tab } from "../common/Tabs";
-import { createChallenge, getChallengeSummary } from "@/api/challenge";
+import { createChallenge, getChallengeSummary } from "@/lib/api/challenge";
 import {
   formatDateToYYYYMMDD,
   calculateEndDateObject,

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ChevronLeftIcon } from "@heroicons/react/24/solid";
-import { fetchChallengeDetail, fetchChallengeApplications, updateApplicationStatus } from "@/api/challenge";
+import { fetchChallengeDetail, fetchChallengeApplications, updateApplicationStatus } from "@/lib/api/challenge";
 import { ChallengeDetail } from "@/types/Challenge";
 import { ChallengeApplication } from "@/types/Application";
 import toast from "react-hot-toast";

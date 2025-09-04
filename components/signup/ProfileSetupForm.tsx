@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import RegionSelectForm from './RegionSelectForm';
-import apiClient from '@/api/apiClient';
+import apiClient from '@/lib/api/apiClient';
 
 const ProfileSetupForm = () => {
     const [nickname, setNickname] = useState('');

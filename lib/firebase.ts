@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getMessaging, getToken, isSupported, onMessage, MessagePayload } from 'firebase/messaging';
-import { saveFCMToken } from '@/api/notification';
+import { saveFCMToken } from '@/lib/api/notification';
 import { ACCESS_TOKEN } from '@/constants/global';
 import toast from 'react-hot-toast';
 

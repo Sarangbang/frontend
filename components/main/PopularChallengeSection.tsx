@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import ChallengeCard from './ChallengeCard';
 import { useEffect, useState } from 'react';
-import { getPopularChallenges } from '@/api/challenge';
+import { getPopularChallenges } from '@/lib/api/challenge';
 import { PopularChallengeResponse } from '@/types/Challenge';
 import ChallengeApplyModal from '../challenge/ChallengeApplyModal';
 

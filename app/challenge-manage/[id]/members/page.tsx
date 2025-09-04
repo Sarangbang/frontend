@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { UserGroupIcon, MagnifyingGlassIcon, EllipsisVerticalIcon } from "@heroicons/react/24/solid";
-import { getChallengeMembers } from "@/api/getChallengeMembers";
+import { getChallengeMembers } from "@/lib/api/getChallengeMembers";
 import { ChallengeMember } from "@/types/ChallengeMember";
 import toast from "react-hot-toast";
 

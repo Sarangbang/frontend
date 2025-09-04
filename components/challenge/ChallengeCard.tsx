@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Challenge } from '@/types/Challenge';
 import { ClockIcon, UserGroupIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import { calculatePeriod, formatPeriod } from '@/util/dateUtils';
-import { getPresignedUrl } from '@/api/files';
+import { getPresignedUrl } from '@/lib/api/files';
 import { useRouter } from 'next/navigation';
 
 interface ChallengeCardProps {
