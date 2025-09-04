@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/common/ThemeProvider";
+import TokenValidator from "@/components/common/TokenValidator";
 
 import "./globals.css";
 
@@ -71,6 +72,7 @@ export default function RootLayout({
           defaultTheme="light"
           enableSystem={false}
         >
+          <TokenValidator />
           <FCMInitializer />
           <Toaster position="top-center" />
           {children}

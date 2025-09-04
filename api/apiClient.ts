@@ -1,26 +1,23 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { getServerURL } from '@/lib/config';
 import { ACCESS_TOKEN } from '@/constants/global';
+import { getCurrentTokenStatus } from '@/util/tokenUtils';
 
 // 토큰 갱신 상태 관리
 let isRefreshing = false; // 현재 토큰 갱신 중인지 확인
 let failedQueue: Array<{
-    resolve: (value: any) => void;
+    resolve: (token: string | null) => void;
     reject: (error: any) => void;
     config: AxiosRequestConfig;
 }> = []; // 토큰 갱신 중 대기하는 요청들의 큐
 
 // 큐에 저장된 요청들을 처리하는 함수
 const processQueue = (error: any, token: string | null = null) => {
-    failedQueue.forEach(({ resolve, reject, config }) => {
+    failedQueue.forEach(({ resolve, reject }) => {
         if (error) {
             reject(error);
         } else {
-            // 새로운 토큰으로 헤더 업데이트 후 요청 재시도
-            if (token && config.headers) {
-                config.headers.Authorization = `Bearer ${token}`;
-            }
-            resolve(apiClient(config));
+            resolve(token);
         }
     });
     
@@ -32,20 +29,78 @@ const apiClient = axios.create({
     withCredentials: true, // refresh token 쿠키 전송을 위해 필요
 });
 
-// 요청 인터셉터: access token을 헤더에 추가
-apiClient.interceptors.request.use((config) => {
-    if (typeof window !== 'undefined') {
-        const token = localStorage.getItem(ACCESS_TOKEN);
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+// 요청 인터셉터: access token을 헤더에 추가하고 만료 확인
+apiClient.interceptors.request.use(
+    async (config) => {
+        if (typeof window !== 'undefined') {
+            const tokenStatus = getCurrentTokenStatus();
+            let currentToken = tokenStatus.token;
+            
+            // 토큰이 있고 만료되었거나 곧 만료될 예정인 경우 미리 갱신
+            if (currentToken && (tokenStatus.isExpired || tokenStatus.isExpiringSoon)) {
+                // refresh 요청이 아닌 경우에만 토큰 갱신 시도
+                if (!config.url?.includes('/users/refresh')) {
+                    try {
+                        // 이미 토큰 갱신 중인 경우 대기
+                        if (isRefreshing) {
+                            return new Promise((resolve, reject) => {
+                                failedQueue.push({ 
+                                    resolve: (token: string | null) => {
+                                        if (token && config.headers) {
+                                            config.headers.Authorization = `Bearer ${token}`;
+                                        }
+                                        resolve(config);
+                                    }, 
+                                    reject, 
+                                    config 
+                                });
+                            });
+                        }
+                        
+                        isRefreshing = true;
+                        
+                        // 토큰 갱신 시도
+                        const refreshResponse = await axios.post<{ accessToken: string }>(
+                            `${getServerURL()}/users/refresh`,
+                            {},
+                            { withCredentials: true }
+                        );
+
+                        const newAccessToken = refreshResponse.data.accessToken;
+                        localStorage.setItem(ACCESS_TOKEN, newAccessToken);
+                        currentToken = newAccessToken;
+                        
+                        // 큐에 저장된 다른 요청들도 처리
+                        processQueue(null, newAccessToken);
+                        isRefreshing = false;
+                        
+                    } catch (refreshError) {
+                        // 토큰 갱신 실패 시 처리
+                        processQueue(refreshError, null);
+                        isRefreshing = false;
+                        
+                        // 토큰을 제거하지 않고 현재 요청을 그대로 진행
+                        // 실제 401 응답이 오면 응답 인터셉터에서 처리
+                    }
+                }
+            }
+            
+            // 현재 토큰으로 헤더 설정
+            if (currentToken) {
+                config.headers.Authorization = `Bearer ${currentToken}`;
+            }
         }
+        
+        const deviceId = localStorage.getItem('deviceId');
+        if (deviceId) {
+            config.headers['Device-Id'] = deviceId;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
     }
-    const deviceId = localStorage.getItem('deviceId');
-    if (deviceId) {
-        config.headers['Device-Id'] = deviceId;
-    }
-    return config;
-});
+);
 
 // 응답 인터셉터: 401 오류 시 토큰 갱신 처리
 apiClient.interceptors.response.use(
@@ -86,7 +141,16 @@ apiClient.interceptors.response.use(
             // 이미 토큰 갱신 중인 경우 큐에 요청 저장
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
-                    failedQueue.push({ resolve, reject, config: originalRequest });
+                    failedQueue.push({ 
+                        resolve: (token: string | null) => {
+                            if (token && originalRequest.headers) {
+                                originalRequest.headers.Authorization = `Bearer ${token}`;
+                            }
+                            resolve(apiClient(originalRequest));
+                        }, 
+                        reject, 
+                        config: originalRequest 
+                    });
                 });
             }
 
