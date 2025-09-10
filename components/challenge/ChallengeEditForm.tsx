@@ -37,7 +37,10 @@ export default function ChallengeEditForm({ challengeId }: ChallengeEditFormProp
         <div className="mb-6">
           <label className="block text-sm font-medium mb-1">대표사진</label>
           <div className="flex items-center space-x-4">
-            <Image src={image} alt="대표사진" width={56} height={56} className="rounded-full border" />
+            <Image src={image} alt="대표사진" width={56} height={56} className="rounded-full border" onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = "/images/charactors/gamza.png";
+            }} />
             {/* 실제 구현 시 파일 업로드 처리 필요 */}
             <button type="button" className="text-xs text-gray-500 border px-2 py-1 rounded">이미지 변경</button>
           </div>

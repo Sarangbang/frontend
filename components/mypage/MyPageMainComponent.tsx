@@ -58,6 +58,10 @@ export default function MyPageMainComponent() {
                   width={56}
                   height={56}
                   className="w-full h-full object-cover object-center"
+                  onError={e => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/images/charactors/gamza.png';
+                  }}
                 />
               </div>
               <div>

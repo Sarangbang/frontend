@@ -144,6 +144,10 @@ export default function ChatRoom({
             width={36}
             height={36}
             className="rounded-full border"
+            onError={e => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/images/charactors/gamza.png';
+            }}
           />
           <span className="font-bold text-base text-gray-800 dark:text-white">
             {roomName}
@@ -260,6 +264,10 @@ export default function ChatRoom({
                           width={32}
                           height={32}
                           className="rounded-full border self-start"
+                          onError={e => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/images/charactors/gamza.png';
+                          }}
                         />
                         <div className="flex flex-col items-start">
                           <div className="text-xs text-gray-500 dark:text-gray-400 ml-1 mb-1">

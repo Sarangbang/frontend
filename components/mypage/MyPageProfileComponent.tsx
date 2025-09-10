@@ -253,6 +253,10 @@ export default function MyPageComponent() {
               width={112}
               height={112}
               className="w-full h-full object-cover object-center"
+              onError={e => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/images/charactors/gamza.png';
+              }}
             />
           </div>
           <input

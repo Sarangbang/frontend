@@ -76,6 +76,10 @@ export default function NicknameChangeComponent() {
             width={100}
             height={100}
             className="rounded-full object-cover"
+            onError={e => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/images/charactors/gamza.png';
+            }}
           />
         </div>
       </div>

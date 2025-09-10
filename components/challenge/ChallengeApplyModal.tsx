@@ -291,9 +291,13 @@ const ChallengeApplyModal = ({ challengeId, onClose }: ChallengeApplyModalProps)
                             layout="fill"
                             objectFit="cover"
                             className="rounded-t-lg"
-                        />
-                    </div>
-                    <button
+                            onError={e => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/images/charactors/gamza.png';
+                          }}
+                       />
+                   </div>
+                   <button
                         onClick={onClose}
                         className="absolute top-3 right-3 bg-black/40 rounded-full p-1 text-white hover:bg-black/60 transition-colors"
                         aria-label="닫기"
