@@ -362,6 +362,10 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
                           alt={`${member.nickname}의 인증 사진`}
                           layout="fill"
                           className="object-cover rounded-lg"
+                          onError={e => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/images/charactors/gamza.png';
+                          }}
                         />
                       </div>
                     ) : (
@@ -490,6 +494,10 @@ const ChallengeDetailClient = ({ challengeId }: { challengeId: BigInt }) => {
                 width={500}
                 height={500}
                 className="w-full h-auto object-contain rounded-lg"
+                onError={e => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/images/charactors/gamza.png';
+                }}
               />
             </div>
             <div className="text-center">

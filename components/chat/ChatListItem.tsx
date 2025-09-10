@@ -20,6 +20,10 @@ export default function ChatListItem({ chat, onClick }: ChatListItemProps) {
           width={56}
           height={56}
           className="flex-shrink-0 rounded-full"
+          onError={e => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/images/charactors/gamza.png';
+          }}
         />
         <div className="min-w-0">
           <div className="flex items-baseline space-x-2">

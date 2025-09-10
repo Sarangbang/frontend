@@ -126,6 +126,10 @@ export default function MyPageChallengeHistoryComponent() {
                     width={48}
                     height={48}
                     className="w-full h-full object-cover"
+                    onError={e => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/images/charactors/gamza.png';
+                    }}
                   />
                 </div>
                 <div className="flex-1 min-w-0">
