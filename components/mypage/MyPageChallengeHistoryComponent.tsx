@@ -8,110 +8,72 @@ import Image from 'next/image';
 import Sidebar from '../common/Sidebar';
 import BottomNav from '../common/BottomNav';
 import Modal from '../common/Modal';
+import type { MyPageApplication, ChallengeApplyStatus } from '@/types/MyPageApplication';
+import { fetchMyApplications } from '@/lib/api/myApplication';
 
 type TabType = 'pending' | 'approved' | 'rejected';
 
-interface ChallengeApplication {
-  id: number;
-  title: string;
-  category: string;
-  region: string;
-  progress: string;
-  status: TabType;
-  image: string;
-  applicationForm: {
-    motivation: string;
-    experience: string;
-    commitment: string;
-  };
-  hostComment?: {
-    comment: string;
-    approvedAt: string;
-  };
-}
+const statusMap: Record<TabType, ChallengeApplyStatus> = {
+  pending: 'PENDING',
+  approved: 'APPROVED',
+  rejected: 'REJECTED',
+};
+
 
 export default function MyPageChallengeHistoryComponent() {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const isDesktop = useMediaQuery({ query: '(min-width: 1024px)' });
+  
   const [activeTab, setActiveTab] = useState<TabType>('pending');
+  
+  // 서버 데이터 상태
+  const [applications, setApplications] = useState<MyPageApplication[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  // 모달 상태
   const [showApplicationModal, setShowApplicationModal] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
-  const [selectedApplication, setSelectedApplication] = useState<ChallengeApplication | null>(null);
+  const [selectedApplication, setSelectedApplication] = useState<MyPageApplication | null>(null);
 
-  // 임시 데이터
-  const applications: ChallengeApplication[] = [
-    {
-      id: 1,
-      title: '메아미 출근 챌린지',
-      category: '기상/루틴',
-      region: '경기도',
-      progress: '10/20',
-      status: 'pending',
-      image: '/images/charactors/gamza.png',
-      applicationForm: {
-        motivation: '매일 규칙적으로 출근하여 건강한 생활 습관을 만들고 싶습니다.',
-        experience: '이전에 비슷한 챌린지에 참여한 경험이 있습니다.',
-        commitment: '매일 인증 사진을 올리고 꾸준히 참여하겠습니다.'
-      }
-    },
-    {
-      id: 2,
-      title: '명상을 합시다',
-      category: '기상/루틴',
-      region: '경기도',
-      progress: '3/5',
-      status: 'pending',
-      image: '/images/charactors/gamza.png',
-      applicationForm: {
-        motivation: '스트레스 해소와 마음의 평화를 찾기 위해 명상을 시작하고 싶습니다.',
-        experience: '명상에 대한 기본적인 지식은 있지만 체계적으로 해보지는 못했습니다.',
-        commitment: '하루 10분씩 명상 시간을 가지겠습니다.'
-      }
-    },
-    {
-      id: 3,
-      title: '매일 운동하기',
-      category: '건강',
-      region: '서울특별시',
-      progress: '15/30',
-      status: 'approved',
-      image: '/images/charactors/gamza.png',
-      applicationForm: {
-        motivation: '건강한 몸을 만들고 체력을 향상시키고 싶습니다.',
-        experience: '운동에 대한 기본적인 지식이 있습니다.',
-        commitment: '매일 30분씩 운동하겠습니다.'
-      },
-      hostComment: {
-        comment: '열심히 참여해주세요! 함께 건강해져요 💪',
-        approvedAt: '2024.01.15 14:30'
-      }
-    }
-  ];
 
   useEffect(() => {
     setIsClient(true);
+    (async () => {
+      try {
+        setLoading(true);
+        setLoadError(null);
+        const data = await fetchMyApplications();
+        setApplications(data);
+      } catch (e: any) {
+        setLoadError(e?.message ?? '신청내역을 불러오지 못했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  const filteredApplications = applications.filter(app => app.status === activeTab);
+  const filteredApplications = applications.filter(
+    (app) => app.challengeApplyStatus === statusMap[activeTab]
+  );
 
-  const getTabCount = (status: TabType) => {
-    return applications.filter(app => app.status === status).length;
-  };
+  const getTabCount = (tab: TabType) =>
+    applications.filter((app) => app.challengeApplyStatus === statusMap[tab]).length;
 
-  const handleApplicationClick = (application: ChallengeApplication) => {
+  const handleApplicationClick = (application: MyPageApplication) => {
     setSelectedApplication(application);
     setShowApplicationModal(true);
   };
 
-  const handleCommentClick = (application: ChallengeApplication) => {
+  const handleCommentClick = (application: MyPageApplication) => {
     setSelectedApplication(application);
     setShowCommentModal(true);
   };
 
   const handleEnterChallenge = () => {
     if (selectedApplication) {
-      router.push(`/challenge/${selectedApplication.id}`);
+      router.push(`/challenge/${selectedApplication.challengeId}`);
     }
   };
 
@@ -156,11 +118,11 @@ export default function MyPageChallengeHistoryComponent() {
         {filteredApplications.length > 0 ? (
           <div className="space-y-4 p-4">
             {filteredApplications.map((application) => (
-              <div key={application.id} className="flex items-center space-x-3 p-4 bg-white rounded-xl shadow-sm">
+              <div key={application.applicationId} className="flex items-center space-x-3 p-4 bg-white rounded-xl shadow-sm">
                 <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
                   <Image
-                    src={application.image}
-                    alt={application.title}
+                    src= {application.imageUrl ?? '/images/charactors/gamza.png'}
+                    alt={application.challengeDisplayTitle}
                     width={48}
                     height={48}
                     className="w-full h-full object-cover"
@@ -168,10 +130,10 @@ export default function MyPageChallengeHistoryComponent() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-gray-500 mb-1">
-                    {application.region} · {application.category}
+                    {application.location} · {application.location}
                   </p>
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    {application.title} [{application.progress}]
+                    {application.challengeDisplayTitle}
                   </p>
                 </div>
                 <div className="flex space-x-2 flex-shrink-0">
@@ -182,7 +144,7 @@ export default function MyPageChallengeHistoryComponent() {
                     신청서
                   </button>
 
-                  {application.status !== 'pending' && application.hostComment && (
+                  {application.challengeApplyStatus !== 'PENDING' && application.comment && (
                     <button
                       onClick={() => handleCommentClick(application)}
                       className="px-3 py-1 bg-orange-500 text-white text-xs rounded-md"
@@ -268,19 +230,19 @@ export default function MyPageChallengeHistoryComponent() {
             <div>
               <h3 className="font-medium text-gray-900 mb-2">자기소개</h3>
               <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-                {selectedApplication.applicationForm.motivation}
+                {selectedApplication.introduction}
               </p>
             </div>
             <div>
               <h3 className="font-medium text-gray-900 mb-2">신청사유</h3>
               <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-                {selectedApplication.applicationForm.experience}
+                {selectedApplication.reason}
               </p>
             </div>
             <div>
               <h3 className="font-medium text-gray-900 mb-2">다짐</h3>
               <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-                {selectedApplication.applicationForm.commitment}
+                {selectedApplication.commitment}
               </p>
             </div>
           </div>
@@ -288,7 +250,7 @@ export default function MyPageChallengeHistoryComponent() {
       )}
 
       {/* 방장 코멘트 모달 */}
-      {showCommentModal && selectedApplication && selectedApplication.hostComment && (
+      {showCommentModal && selectedApplication && selectedApplication.comment && (
         <Modal 
           isOpen={showCommentModal} 
           onClose={() => setShowCommentModal(false)}
@@ -298,7 +260,7 @@ export default function MyPageChallengeHistoryComponent() {
             <div>
               <h3 className="font-medium text-gray-900 mb-2">코멘트</h3>
               <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-                {selectedApplication.hostComment.comment}
+                {selectedApplication.comment}
               </p>
             </div>
             <button
