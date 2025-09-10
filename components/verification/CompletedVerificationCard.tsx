@@ -26,6 +26,10 @@ const CompletedVerificationCard = ({
         layout="fill"
         objectFit="cover"
         className="transform hover:scale-105 transition-transform duration-300"
+        onError={e => {
+          const target = e.target as HTMLImageElement;
+          target.src = '/images/charactors/gamza.png';
+        }}
       />
       <div className="absolute bottom-2 left-2 right-2 bg-black bg-opacity-30 text-white p-3 rounded-md">
         <h3 className="font-bold truncate">{verification.title}</h3>

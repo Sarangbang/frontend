@@ -55,6 +55,10 @@ const ContentHeader = ({
                 alt="Profile"
                 fill
                 className="rounded-full"
+                onError={e => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/images/charactors/gamza.png';
+                }}
               />
             </div>
           </div>
@@ -80,6 +84,10 @@ const ContentHeader = ({
               alt="Profile"
               fill
               className="rounded-full"
+              onError={e => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/images/charactors/gamza.png';
+              }}
             />
           </div>
         </div>

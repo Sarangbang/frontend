@@ -38,7 +38,17 @@ const VerifiableChallengeCard = ({ challenge }: VerifiableChallengeCardProps) =>
       <div className="flex flex-col flex-1">
         <div className="flex items-center">
           <div className="relative w-20 h-20 mr-4 flex-shrink-0 overflow-hidden">
-            <Image src={challenge.image} alt={challenge.title} width={80} height={80} className="rounded-lg object-cover w-full h-full" />
+            <Image
+              src={challenge.image}
+              alt={challenge.title}
+              width={80}
+              height={80}
+              className="rounded-lg object-cover w-full h-full"
+              onError={e => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/images/charactors/gamza.png';
+              }}
+            />
           </div>
           <div>
             <span className={`px-2 py-0.5 text-xs font-semibold rounded-full mb-1 inline-block ${getStatusChipStyle(status)}`}>
